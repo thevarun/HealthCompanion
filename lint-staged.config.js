@@ -1,4 +1,5 @@
 module.exports = {
-  '*': ['eslint --fix --no-warn-ignored'],
+  // Run ESLint on source files only; skip docs/*.md to avoid markdown parser noise
+  '**/*.{js,jsx,ts,tsx,mjs,cjs}': ['eslint --fix --no-warn-ignored'],
   '**/*.ts?(x)': () => 'npm run check-types',
 };

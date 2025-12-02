@@ -1,11 +1,13 @@
-import { clerkMiddleware, createRouteMatcher } from '@clerk/nextjs/server';
+/* eslint-disable simple-import-sort/imports */
 import {
   type NextFetchEvent,
   type NextRequest,
   NextResponse,
 } from 'next/server';
 import createMiddleware from 'next-intl/middleware';
+/* eslint-enable simple-import-sort/imports */
 
+import { updateSession } from '@/libs/supabase/middleware';
 import { AllLocales, AppConfig } from './utils/AppConfig';
 
 const intlMiddleware = createMiddleware({
@@ -14,58 +16,48 @@ const intlMiddleware = createMiddleware({
   defaultLocale: AppConfig.defaultLocale,
 });
 
-const isProtectedRoute = createRouteMatcher([
-  '/dashboard(.*)',
-  '/:locale/dashboard(.*)',
-  '/onboarding(.*)',
-  '/:locale/onboarding(.*)',
-  '/api(.*)',
-  '/:locale/api(.*)',
-]);
+const protectedPaths = [
+  '/dashboard',
+  '/onboarding',
+  '/api',
+];
 
-export default function middleware(
+function isProtectedRoute(pathname: string): boolean {
+  return protectedPaths.some(path => pathname.includes(path));
+}
+
+export async function middleware(
   request: NextRequest,
-  event: NextFetchEvent,
+  _event: NextFetchEvent,
 ) {
-  if (
-    request.nextUrl.pathname.includes('/sign-in')
-    || request.nextUrl.pathname.includes('/sign-up')
-    || isProtectedRoute(request)
-  ) {
-    return clerkMiddleware(async (auth, req) => {
-      if (isProtectedRoute(req)) {
-        const locale
-          = req.nextUrl.pathname.match(/(\/.*)\/dashboard/)?.at(1) ?? '';
+  // Apply internationalization middleware first
+  const response = intlMiddleware(request);
 
-        const signInUrl = new URL(`${locale}/sign-in`, req.url);
+  // Update Supabase session cookies on the response
+  await updateSession(request, response);
 
-        await auth.protect({
-          // `unauthenticatedUrl` is needed to avoid error: "Unable to find `next-intl` locale because the middleware didn't run on this request"
-          unauthenticatedUrl: signInUrl.toString(),
-        });
-      }
+  // Check if route requires authentication
+  if (isProtectedRoute(request.nextUrl.pathname)) {
+    const supabase = await import('@/libs/supabase/server').then(mod =>
+      mod.createClient(request.cookies as any),
+    );
 
-      const authObj = await auth();
+    const {
+      data: { user },
+    } = await supabase.auth.getUser();
 
-      if (
-        authObj.userId
-        && !authObj.orgId
-        && req.nextUrl.pathname.includes('/dashboard')
-        && !req.nextUrl.pathname.endsWith('/organization-selection')
-      ) {
-        const orgSelection = new URL(
-          '/onboarding/organization-selection',
-          req.url,
-        );
+    if (!user) {
+      const locale
+        = request.nextUrl.pathname.match(/^\/([^/]+)/)?.at(1) ?? '';
+      const isLocale = AllLocales.includes(locale as any);
+      const localePrefix = isLocale ? `/${locale}` : '';
 
-        return NextResponse.redirect(orgSelection);
-      }
-
-      return intlMiddleware(req);
-    })(request, event);
+      const signInUrl = new URL(`${localePrefix}/sign-in`, request.url);
+      return NextResponse.redirect(signInUrl);
+    }
   }
 
-  return intlMiddleware(request);
+  return response;
 }
 
 export const config = {
