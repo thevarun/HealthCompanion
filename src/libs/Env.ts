@@ -5,8 +5,8 @@ export const Env = createEnv({
   server: {
     DATABASE_URL: z.string().optional(),
     LOGTAIL_SOURCE_TOKEN: z.string().optional(),
-    STRIPE_SECRET_KEY: z.string().min(1),
-    STRIPE_WEBHOOK_SECRET: z.string().min(1),
+    STRIPE_SECRET_KEY: z.string().min(1).optional(),
+    STRIPE_WEBHOOK_SECRET: z.string().min(1).optional(),
     BILLING_PLAN_ENV: z.enum(['dev', 'test', 'prod']),
     SUPABASE_SERVICE_ROLE_KEY: z.string().optional(),
     DIFY_API_KEY: z.string().min(1),

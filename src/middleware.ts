@@ -20,7 +20,6 @@ const protectedPaths = [
   '/dashboard',
   '/onboarding',
   '/chat',
-  '/api',
 ];
 
 function isProtectedRoute(pathname: string): boolean {
@@ -48,6 +47,15 @@ export async function middleware(
     } = await supabase.auth.getUser();
 
     if (!user) {
+      // For API routes, return a JSON 401 instead of redirecting so
+      // client-side fetches don't try to parse an HTML error page.
+      if (request.nextUrl.pathname.startsWith('/api')) {
+        return NextResponse.json(
+          { error: 'Unauthorized', code: 'AUTH_REQUIRED' },
+          { status: 401 },
+        );
+      }
+
       const locale
         = request.nextUrl.pathname.match(/^\/([^/]+)/)?.at(1) ?? '';
       const isLocale = AllLocales.includes(locale as any);
@@ -62,5 +70,7 @@ export async function middleware(
 }
 
 export const config = {
-  matcher: ['/((?!.+\\.[\\w]+$|_next|monitoring).*)', '/', '/(api|trpc)(.*)'], // Also exclude tunnelRoute used in Sentry from the matcher
+  // Important: exclude API routes so they aren't run through locale middleware.
+  // The chat API already validates auth server-side and doesn't need locale prefixes.
+  matcher: ['/((?!.+\\.[\\w]+$|_next|monitoring|api|trpc).*)', '/'],
 };
