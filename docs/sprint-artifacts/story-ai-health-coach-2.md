@@ -107,34 +107,34 @@ Client → POST /api/chat (with message)
 **Tech-Spec Implementation (from tech-spec.md):**
 ```typescript
 // app/api/chat/route.ts pattern
-import { createClient } from '@/lib/supabase/server'
-import { DifyClient } from '@/lib/dify/client'
+import { DifyClient } from '@/lib/dify/client';
+import { createClient } from '@/lib/supabase/server';
 
 export async function POST(request: Request) {
   // 1. Validate Supabase session
-  const supabase = createClient()
-  const { data: { user }, error } = await supabase.auth.getUser()
+  const supabase = createClient();
+  const { data: { user }, error } = await supabase.auth.getUser();
 
   if (error || !user) {
-    return new Response('Unauthorized', { status: 401 })
+    return new Response('Unauthorized', { status: 401 });
   }
 
   // 2. Extract message from request
-  const { message, conversationId } = await request.json()
+  const { message, conversationId } = await request.json();
 
   // 3. Call Dify API with service token
-  const dify = new DifyClient(process.env.DIFY_API_KEY!)
+  const dify = new DifyClient(process.env.DIFY_API_KEY!);
   const stream = await dify.chatMessages({
     query: message,
     user: user.id,
     conversation_id: conversationId,
     response_mode: 'streaming',
-  })
+  });
 
   // 4. Stream response back to client
   return new Response(stream, {
     headers: { 'Content-Type': 'text/event-stream' },
-  })
+  });
 }
 ```
 

@@ -255,7 +255,7 @@ Generates failing acceptance tests BEFORE implementation following TDD's red-gre
    **Use Given-When-Then format:**
 
    ```typescript
-   import { test, expect } from '@playwright/test';
+   import { expect, test } from '@playwright/test';
 
    test.describe('User Login', () => {
      test('should display error for invalid credentials', async ({ page }) => {
@@ -287,12 +287,11 @@ Generates failing acceptance tests BEFORE implementation following TDD's red-gre
    ```typescript
    test('should load user dashboard after login', async ({ page }) => {
      // CRITICAL: Intercept routes BEFORE navigation
-     await page.route('**/api/user', (route) =>
+     await page.route('**/api/user', route =>
        route.fulfill({
          status: 200,
          body: JSON.stringify({ id: 1, name: 'Test User' }),
-       }),
-     );
+       }),);
 
      // NOW navigate
      await page.goto('/dashboard');
@@ -304,7 +303,7 @@ Generates failing acceptance tests BEFORE implementation following TDD's red-gre
 4. **Write Failing API Tests (If Applicable)**
 
    ```typescript
-   import { test, expect } from '@playwright/test';
+   import { expect, test } from '@playwright/test';
 
    test.describe('User API', () => {
      test('POST /api/users - should create new user', async ({ request }) => {
@@ -321,7 +320,9 @@ Generates failing acceptance tests BEFORE implementation following TDD's red-gre
 
        // THEN: User is created successfully
        expect(response.status()).toBe(201);
+
        const body = await response.json();
+
        expect(body).toMatchObject({
          email: userData.email,
          name: userData.name,

@@ -18,7 +18,7 @@ Email authentication introduces unique challenges: asynchronous email delivery, 
 
 ```typescript
 // tests/e2e/magic-link-auth.spec.ts
-import { test, expect } from '@playwright/test';
+import { expect, test } from '@playwright/test';
 
 /**
  * Magic Link Authentication Flow
@@ -101,6 +101,7 @@ test.describe('Magic Link Authentication', () => {
 
     // Verify session storage preserved
     const localStorage = await page.evaluate(() => JSON.stringify(window.localStorage));
+
     expect(localStorage).toContain('authToken');
   });
 
@@ -131,6 +132,7 @@ test.describe('Magic Link Authentication', () => {
 
     // Visit link first time (success)
     await page.goto(magicLink);
+
     await expect(page.getByTestId('user-menu')).toBeVisible();
 
     // Sign out
@@ -138,6 +140,7 @@ test.describe('Magic Link Authentication', () => {
 
     // Try to reuse same link (should fail)
     await page.goto(magicLink);
+
     await expect(page.getByTestId('error-message')).toBeVisible();
     await expect(page.getByTestId('error-message')).toContainText('link has already been used');
   });
@@ -195,6 +198,7 @@ describe('Magic Link Authentication', () => {
 ```typescript
 // playwright/fixtures/email-auth-fixture.ts
 import { test as base } from '@playwright/test';
+
 import { getMagicLinkFromEmail } from '../support/mailosaur-helpers';
 
 type EmailAuthFixture = {
@@ -236,6 +240,7 @@ export const test = base.extend<EmailAuthFixture>({
 
     // Visit link and authenticate
     await page.goto(magicLink);
+
     await expect(page.getByTestId('user-menu')).toBeVisible();
 
     // Extract auth token from localStorage
@@ -353,7 +358,8 @@ describe('Dashboard', () => {
 
 ```typescript
 // tests/e2e/email-auth-negative.spec.ts
-import { test, expect } from '@playwright/test';
+import { expect, test } from '@playwright/test';
+
 import { getMagicLinkFromEmail } from '../support/mailosaur-helpers';
 
 const MAILOSAUR_SERVER_ID = process.env.MAILOSAUR_SERVER_ID!;
@@ -410,11 +416,13 @@ test.describe('Email Auth Negative Flows', () => {
 
     // Visit link FIRST time (success)
     await page.goto(magicLink);
+
     await expect(page.getByTestId('user-menu')).toBeVisible();
 
     // Sign out
     await page.getByTestId('user-menu').click();
     await page.getByTestId('sign-out').click();
+
     await expect(page.getByTestId('user-menu')).not.toBeVisible();
 
     // Try to reuse SAME link (should fail)
@@ -437,6 +445,7 @@ test.describe('Email Auth Negative Flows', () => {
       await page.goto('/login');
       await page.getByTestId('email-input').fill(testEmail);
       await page.getByTestId('send-magic-link').click();
+
       await expect(page.getByTestId('check-email-message')).toBeVisible();
     }
 
@@ -457,6 +466,7 @@ test.describe('Email Auth Negative Flows', () => {
 
     // Latest link works
     await page.goto(latestLink);
+
     await expect(page.getByTestId('user-menu')).toBeVisible();
 
     // Older links should NOT work (if backend invalidates previous)
@@ -464,6 +474,7 @@ test.describe('Email Auth Negative Flows', () => {
     const olderLink = messages.items[1].html.links[0].href;
 
     await page.goto(olderLink);
+
     await expect(page.getByTestId('error-message')).toBeVisible();
   });
 
@@ -485,7 +496,9 @@ test.describe('Email Auth Negative Flows', () => {
 
       if (errorVisible) {
         console.log(`Rate limit hit after ${i + 1} requests`);
+
         await expect(page.getByTestId('rate-limit-error')).toContainText(/too many.*requests|rate.*limit/i);
+
         return;
       }
     }
@@ -612,6 +625,7 @@ describe('Place Order', () => {
   it('should place order', () => {
     /* ... */
   });
+
   it('should view order history', () => {
     /* ... */
   });
@@ -662,6 +676,7 @@ export default defineConfig({
 ```typescript
 // tests/global-setup.ts (runs once)
 import { test as setup } from '@playwright/test';
+
 import { getMagicLinkFromEmail } from './support/mailosaur-helpers';
 
 const authFile = '.auth/user-session.json';

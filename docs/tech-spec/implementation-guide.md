@@ -108,12 +108,13 @@
 ```typescript
 describe('Dify Client', () => {
   it('should format chat message correctly', () => {
-    const client = new DifyClient(API_KEY)
-    const formatted = client.formatMessage('Hello', 'user-123')
-    expect(formatted).toHaveProperty('query', 'Hello')
-    expect(formatted).toHaveProperty('user', 'user-123')
-  })
-})
+    const client = new DifyClient(API_KEY);
+    const formatted = client.formatMessage('Hello', 'user-123');
+
+    expect(formatted).toHaveProperty('query', 'Hello');
+    expect(formatted).toHaveProperty('user', 'user-123');
+  });
+});
 ```
 
 **Integration Testing:**
@@ -133,9 +134,10 @@ describe('POST /api/chat', () => {
     const response = await fetch('/api/chat', {
       method: 'POST',
       body: JSON.stringify({ message: 'Hello' }),
-    })
-    expect(response.status).toBe(401)
-  })
+    });
+
+    expect(response.status).toBe(401);
+  });
 
   it('should proxy to Dify with valid session', async () => {
     // Mock Supabase session
@@ -144,10 +146,11 @@ describe('POST /api/chat', () => {
       method: 'POST',
       headers: { Cookie: validSessionCookie },
       body: JSON.stringify({ message: 'Hello' }),
-    })
-    expect(response.ok).toBe(true)
-  })
-})
+    });
+
+    expect(response.ok).toBe(true);
+  });
+});
 ```
 
 **E2E Testing (Playwright):**
@@ -162,22 +165,22 @@ describe('POST /api/chat', () => {
 ```typescript
 test('complete chat flow', async ({ page }) => {
   // Sign in
-  await page.goto('/sign-in')
-  await page.fill('[name="email"]', 'test@example.com')
-  await page.fill('[name="password"]', 'password123')
-  await page.click('button[type="submit"]')
+  await page.goto('/sign-in');
+  await page.fill('[name="email"]', 'test@example.com');
+  await page.fill('[name="password"]', 'password123');
+  await page.click('button[type="submit"]');
 
   // Navigate to chat
-  await expect(page).toHaveURL('/chat')
+  await expect(page).toHaveURL('/chat');
 
   // Send message
-  await page.fill('[data-testid="chat-input"]', 'What are healthy breakfast options?')
-  await page.click('[data-testid="send-button"]')
+  await page.fill('[data-testid="chat-input"]', 'What are healthy breakfast options?');
+  await page.click('[data-testid="send-button"]');
 
   // Verify response
-  await expect(page.locator('[data-testid="ai-response"]')).toBeVisible({ timeout: 10000 })
-  await expect(page.locator('[data-testid="ai-response"]')).not.toBeEmpty()
-})
+  await expect(page.locator('[data-testid="ai-response"]')).toBeVisible({ timeout: 10000 });
+  await expect(page.locator('[data-testid="ai-response"]')).not.toBeEmpty();
+});
 ```
 
 **Manual Testing Checklist:**

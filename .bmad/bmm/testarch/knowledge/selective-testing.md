@@ -18,7 +18,7 @@ Running the entire test suite on every commit wastes time and resources. Smart t
 
 ```typescript
 // tests/e2e/checkout.spec.ts
-import { test, expect } from '@playwright/test';
+import { expect, test } from '@playwright/test';
 
 /**
  * Tag-based test organization
@@ -62,6 +62,7 @@ test.describe('Checkout Flow', () => {
   // P2: Run in full regression only
   test('@regression @p2 should remember saved payment methods', async ({ page }) => {
     await page.goto('/checkout');
+
     await expect(page.getByTestId('saved-cards')).toBeVisible();
   });
 
@@ -69,6 +70,7 @@ test.describe('Checkout Flow', () => {
   test('@nightly @p3 should display checkout page analytics', async ({ page }) => {
     await page.goto('/checkout');
     const analyticsEvents = await page.evaluate(() => (window as any).__ANALYTICS__);
+
     expect(analyticsEvents).toBeDefined();
   });
 });
@@ -245,7 +247,7 @@ export default defineConfig({
  * Usage: npm run test:component UserProfile,Settings
  */
 
-import { execSync } from 'child_process';
+import { execSync } from 'node:child_process';
 
 const components = process.argv[2]?.split(',') || [];
 
@@ -256,7 +258,7 @@ if (components.length === 0) {
 }
 
 // Convert component names to glob patterns
-const patterns = components.map((comp) => `**/*${comp}*.spec.ts`).join(' ');
+const patterns = components.map(comp => `**/*${comp}*.spec.ts`).join(' ');
 
 console.log(`🧩 Running tests for components: ${components.join(', ')}`);
 console.log(`Patterns: ${patterns}`);
@@ -528,7 +530,7 @@ export const TEST_PROMOTION_RULES: Record<TestStage, TestPromotion> = {
     required: true,
     failureAction: 'block',
   },
-  staging: {
+  'staging': {
     stage: 'staging',
     description: 'Post-deployment validation in staging environment',
     testCommand: 'npm run test:e2e -- --grep "@smoke"',
@@ -536,7 +538,7 @@ export const TEST_PROMOTION_RULES: Record<TestStage, TestPromotion> = {
     required: true,
     failureAction: 'block',
   },
-  production: {
+  'production': {
     stage: 'production',
     description: 'Production smoke tests post-deployment',
     testCommand: 'npm run test:e2e:prod -- --grep "@smoke.*@p0"',
@@ -654,7 +656,7 @@ jobs:
         uses: 8398a7/action-slack@v3
         with:
           status: ${{ job.status }}
-          text: '🚨 Production smoke tests failed!'
+          text: 🚨 Production smoke tests failed!
           webhook_url: ${{ secrets.SLACK_WEBHOOK }}
 ```
 

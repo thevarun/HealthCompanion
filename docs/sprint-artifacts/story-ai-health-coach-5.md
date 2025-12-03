@@ -139,30 +139,30 @@ User clicks workflow button
 **Workflow API Endpoint Pattern:**
 ```typescript
 // app/api/chat/workflows/route.ts
-import { createClient } from '@/lib/supabase/server'
-import { DifyClient } from '@/lib/dify/client'
+import { DifyClient } from '@/lib/dify/client';
+import { createClient } from '@/lib/supabase/server';
 
 export async function POST(request: Request) {
   // Validate session
-  const supabase = createClient()
-  const { data: { user }, error } = await supabase.auth.getUser()
+  const supabase = createClient();
+  const { data: { user }, error } = await supabase.auth.getUser();
 
   if (error || !user) {
-    return Response.json({ error: 'Unauthorized' }, { status: 401 })
+    return Response.json({ error: 'Unauthorized' }, { status: 401 });
   }
 
   // Extract workflow details
-  const { workflowId, parameters } = await request.json()
+  const { workflowId, parameters } = await request.json();
 
   // Call Dify Workflow API
-  const dify = new DifyClient(process.env.DIFY_API_KEY!)
+  const dify = new DifyClient(process.env.DIFY_API_KEY!);
   const result = await dify.executeWorkflow({
     workflow_id: workflowId,
     inputs: parameters,
     user: user.id,
-  })
+  });
 
-  return Response.json(result)
+  return Response.json(result);
 }
 ```
 

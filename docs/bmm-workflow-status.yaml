@@ -15,48 +15,48 @@
 #   - {file-path}: File created/found (e.g., "docs/product-brief.md")
 #   - skipped: Optional/conditional workflow that was skipped
 
-generated: "2025-12-01"
-project: "HealthCompanion"
-project_type: "greenfield"
-selected_track: "quick-flow"
-field_type: "greenfield"
-workflow_path: ".bmad/bmm/workflows/workflow-status/paths/quick-flow-greenfield.yaml"
+generated: 2025-12-01
+project: HealthCompanion
+project_type: greenfield
+selected_track: quick-flow
+field_type: greenfield
+workflow_path: .bmad/bmm/workflows/workflow-status/paths/quick-flow-greenfield.yaml
 workflow_status:
   - phase: 0
-    name: "Discovery (Optional)"
+    name: Discovery (Optional)
     workflows:
-      - id: "brainstorm-project"
-        agent: "analyst"
-        command: "brainstorm-project"
-        status: "skipped"
+      - id: brainstorm-project
+        agent: analyst
+        command: brainstorm-project
+        status: skipped
 
-      - id: "research"
-        agent: "analyst"
-        command: "research"
-        status: "skipped"
+      - id: research
+        agent: analyst
+        command: research
+        status: skipped
 
   - phase: 1
-    name: "Planning"
+    name: Planning
     workflows:
-      - id: "tech-spec"
-        agent: "pm"
-        command: "tech-spec"
-        status: "docs/tech-spec.md"
-        output: "Technical Specification with stories"
-        epic: "ai-health-coach"
+      - id: tech-spec
+        agent: pm
+        command: tech-spec
+        status: docs/tech-spec.md
+        output: Technical Specification with stories
+        epic: ai-health-coach
         story_count: 5
         stories:
-          - "docs/sprint-artifacts/story-ai-health-coach-1.md"
-          - "docs/sprint-artifacts/story-ai-health-coach-2.md"
-          - "docs/sprint-artifacts/story-ai-health-coach-3.md"
-          - "docs/sprint-artifacts/story-ai-health-coach-4.md"
-          - "docs/sprint-artifacts/story-ai-health-coach-5.md"
+          - docs/sprint-artifacts/story-ai-health-coach-1.md
+          - docs/sprint-artifacts/story-ai-health-coach-2.md
+          - docs/sprint-artifacts/story-ai-health-coach-3.md
+          - docs/sprint-artifacts/story-ai-health-coach-4.md
+          - docs/sprint-artifacts/story-ai-health-coach-5.md
 
   - phase: 2
-    name: "Implementation"
+    name: Implementation
     workflows:
-      - id: "sprint-planning"
-        agent: "sm"
-        command: "sprint-planning"
-        status: "required"
-        note: "Subsequent work tracked in sprint plan output"
+      - id: sprint-planning
+        agent: sm
+        command: sprint-planning
+        status: required
+        note: Subsequent work tracked in sprint plan output

@@ -256,6 +256,7 @@ Expands test automation coverage by generating comprehensive test suites at appr
    ```typescript
    // tests/support/fixtures/auth.fixture.ts
    import { test as base } from '@playwright/test';
+
    import { createUser, deleteUser } from '../factories/user.factory';
 
    export const test = base.extend({
@@ -332,8 +333,10 @@ Expands test automation coverage by generating comprehensive test suites at appr
    export const waitFor = async (condition: () => Promise<boolean>, timeout = 5000, interval = 100): Promise<void> => {
      const startTime = Date.now();
      while (Date.now() - startTime < timeout) {
-       if (await condition()) return;
-       await new Promise((resolve) => setTimeout(resolve, interval));
+       if (await condition()) {
+         return;
+       }
+       await new Promise(resolve => setTimeout(resolve, interval));
      }
      throw new Error(`Condition not met within ${timeout}ms`);
    };
@@ -368,7 +371,7 @@ Expands test automation coverage by generating comprehensive test suites at appr
    **Follow Given-When-Then format:**
 
    ```typescript
-   import { test, expect } from '@playwright/test';
+   import { expect, test } from '@playwright/test';
 
    test.describe('User Authentication', () => {
      test('[P0] should login with valid credentials and load dashboard', async ({ page }) => {
@@ -411,7 +414,7 @@ Expands test automation coverage by generating comprehensive test suites at appr
 3. **Write API Tests (If Applicable)**
 
    ```typescript
-   import { test, expect } from '@playwright/test';
+   import { expect, test } from '@playwright/test';
 
    test.describe('User Authentication API', () => {
      test('[P1] POST /api/auth/login - should return token for valid credentials', async ({ request }) => {
@@ -428,9 +431,11 @@ Expands test automation coverage by generating comprehensive test suites at appr
 
        // THEN: Returns 200 and JWT token
        expect(response.status()).toBe(200);
+
        const body = await response.json();
+
        expect(body).toHaveProperty('token');
-       expect(body.token).toMatch(/^[A-Za-z0-9-_]+\.[A-Za-z0-9-_]+\.[A-Za-z0-9-_]+$/); // JWT format
+       expect(body.token).toMatch(/^[\w-]+\.[\w-]+\.[\w-]+$/); // JWT format
      });
 
      test('[P1] POST /api/auth/login - should return 401 for invalid credentials', async ({ request }) => {
@@ -447,7 +452,9 @@ Expands test automation coverage by generating comprehensive test suites at appr
 
        // THEN: Returns 401 with error
        expect(response.status()).toBe(401);
+
        const body = await response.json();
+
        expect(body).toMatchObject({
          error: 'Invalid credentials',
        });
@@ -528,12 +535,11 @@ Expands test automation coverage by generating comprehensive test suites at appr
    ```typescript
    test('should load user dashboard after login', async ({ page }) => {
      // CRITICAL: Intercept routes BEFORE navigation
-     await page.route('**/api/user', (route) =>
+     await page.route('**/api/user', route =>
        route.fulfill({
          status: 200,
          body: JSON.stringify({ id: 1, name: 'Test User' }),
-       }),
-     );
+       }),);
 
      // NOW navigate
      await page.goto('/dashboard');
@@ -1109,6 +1115,7 @@ await page.waitForTimeout(2000);
 
 // ✅ CORRECT: Explicit wait
 await page.waitForSelector('[data-testid="user-name"]');
+
 await expect(page.locator('[data-testid="user-name"]')).toBeVisible();
 
 // ❌ WRONG: Conditional flow
@@ -1118,6 +1125,7 @@ if (await element.isVisible()) {
 
 // ✅ CORRECT: Deterministic assertion
 await expect(element).toBeVisible();
+
 await element.click();
 
 // ❌ WRONG: Try-catch for test logic

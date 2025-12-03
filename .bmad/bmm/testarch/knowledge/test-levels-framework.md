@@ -27,10 +27,10 @@ Comprehensive guide for determining appropriate test levels (unit, integration, 
 
 ```yaml
 unit_test:
-  component: 'PriceCalculator'
-  scenario: 'Calculate discount with multiple rules'
-  justification: 'Complex business logic with multiple branches'
-  mock_requirements: 'None - pure function'
+  component: PriceCalculator
+  scenario: Calculate discount with multiple rules
+  justification: Complex business logic with multiple branches
+  mock_requirements: None - pure function
 ```
 
 ### Integration Tests
@@ -54,10 +54,10 @@ unit_test:
 
 ```yaml
 integration_test:
-  components: ['UserService', 'AuthRepository']
-  scenario: 'Create user with role assignment'
-  justification: 'Critical data flow between service and persistence'
-  test_environment: 'In-memory database'
+  components: [UserService, AuthRepository]
+  scenario: Create user with role assignment
+  justification: Critical data flow between service and persistence
+  test_environment: In-memory database
 ```
 
 ### End-to-End Tests
@@ -81,10 +81,10 @@ integration_test:
 
 ```yaml
 e2e_test:
-  journey: 'Complete checkout process'
-  scenario: 'User purchases with saved payment method'
-  justification: 'Revenue-critical path requiring full validation'
-  environment: 'Staging with test payment gateway'
+  journey: Complete checkout process
+  scenario: User purchases with saved payment method
+  justification: Revenue-critical path requiring full validation
+  environment: Staging with test payment gateway
 ```
 
 ## Test Level Selection Rules
@@ -155,8 +155,9 @@ Examples:
 
 ```typescript
 // tests/e2e/checkout-flow.spec.ts
-import { test, expect } from '@playwright/test';
-import { createUser, createProduct } from '../test-utils/factories';
+import { expect, test } from '@playwright/test';
+
+import { createProduct, createUser } from '../test-utils/factories';
 
 test.describe('Checkout Flow', () => {
   test('user can complete purchase with saved payment method', async ({ page, apiRequest }) => {
@@ -187,11 +188,14 @@ test.describe('Checkout Flow', () => {
     await page.goto(`/products/${product.id}`);
     await page.click('[data-testid="add-to-cart"]');
     await cartPromise;
+
     await expect(page.getByText('Added to cart')).toBeVisible();
 
     // Step 3: Checkout with saved payment
     await page.goto('/checkout');
+
     await expect(page.getByText('Visa ending in 1234')).toBeVisible(); // Saved card
+
     await page.click('[data-testid="use-saved-card"]');
     await page.click('[data-testid="place-order"]');
     await orderPromise;
@@ -217,7 +221,8 @@ test.describe('Checkout Flow', () => {
 
 ```typescript
 // tests/integration/user-service.spec.ts
-import { test, expect } from '@playwright/test';
+import { expect, test } from '@playwright/test';
+
 import { createUser } from '../test-utils/factories';
 
 test.describe('UserService Integration', () => {
@@ -232,15 +237,18 @@ test.describe('UserService Integration', () => {
     expect(response.status()).toBe(201);
 
     const createdUser = await response.json();
+
     expect(createdUser.id).toBeTruthy();
     expect(createdUser.email).toBe(userData.email);
     expect(createdUser.role).toBe('admin');
 
     // Verify database state
     const getResponse = await request.get(`/api/users/${createdUser.id}`);
+
     expect(getResponse.status()).toBe(200);
 
     const fetchedUser = await getResponse.json();
+
     expect(fetchedUser.role).toBe('admin');
     expect(fetchedUser.permissions).toContain('user:delete');
     expect(fetchedUser.permissions).toContain('user:update');
@@ -254,14 +262,18 @@ test.describe('UserService Integration', () => {
 
     // Create first user
     const response1 = await request.post('/api/users', { data: userData });
+
     expect(response1.status()).toBe(201);
 
     const user1 = await response1.json();
 
     // Attempt duplicate email
     const response2 = await request.post('/api/users', { data: userData });
+
     expect(response2.status()).toBe(409); // Conflict
+
     const error = await response2.json();
+
     expect(error.message).toContain('Email already exists');
 
     // Cleanup
@@ -356,27 +368,31 @@ test.describe('Button Component', () => {
 
 ```typescript
 // src/utils/price-calculator.test.ts (Jest/Vitest)
-import { calculateDiscount, applyTaxes, calculateTotal } from './price-calculator';
+import { applyTaxes, calculateDiscount, calculateTotal } from './price-calculator';
 
 describe('PriceCalculator', () => {
   describe('calculateDiscount', () => {
     it('should apply percentage discount correctly', () => {
       const result = calculateDiscount(100, { type: 'percentage', value: 20 });
+
       expect(result).toBe(80);
     });
 
     it('should apply fixed amount discount correctly', () => {
       const result = calculateDiscount(100, { type: 'fixed', value: 15 });
+
       expect(result).toBe(85);
     });
 
     it('should not apply discount below zero', () => {
       const result = calculateDiscount(10, { type: 'fixed', value: 20 });
+
       expect(result).toBe(0);
     });
 
     it('should handle no discount', () => {
       const result = calculateDiscount(100, { type: 'none', value: 0 });
+
       expect(result).toBe(100);
     });
   });
@@ -384,16 +400,19 @@ describe('PriceCalculator', () => {
   describe('applyTaxes', () => {
     it('should calculate tax correctly for US', () => {
       const result = applyTaxes(100, { country: 'US', rate: 0.08 });
+
       expect(result).toBe(108);
     });
 
     it('should calculate tax correctly for EU (VAT)', () => {
       const result = applyTaxes(100, { country: 'DE', rate: 0.19 });
+
       expect(result).toBe(119);
     });
 
     it('should handle zero tax rate', () => {
       const result = applyTaxes(100, { country: 'US', rate: 0 });
+
       expect(result).toBe(100);
     });
   });
@@ -408,17 +427,20 @@ describe('PriceCalculator', () => {
       const tax = { country: 'US', rate: 0.08 }; // +9.36
 
       const result = calculateTotal(items, discount, tax);
+
       expect(result).toBeCloseTo(126.36, 2);
     });
 
     it('should handle empty items array', () => {
       const result = calculateTotal([], { type: 'none', value: 0 }, { country: 'US', rate: 0 });
+
       expect(result).toBe(0);
     });
 
     it('should calculate correctly without discount or tax', () => {
       const items = [{ price: 25, quantity: 4 }];
       const result = calculateTotal(items, { type: 'none', value: 0 }, { country: 'US', rate: 0 });
+
       expect(result).toBe(100);
     });
   });
@@ -456,6 +478,7 @@ test('calculate discount via UI', async ({ page }) => {
   await page.fill('[data-testid="price"]', '100');
   await page.fill('[data-testid="discount"]', '20');
   await page.click('[data-testid="calculate"]');
+
   await expect(page.getByText('$80')).toBeVisible();
 });
 // Problem: Slow, brittle, tests logic that should be unit tested

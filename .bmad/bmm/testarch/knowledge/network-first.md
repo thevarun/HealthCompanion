@@ -31,7 +31,7 @@ Network-first patterns provide:
 // ✅ CORRECT: Intercept BEFORE navigate
 test('user can view dashboard data', async ({ page }) => {
   // Step 1: Register interception FIRST
-  const usersPromise = page.waitForResponse((resp) => resp.url().includes('/api/users') && resp.status() === 200);
+  const usersPromise = page.waitForResponse(resp => resp.url().includes('/api/users') && resp.status() === 200);
 
   // Step 2: THEN trigger the request
   await page.goto('/dashboard');
@@ -59,6 +59,7 @@ describe('Dashboard', () => {
       // Step 4: Assert on structured data
       expect(interception.response.statusCode).to.equal(200);
       expect(interception.response.body).to.have.length(10);
+
       cy.contains(interception.response.body[0].name).should('be.visible');
     });
   });
@@ -108,6 +109,7 @@ test('capture network for order flow', async ({ page, context }) => {
   await page.goto('/checkout');
   await page.fill('[data-testid="credit-card"]', '4111111111111111');
   await page.click('[data-testid="submit-order"]');
+
   await expect(page.getByText('Order Confirmed')).toBeVisible();
 
   // HAR saved to ./hars/order-flow.har
@@ -125,13 +127,14 @@ test('replay order flow from HAR', async ({ page, context }) => {
   await page.goto('/checkout');
   await page.fill('[data-testid="credit-card"]', '4111111111111111');
   await page.click('[data-testid="submit-order"]');
+
   await expect(page.getByText('Order Confirmed')).toBeVisible();
 });
 
 // Custom mock based on HAR insights
 test('mock order response based on HAR', async ({ page }) => {
   // After analyzing HAR, create focused mock
-  await page.route('**/api/orders', (route) =>
+  await page.route('**/api/orders', route =>
     route.fulfill({
       status: 200,
       contentType: 'application/json',
@@ -140,11 +143,11 @@ test('mock order response based on HAR', async ({ page }) => {
         status: 'confirmed',
         total: 99.99,
       }),
-    }),
-  );
+    }),);
 
   await page.goto('/checkout');
   await page.click('[data-testid="submit-order"]');
+
   await expect(page.getByText('Order #12345')).toBeVisible();
 });
 ```
@@ -165,16 +168,16 @@ test('mock order response based on HAR', async ({ page }) => {
 ```typescript
 // Test happy path
 test('order succeeds with valid data', async ({ page }) => {
-  await page.route('**/api/orders', (route) =>
+  await page.route('**/api/orders', route =>
     route.fulfill({
       status: 200,
       contentType: 'application/json',
       body: JSON.stringify({ orderId: '123', status: 'confirmed' }),
-    }),
-  );
+    }),);
 
   await page.goto('/checkout');
   await page.click('[data-testid="submit-order"]');
+
   await expect(page.getByText('Order Confirmed')).toBeVisible();
 });
 
@@ -183,17 +186,18 @@ test('order fails with server error', async ({ page }) => {
   // Listen for console errors (app should log gracefully)
   const consoleErrors: string[] = [];
   page.on('console', (msg) => {
-    if (msg.type() === 'error') consoleErrors.push(msg.text());
+    if (msg.type() === 'error') {
+      consoleErrors.push(msg.text());
+    }
   });
 
   // Stub 500 error
-  await page.route('**/api/orders', (route) =>
+  await page.route('**/api/orders', route =>
     route.fulfill({
       status: 500,
       contentType: 'application/json',
       body: JSON.stringify({ error: 'Internal Server Error' }),
-    }),
-  );
+    }),);
 
   await page.goto('/checkout');
   await page.click('[data-testid="submit-order"]');
@@ -203,7 +207,7 @@ test('order fails with server error', async ({ page }) => {
   await expect(page.getByText('Please try again')).toBeVisible();
 
   // Verify error logged (not thrown)
-  expect(consoleErrors.some((e) => e.includes('Order failed'))).toBeTruthy();
+  expect(consoleErrors.some(e => e.includes('Order failed'))).toBeTruthy();
 });
 
 // Test network timeout
@@ -211,7 +215,7 @@ test('order times out after 10 seconds', async ({ page }) => {
   // Stub delayed response (never resolves within timeout)
   await page.route(
     '**/api/orders',
-    (route) => new Promise(() => {}), // Never resolves - simulates timeout
+    route => new Promise(() => {}), // Never resolves - simulates timeout
   );
 
   await page.goto('/checkout');
@@ -223,14 +227,13 @@ test('order times out after 10 seconds', async ({ page }) => {
 
 // Test partial data response
 test('order handles missing optional fields', async ({ page }) => {
-  await page.route('**/api/orders', (route) =>
+  await page.route('**/api/orders', route =>
     route.fulfill({
       status: 200,
       contentType: 'application/json',
       // Missing optional fields like 'trackingNumber', 'estimatedDelivery'
       body: JSON.stringify({ orderId: '123', status: 'confirmed' }),
-    }),
-  );
+    }),);
 
   await page.goto('/checkout');
   await page.click('[data-testid="submit-order"]');
@@ -282,7 +285,7 @@ describe('Order Edge Cases', () => {
 ```typescript
 // ✅ GOOD: Wait for response with predicate
 test('wait for specific response', async ({ page }) => {
-  const responsePromise = page.waitForResponse((resp) => resp.url().includes('/api/users') && resp.status() === 200);
+  const responsePromise = page.waitForResponse(resp => resp.url().includes('/api/users') && resp.status() === 200);
 
   await page.goto('/dashboard');
   const response = await responsePromise;
@@ -320,7 +323,9 @@ test('wait for loading indicator', async ({ page }) => {
 test('wait for custom ready event', async ({ page }) => {
   let appReady = false;
   page.on('console', (msg) => {
-    if (msg.text() === 'App ready') appReady = true;
+    if (msg.text() === 'App ready') {
+      appReady = true;
+    }
   });
 
   await page.goto('/dashboard');
@@ -335,6 +340,7 @@ test('wait for custom ready event', async ({ page }) => {
 test('flaky hard wait example', async ({ page }) => {
   await page.goto('/dashboard');
   await page.waitForTimeout(3000); // WHY 3 seconds? What if slower? What if faster?
+
   await expect(page.getByText('Dashboard')).toBeVisible(); // May fail if >3s
 });
 
@@ -380,12 +386,11 @@ test('flaky test - navigate then mock', async ({ page }) => {
   await page.goto('/dashboard'); // Request to /api/users fires NOW
 
   // Mock registered too late - request already sent
-  await page.route('**/api/users', (route) =>
+  await page.route('**/api/users', route =>
     route.fulfill({
       status: 200,
       body: JSON.stringify([{ id: 1, name: 'Test User' }]),
-    }),
-  );
+    }),);
 
   // Test randomly passes/fails depending on timing
   await expect(page.getByText('Test User')).toBeVisible(); // Flaky!
@@ -393,7 +398,7 @@ test('flaky test - navigate then mock', async ({ page }) => {
 
 // ❌ BAD: No wait for response
 test('flaky test - no explicit wait', async ({ page }) => {
-  await page.route('**/api/users', (route) => route.fulfill({ status: 200, body: JSON.stringify([]) }));
+  await page.route('**/api/users', route => route.fulfill({ status: 200, body: JSON.stringify([]) }));
 
   await page.goto('/dashboard');
 
@@ -423,13 +428,12 @@ test('flaky test - hard wait', async ({ page }) => {
 // ✅ GOOD: Intercept BEFORE navigate
 test('deterministic test', async ({ page }) => {
   // Step 1: Register mock FIRST
-  await page.route('**/api/users', (route) =>
+  await page.route('**/api/users', route =>
     route.fulfill({
       status: 200,
       contentType: 'application/json',
       body: JSON.stringify([{ id: 1, name: 'Test User' }]),
-    }),
-  );
+    }),);
 
   // Step 2: Store response promise BEFORE trigger
   const responsePromise = page.waitForResponse('**/api/users');
@@ -474,10 +478,10 @@ When network tests fail, check:
 // Debug network issues with logging
 test('debug network', async ({ page }) => {
   // Log all requests
-  page.on('request', (req) => console.log('→', req.method(), req.url()));
+  page.on('request', req => console.log('→', req.method(), req.url()));
 
   // Log all responses
-  page.on('response', (resp) => console.log('←', resp.status(), resp.url()));
+  page.on('response', resp => console.log('←', resp.status(), resp.url()));
 
   await page.goto('/dashboard');
 });

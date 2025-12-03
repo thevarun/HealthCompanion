@@ -93,8 +93,9 @@ npx playwright show-report
 
 ```typescript
 // tests/e2e/checkout-with-har.spec.ts
-import { test, expect } from '@playwright/test';
-import path from 'path';
+import path from 'node:path';
+
+import { expect, test } from '@playwright/test';
 
 test.describe('Checkout Flow with HAR Recording', () => {
   test('should complete payment with full network capture', async ({ page, context }) => {
@@ -124,8 +125,9 @@ test.describe('Checkout Flow with HAR Recording', () => {
 
 ```typescript
 // tests/e2e/checkout-replay-har.spec.ts
-import { test, expect } from '@playwright/test';
-import path from 'path';
+import path from 'node:path';
+
+import { expect, test } from '@playwright/test';
 
 test('should replay checkout flow from HAR', async ({ page, context }) => {
   // Replay network from HAR (no real API calls)
@@ -169,9 +171,10 @@ test('should replay checkout flow from HAR', async ({ page, context }) => {
 
 ```typescript
 // playwright/support/fixtures/debug-fixture.ts
+import fs from 'node:fs';
+import path from 'node:path';
+
 import { test as base } from '@playwright/test';
-import fs from 'fs';
-import path from 'path';
 
 type DebugFixture = {
   captureDebugArtifacts: () => Promise<void>;
@@ -197,8 +200,10 @@ export const test = base.extend<DebugFixture>({
     });
 
     page.on('response', (response) => {
-      const req = networkRequests.find((r) => r.url === response.url());
-      if (req) req.status = response.status();
+      const req = networkRequests.find(r => r.url === response.url());
+      if (req) {
+        req.status = response.status();
+      }
     });
 
     await use(async () => {
@@ -227,13 +232,14 @@ export const test = base.extend<DebugFixture>({
 
 ```typescript
 // tests/e2e/payment-with-debug.spec.ts
-import { test, expect } from '../support/fixtures/debug-fixture';
+import { expect, test } from '../support/fixtures/debug-fixture';
 
 test('payment flow captures debug artifacts on failure', async ({ page, captureDebugArtifacts }) => {
   await page.goto('/checkout');
 
   // Test will automatically capture console + network on failure
   await page.getByTestId('submit-payment').click();
+
   await expect(page.getByTestId('success-message')).toBeVisible({ timeout: 5000 });
 
   // If this fails, console.log and network.json saved automatically
@@ -254,7 +260,7 @@ jobs:
       - uses: actions/checkout@v4
       - uses: actions/setup-node@v4
         with:
-          node-version-file: '.nvmrc'
+          node-version-file: .nvmrc
 
       - name: Install dependencies
         run: npm ci
@@ -291,8 +297,8 @@ jobs:
 
 ```typescript
 // playwright/support/fixtures/a11y-fixture.ts
-import { test as base } from '@playwright/test';
 import AxeBuilder from '@axe-core/playwright';
+import { test as base } from '@playwright/test';
 
 type A11yFixture = {
   checkA11y: () => Promise<void>;
@@ -323,7 +329,7 @@ export const test = base.extend<A11yFixture>({
 
 ```typescript
 // tests/e2e/checkout-a11y.spec.ts
-import { test, expect } from '../support/fixtures/a11y-fixture';
+import { expect, test } from '../support/fixtures/a11y-fixture';
 
 test('checkout page is accessible', async ({ page, checkA11y }) => {
   await page.goto('/checkout');
@@ -397,7 +403,7 @@ describe('Checkout Accessibility', () => {
 
 ```typescript
 // tests/e2e/checkout-debug.spec.ts
-import { test, expect } from '@playwright/test';
+import { expect, test } from '@playwright/test';
 
 test('debug checkout flow step-by-step', async ({ page }) => {
   // Set breakpoint by uncommenting this:
@@ -473,6 +479,7 @@ test('debug network timing', async ({ page }) => {
   await page.pause(); // Check network panel for timing
 
   const response = await responsePromise;
+
   expect(response.status()).toBe(200);
 });
 

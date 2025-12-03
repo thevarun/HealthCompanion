@@ -19,6 +19,7 @@ const intlMiddleware = createMiddleware({
 const protectedPaths = [
   '/dashboard',
   '/onboarding',
+  '/chat',
   '/api',
 ];
 

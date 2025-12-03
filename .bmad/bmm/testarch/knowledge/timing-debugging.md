@@ -27,7 +27,7 @@ Race conditions arise when tests make assumptions about asynchronous timing (net
 
 ```typescript
 // tests/timing/race-condition-prevention.spec.ts
-import { test, expect } from '@playwright/test';
+import { expect, test } from '@playwright/test';
 
 test.describe('Race Condition Prevention Patterns', () => {
   test('❌ Anti-Pattern: Navigate then intercept (race condition)', async ({ page, context }) => {
@@ -124,7 +124,7 @@ test.describe('Race Condition Prevention Patterns', () => {
 
 ```typescript
 // tests/timing/deterministic-waits.spec.ts
-import { test, expect } from '@playwright/test';
+import { expect, test } from '@playwright/test';
 
 test.describe('Deterministic Waiting Patterns', () => {
   test('waitForResponse() with URL pattern', async ({ page }) => {
@@ -137,7 +137,7 @@ test.describe('Deterministic Waiting Patterns', () => {
   });
 
   test('waitForResponse() with predicate function', async ({ page }) => {
-    const responsePromise = page.waitForResponse((resp) => resp.url().includes('/api/search') && resp.status() === 200);
+    const responsePromise = page.waitForResponse(resp => resp.url().includes('/api/search') && resp.status() === 200);
 
     await page.goto('/search');
     await page.getByPlaceholder('Search').fill('laptop');
@@ -154,7 +154,7 @@ test.describe('Deterministic Waiting Patterns', () => {
     // Wait for custom JavaScript condition
     await page.waitForFunction(() => {
       const element = document.querySelector('[data-testid="user-count"]');
-      return element && parseInt(element.textContent || '0') > 0;
+      return element && Number.parseInt(element.textContent || '0') > 0;
     });
 
     // User count now loaded
@@ -208,7 +208,7 @@ test.describe('Deterministic Waiting Patterns', () => {
 
 ```typescript
 // tests/timing/anti-patterns.spec.ts
-import { test, expect } from '@playwright/test';
+import { expect, test } from '@playwright/test';
 
 test.describe('Timing Anti-Patterns to Avoid', () => {
   test('❌ NEVER: page.waitForTimeout() (arbitrary delay)', async ({ page }) => {
@@ -220,6 +220,7 @@ test.describe('Timing Anti-Patterns to Avoid', () => {
 
     // ✅ Good: Wait for observable event
     await page.waitForResponse('**/api/dashboard');
+
     await expect(page.getByText('Dashboard loaded')).toBeVisible();
   });
 
@@ -264,6 +265,7 @@ test.describe('Timing Anti-Patterns to Avoid', () => {
     await page.goto('/dashboard');
     await page.waitForResponse('**/api/dashboard');
     await page.waitForResponse('**/api/user');
+
     await expect(page.getByTestId('dashboard-content')).toBeVisible();
   });
 
@@ -304,7 +306,9 @@ test('debug async waterfall with console logs', async ({ page }) => {
   console.log('3. API responded:', response.status());
 
   console.log('4. Waiting for UI update...');
+
   await expect(page.getByText('Products loaded')).toBeVisible();
+
   console.log('5. Test complete');
 
   // Console output shows exactly where timing issue occurs

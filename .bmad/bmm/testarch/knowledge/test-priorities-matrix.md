@@ -239,15 +239,27 @@ export function justifyPriority(factors: PriorityFactors): string {
   const priority = calculatePriority(factors);
   const reasons: string[] = [];
 
-  if (factors.revenueImpact === 'critical') reasons.push('critical revenue impact');
-  if (factors.securityRisk) reasons.push('security-critical');
-  if (factors.complianceRequired) reasons.push('compliance requirement');
-  if (factors.previousFailure) reasons.push('regression prevention');
+  if (factors.revenueImpact === 'critical') {
+    reasons.push('critical revenue impact');
+  }
+  if (factors.securityRisk) {
+    reasons.push('security-critical');
+  }
+  if (factors.complianceRequired) {
+    reasons.push('compliance requirement');
+  }
+  if (factors.previousFailure) {
+    reasons.push('regression prevention');
+  }
   if (factors.userImpact === 'all' || factors.userImpact === 'majority') {
     reasons.push(`impacts ${factors.userImpact} users`);
   }
-  if (factors.complexity === 'high') reasons.push('high complexity');
-  if (factors.usage === 'frequent') reasons.push('frequently used');
+  if (factors.complexity === 'high') {
+    reasons.push('high complexity');
+  }
+  if (factors.usage === 'frequent') {
+    reasons.push('frequently used');
+  }
 
   return `${priority}: ${reasons.join(', ')}`;
 }
@@ -274,7 +286,7 @@ console.log(justifyPriority(paymentScenario));
 
 ```typescript
 // tests/e2e/checkout.spec.ts
-import { test, expect } from '@playwright/test';
+import { expect, test } from '@playwright/test';
 
 // Tag tests with priority for selective execution
 test.describe('Checkout Flow', () => {

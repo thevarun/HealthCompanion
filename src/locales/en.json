@@ -88,10 +88,15 @@
   },
   "DashboardLayout": {
     "home": "Home",
+    "chat": "Chat",
     "todos": "Todos",
     "members": "Members",
     "billing": "Billing",
     "settings": "Settings"
+  },
+  "Chat": {
+    "meta_title": "AI Health Coach Chat",
+    "meta_description": "Chat with your AI-powered health coach for personalized guidance and support"
   },
   "Dashboard": {
     "meta_title": "SaaS Template Dashboard",

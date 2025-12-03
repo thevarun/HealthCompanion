@@ -69,9 +69,15 @@ export function isCriticalBlocker(score: number): boolean {
 }
 
 export function classifyRiskLevel(score: number): 'LOW' | 'MEDIUM' | 'HIGH' | 'CRITICAL' {
-  if (score === 9) return 'CRITICAL';
-  if (score >= 6) return 'HIGH';
-  if (score >= 4) return 'MEDIUM';
+  if (score === 9) {
+    return 'CRITICAL';
+  }
+  if (score >= 6) {
+    return 'HIGH';
+  }
+  if (score >= 4) {
+    return 'MEDIUM';
+  }
   return 'LOW';
 }
 
@@ -88,10 +94,15 @@ export function assessTestFailureRisk(failure: {
 
   // Impact based on business context
   let impact: 1 | 2 | 3 = 1;
-  if (failure.securityVulnerability) impact = 3;
-  else if (failure.revenueImpact > 10000) impact = 3;
-  else if (failure.affectedUsers > 1000) impact = 2;
-  else impact = 1;
+  if (failure.securityVulnerability) {
+    impact = 3;
+  } else if (failure.revenueImpact > 10000) {
+    impact = 3;
+  } else if (failure.affectedUsers > 1000) {
+    impact = 2;
+  } else {
+    impact = 1;
+  }
 
   const score = calculateRiskScore(probability, impact);
 
@@ -148,9 +159,9 @@ export function evaluateGate(params: { risks: RiskScore[]; coverageGaps: Coverag
   const { risks, coverageGaps, waiverApprover } = params;
 
   // Categorize risks
-  const criticalRisks = risks.filter((r) => r.score === 9 && r.status === 'OPEN');
-  const highRisks = risks.filter((r) => r.score >= 6 && r.score < 9 && r.status === 'OPEN');
-  const unresolvedGaps = coverageGaps.filter((g) => !g.reason);
+  const criticalRisks = risks.filter(r => r.score === 9 && r.status === 'OPEN');
+  const highRisks = risks.filter(r => r.score >= 6 && r.score < 9 && r.status === 'OPEN');
+  const unresolvedGaps = coverageGaps.filter(g => !g.reason);
 
   // Decision logic
   let decision: GateDecision;
@@ -160,11 +171,11 @@ export function evaluateGate(params: { risks: RiskScore[]; coverageGaps: Coverag
     decision = 'FAIL';
   }
   // WAIVED: All risks waived by authorized approver
-  else if (risks.every((r) => r.status === 'WAIVED') && waiverApprover) {
+  else if (risks.every(r => r.status === 'WAIVED') && waiverApprover) {
     decision = 'WAIVED';
   }
   // CONCERNS: High risks (score 6-8) with mitigation plans
-  else if (highRisks.length > 0 && highRisks.every((r) => r.mitigationPlan && r.owner !== 'unassigned')) {
+  else if (highRisks.length > 0 && highRisks.every(r => r.mitigationPlan && r.owner !== 'unassigned')) {
     decision = 'CONCERNS';
   }
   // PASS: No critical issues, all risks mitigated or low
@@ -180,7 +191,7 @@ export function evaluateGate(params: { risks: RiskScore[]; coverageGaps: Coverag
   if (unresolvedGaps.length > 0) {
     recommendations.push(`📋 ${unresolvedGaps.length} acceptance criteria lack test coverage`);
   }
-  if (highRisks.some((r) => !r.mitigationPlan)) {
+  if (highRisks.some(r => !r.mitigationPlan)) {
     recommendations.push(`⚠️  High risks without mitigation plans: assign owners and deadlines`);
   }
   if (decision === 'PASS') {
@@ -200,8 +211,8 @@ export function evaluateGate(params: { risks: RiskScore[]; coverageGaps: Coverag
 
 function generateSummary(decision: GateDecision, risks: RiskScore[], gaps: CoverageGap[]): string {
   const total = risks.length;
-  const critical = risks.filter((r) => r.score === 9).length;
-  const high = risks.filter((r) => r.score >= 6 && r.score < 9).length;
+  const critical = risks.filter(r => r.score === 9).length;
+  const high = risks.filter(r => r.score >= 6 && r.score < 9).length;
 
   return `Gate Decision: ${decision}. Total Risks: ${total} (${critical} critical, ${high} high). Coverage Gaps: ${gaps.length}.`;
 }
@@ -300,7 +311,9 @@ export class RiskMitigationTracker {
   // Add mitigation action
   addMitigationAction(action: MitigationAction): void {
     const risk = this.risks.get(action.riskId);
-    if (!risk) throw new Error(`Risk ${action.riskId} not found`);
+    if (!risk) {
+      throw new Error(`Risk ${action.riskId} not found`);
+    }
 
     const existingActions = this.actions.get(action.riskId) || [];
     existingActions.push(action);
@@ -312,7 +325,9 @@ export class RiskMitigationTracker {
   // Complete mitigation action
   completeMitigation(riskId: string, actionIndex: number): void {
     const actions = this.actions.get(riskId);
-    if (!actions || !actions[actionIndex]) throw new Error('Action not found');
+    if (!actions || !actions[actionIndex]) {
+      throw new Error('Action not found');
+    }
 
     actions[actionIndex].status = 'COMPLETED';
     actions[actionIndex].completedAt = new Date();
@@ -320,7 +335,7 @@ export class RiskMitigationTracker {
     this.logHistory(riskId, `Mitigation completed: ${actions[actionIndex].action}`);
 
     // If all actions completed, mark risk as MITIGATED
-    if (actions.every((a) => a.status === 'COMPLETED')) {
+    if (actions.every(a => a.status === 'COMPLETED')) {
       const risk = this.risks.get(riskId)!;
       risk.status = 'MITIGATED';
       this.logHistory(riskId, `✅ Risk mitigated. All actions complete.`);
@@ -330,7 +345,9 @@ export class RiskMitigationTracker {
   // Request waiver for a risk
   requestWaiver(riskId: string, reason: string, approver: string, expiryDays: number): void {
     const risk = this.risks.get(riskId);
-    if (!risk) throw new Error(`Risk ${riskId} not found`);
+    if (!risk) {
+      throw new Error(`Risk ${riskId} not found`);
+    }
 
     risk.status = 'WAIVED';
     risk.waiverReason = reason;
@@ -343,10 +360,10 @@ export class RiskMitigationTracker {
   // Generate risk report
   generateReport(): string {
     const allRisks = Array.from(this.risks.values());
-    const critical = allRisks.filter((r) => r.score === 9 && r.status === 'OPEN');
-    const high = allRisks.filter((r) => r.score >= 6 && r.score < 9 && r.status === 'OPEN');
-    const mitigated = allRisks.filter((r) => r.status === 'MITIGATED');
-    const waived = allRisks.filter((r) => r.status === 'WAIVED');
+    const critical = allRisks.filter(r => r.score === 9 && r.status === 'OPEN');
+    const high = allRisks.filter(r => r.score >= 6 && r.score < 9 && r.status === 'OPEN');
+    const mitigated = allRisks.filter(r => r.status === 'MITIGATED');
+    const waived = allRisks.filter(r => r.status === 'WAIVED');
 
     let report = `# Risk Mitigation Report\n\n`;
     report += `**Generated**: ${new Date().toISOString()}\n\n`;
@@ -385,7 +402,7 @@ export class RiskMitigationTracker {
   }
 
   getHistory(riskId: string): Array<{ event: string; timestamp: Date }> {
-    return this.history.filter((h) => h.riskId === riskId).map((h) => ({ event: h.event, timestamp: h.timestamp }));
+    return this.history.filter(h => h.riskId === riskId).map(h => ({ event: h.event, timestamp: h.timestamp }));
   }
 }
 ```
@@ -480,7 +497,7 @@ export type CoverageMatrix = {
 
 export function buildCoverageMatrix(criteria: AcceptanceCriterion[], tests: TestCase[]): CoverageMatrix[] {
   return criteria.map((criterion) => {
-    const matchingTests = tests.filter((t) => t.criteriaIds.includes(criterion.id));
+    const matchingTests = tests.filter(t => t.criteriaIds.includes(criterion.id));
 
     return {
       criterion,
@@ -494,7 +511,7 @@ export function validateCoverage(matrix: CoverageMatrix[]): {
   gaps: CoverageMatrix[];
   passRate: number;
 } {
-  const gaps = matrix.filter((m) => !m.covered && !m.waiverReason);
+  const gaps = matrix.filter(m => !m.covered && !m.waiverReason);
   const passRate = ((matrix.length - gaps.length) / matrix.length) * 100;
 
   return { gaps, passRate };
@@ -527,9 +544,9 @@ export function generateTraceabilityReport(matrix: CoverageMatrix[]): string {
 
   report += `## Summary\n`;
   report += `- Total Criteria: ${matrix.length}\n`;
-  report += `- Covered: ${matrix.filter((m) => m.covered).length}\n`;
+  report += `- Covered: ${matrix.filter(m => m.covered).length}\n`;
   report += `- Gaps: ${gaps.length}\n`;
-  report += `- Waived: ${matrix.filter((m) => m.waiverReason).length}\n`;
+  report += `- Waived: ${matrix.filter(m => m.waiverReason).length}\n`;
   report += `- Coverage Rate: ${passRate.toFixed(1)}%\n\n`;
 
   if (gaps.length > 0) {
@@ -546,9 +563,9 @@ export function generateTraceabilityReport(matrix: CoverageMatrix[]): string {
   report += `| Story | Criterion | Tests |\n`;
   report += `|-------|-----------|-------|\n`;
   matrix
-    .filter((m) => m.covered)
+    .filter(m => m.covered)
     .forEach((m) => {
-      const testList = m.tests.map((t) => `\`${t.file}\``).join(', ');
+      const testList = m.tests.map(t => `\`${t.file}\``).join(', ');
       report += `| ${m.criterion.story} | ${m.criterion.criterion} | ${testList} |\n`;
     });
 

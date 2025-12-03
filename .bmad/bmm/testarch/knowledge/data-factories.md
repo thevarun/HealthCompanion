@@ -62,7 +62,7 @@ type Product = {
 export const createProduct = (overrides: Partial<Product> = {}): Product => ({
   id: faker.string.uuid(),
   name: faker.commerce.productName(),
-  price: parseFloat(faker.commerce.price()),
+  price: Number.parseFloat(faker.commerce.price()),
   stock: faker.number.int({ min: 0, max: 100 }),
   category: faker.commerce.department(),
   ...overrides,
@@ -83,6 +83,7 @@ test('admin can delete users', async ({ page, apiRequest }) => {
   // Now test UI behavior
   await page.goto('/admin/users');
   await page.click(`[data-testid="delete-user-${user.id}"]`);
+
   await expect(page.getByText(`User ${user.name} deleted`)).toBeVisible();
 });
 ```
@@ -102,8 +103,8 @@ test('admin can delete users', async ({ page, apiRequest }) => {
 
 ```typescript
 // test-utils/factories/order-factory.ts
-import { createUser } from './user-factory';
 import { createProduct } from './product-factory';
+import { createUser } from './user-factory';
 
 type OrderItem = {
   product: Product;
@@ -170,6 +171,7 @@ test('user can view order details', async ({ page, apiRequest }) => {
 
   // Test UI
   await page.goto(`/orders/${order.id}`);
+
   await expect(page.getByText('Widget A x 2')).toBeVisible();
   await expect(page.getByText('Widget B x 1')).toBeVisible();
   await expect(page.getByText('Total: $35.00')).toBeVisible();
@@ -192,8 +194,13 @@ test('user can view order details', async ({ page, apiRequest }) => {
 ```typescript
 // playwright/support/helpers/seed-helpers.ts
 import { APIRequestContext } from '@playwright/test';
-import { User, createUser } from '../../test-utils/factories/user-factory';
-import { Product, createProduct } from '../../test-utils/factories/product-factory';
+// Playwright globalSetup for shared data
+// playwright/support/global-setup.ts
+import { chromium, FullConfig } from '@playwright/test';
+
+import { createProduct, Product } from '../../test-utils/factories/product-factory';
+import { createUser, User } from '../../test-utils/factories/user-factory';
+import { seedUser } from './helpers/seed-helpers';
 
 export async function seedUser(request: APIRequestContext, overrides: Partial<User> = {}): Promise<User> {
   const user = createUser(overrides);
@@ -222,11 +229,6 @@ export async function seedProduct(request: APIRequestContext, overrides: Partial
 
   return product;
 }
-
-// Playwright globalSetup for shared data
-// playwright/support/global-setup.ts
-import { chromium, FullConfig } from '@playwright/test';
-import { seedUser } from './helpers/seed-helpers';
 
 async function globalSetup(config: FullConfig) {
   const browser = await chromium.launch();
@@ -415,6 +417,7 @@ test('pro accounts can access analytics', async ({ page, apiRequest }) => {
   await apiRequest({ method: 'POST', url: '/api/accounts', data: account });
 
   await page.goto('/analytics');
+
   await expect(page.getByText('Advanced Analytics')).toBeVisible();
 });
 
@@ -426,6 +429,7 @@ test('free accounts cannot access analytics', async ({ page, apiRequest }) => {
   await apiRequest({ method: 'POST', url: '/api/accounts', data: account });
 
   await page.goto('/analytics');
+
   await expect(page.getByText('Upgrade to Pro')).toBeVisible();
 });
 ```

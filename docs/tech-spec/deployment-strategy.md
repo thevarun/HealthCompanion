@@ -128,13 +128,13 @@ psql $DATABASE_URL
 **Setup:**
 ```typescript
 // Already configured in boilerplate
-import * as Sentry from '@sentry/nextjs'
+import * as Sentry from '@sentry/nextjs';
 
 Sentry.init({
   dsn: process.env.SENTRY_DSN,
   environment: process.env.NODE_ENV,
   tracesSampleRate: 0.1,
-})
+});
 ```
 
 **Monitored Events:**
@@ -186,10 +186,10 @@ Sentry.init({
 **Track via Custom Events:**
 ```typescript
 // Analytics events to track
-analytics.track('chat_message_sent', { userId, messageLength })
-analytics.track('workflow_triggered', { userId, workflowId })
-analytics.track('user_signed_up', { userId })
-analytics.track('conversation_started', { userId })
+analytics.track('chat_message_sent', { userId, messageLength });
+analytics.track('workflow_triggered', { userId, workflowId });
+analytics.track('user_signed_up', { userId });
+analytics.track('conversation_started', { userId });
 ```
 
 **KPIs to Monitor:**
@@ -209,13 +209,13 @@ logger.info('Chat message processed', {
   messageLength,
   responseTime,
   difyLatency
-})
+});
 
 logger.error('Dify API error', {
   userId,
   error: error.message,
   statusCode: error.response?.status
-})
+});
 ```
 
 **Logs Storage:**

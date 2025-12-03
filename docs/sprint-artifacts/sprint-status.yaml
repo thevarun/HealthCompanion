@@ -33,13 +33,13 @@ generated: 2025-12-01
 project: HealthCompanion
 project_key: health-companion
 tracking_system: file-system
-story_location: "{project-root}/docs/sprint-artifacts"
+story_location: '{project-root}/docs/sprint-artifacts'
 
 development_status:
   epic-1: backlog
   1-1-replace-clerk-with-supabase-auth: done
   1-2-build-dify-backend-proxy: done
-  1-3-create-chat-interface-with-assistant-ui: ready-for-dev
+  1-3-create-chat-interface-with-assistant-ui: review
   1-4-set-up-dify-knowledge-base: drafted
   1-5-implement-user-workflows: drafted
   epic-1-retrospective: optional

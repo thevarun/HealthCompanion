@@ -27,7 +27,7 @@ Robust selectors follow a strict hierarchy: **data-testid > ARIA roles > text co
 
 ```typescript
 // tests/selectors/hierarchy-examples.spec.ts
-import { test, expect } from '@playwright/test';
+import { expect, test } from '@playwright/test';
 
 test.describe('Selector Hierarchy Best Practices', () => {
   test('Level 1: data-testid (BEST - most resilient)', async ({ page }) => {
@@ -69,6 +69,7 @@ test.describe('Selector Hierarchy Best Practices', () => {
 
     // ✅ Acceptable: Text content (matches user perception)
     await page.getByText('Create New Order').click();
+
     await expect(page.getByText('Order Details')).toBeVisible();
 
     // Why it's acceptable:
@@ -120,7 +121,7 @@ test.describe('Selector Hierarchy Best Practices', () => {
 
 ```typescript
 // tests/selectors/dynamic-selectors.spec.ts
-import { test, expect } from '@playwright/test';
+import { expect, test } from '@playwright/test';
 
 test.describe('Dynamic Selector Patterns', () => {
   test('regex for variable content (user IDs, timestamps)', async ({ page }) => {
@@ -168,6 +169,7 @@ test.describe('Dynamic Selector Patterns', () => {
 
     // ⚠️ Acceptable: nth(0) for first item (common pattern)
     const firstNotification = page.getByTestId('notification').nth(0);
+
     await expect(firstNotification).toContainText('Welcome');
 
     // ❌ Bad: nth(5) for arbitrary index (fragile)
@@ -208,7 +210,7 @@ test.describe('Dynamic Selector Patterns', () => {
 
 ```typescript
 // tests/selectors/anti-patterns.spec.ts
-import { test, expect } from '@playwright/test';
+import { expect, test } from '@playwright/test';
 
 test.describe('Selector Anti-Patterns to Avoid', () => {
   test('❌ Anti-Pattern 1: CSS classes (brittle)', async ({ page }) => {
@@ -286,7 +288,7 @@ test.describe('Selector Anti-Patterns to Avoid', () => {
 
 ```typescript
 // tests/selectors/debugging-techniques.spec.ts
-import { test, expect } from '@playwright/test';
+import { expect, test } from '@playwright/test';
 
 test.describe('Selector Debugging Techniques', () => {
   test('use Playwright Inspector to test selectors', async ({ page }) => {
@@ -304,6 +306,7 @@ test.describe('Selector Debugging Techniques', () => {
     // Use "Record" mode to capture user interactions
 
     await page.getByTestId('user-menu').click();
+
     await expect(page.getByRole('menu')).toBeVisible();
   });
 
@@ -349,6 +352,7 @@ test.describe('Selector Debugging Techniques', () => {
 
     // Use generated selector
     await page.getByRole('link', { name: 'Product A' }).click();
+
     await expect(page).toHaveURL(/\/products\/\d+/);
   });
 });
@@ -372,7 +376,7 @@ test.describe('Selector Debugging Techniques', () => {
 
 ```typescript
 // tests/selectors/refactoring-guide.spec.ts
-import { test, expect } from '@playwright/test';
+import { expect, test } from '@playwright/test';
 
 test.describe('Selector Refactoring Patterns', () => {
   test('refactor: CSS class → data-testid', async ({ page }) => {
@@ -445,7 +449,7 @@ test.describe('Selector Refactoring Patterns', () => {
 
 ```typescript
 // tests/selectors/validation-checklist.spec.ts
-import { test, expect } from '@playwright/test';
+import { expect, test } from '@playwright/test';
 
 /**
  * Selector Validation Checklist
@@ -466,6 +470,7 @@ test.describe('Selector Best Practices Validation', () => {
 
     // Semantic elements (headings, navigation, forms) use ARIA
     await expect(page.getByRole('heading', { name: 'Dashboard' })).toBeVisible();
+
     await page.getByRole('navigation').getByRole('link', { name: 'Settings' }).click();
   });
 

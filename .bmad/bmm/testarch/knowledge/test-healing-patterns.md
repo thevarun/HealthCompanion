@@ -48,7 +48,7 @@ export function isSelectorFailure(error: Error): boolean {
     /unable to find element/i,
   ];
 
-  return patterns.some((pattern) => pattern.test(error.message));
+  return patterns.some(pattern => pattern.test(error.message));
 }
 
 /**
@@ -57,11 +57,15 @@ export function isSelectorFailure(error: Error): boolean {
 export function extractSelector(errorMessage: string): string | null {
   // Playwright: "locator('button[type=\"submit\"]') resolved to 0 elements"
   const playwrightMatch = errorMessage.match(/locator\('([^']+)'\)/);
-  if (playwrightMatch) return playwrightMatch[1];
+  if (playwrightMatch) {
+    return playwrightMatch[1];
+  }
 
   // Cypress: "Timed out retrying: Expected to find element: '.submit-button'"
   const cypressMatch = errorMessage.match(/Expected to find element: ['"]([^'"]+)['"]/i);
-  if (cypressMatch) return cypressMatch[1];
+  if (cypressMatch) {
+    return cypressMatch[1];
+  }
 
   return null;
 }
@@ -99,8 +103,9 @@ export function suggestBetterSelector(badSelector: string): string {
 
 ```typescript
 // tests/healing/selector-healing.spec.ts
-import { test, expect } from '@playwright/test';
-import { isSelectorFailure, extractSelector, suggestBetterSelector } from '../../src/testing/healing/selector-healing';
+import { expect, test } from '@playwright/test';
+
+import { extractSelector, isSelectorFailure, suggestBetterSelector } from '../../src/testing/healing/selector-healing';
 
 test('heal stale selector failures automatically', async ({ page }) => {
   await page.goto('/dashboard');
@@ -164,7 +169,7 @@ export function isTimingFailure(error: Error): boolean {
     /waitForLoadState.*timeout/i,
   ];
 
-  return patterns.some((pattern) => pattern.test(error.message));
+  return patterns.some(pattern => pattern.test(error.message));
 }
 
 /**
@@ -173,7 +178,7 @@ export function isTimingFailure(error: Error): boolean {
 export function hasHardWait(testCode: string): boolean {
   const hardWaitPatterns = [/page\.waitForTimeout\(/, /cy\.wait\(\d+\)/, /await.*sleep\(/, /setTimeout\(/];
 
-  return hardWaitPatterns.some((pattern) => pattern.test(testCode));
+  return hardWaitPatterns.some(pattern => pattern.test(testCode));
 }
 
 /**
@@ -219,8 +224,9 @@ await responsePromise
 
 ```typescript
 // tests/healing/timing-healing.spec.ts
-import { test, expect } from '@playwright/test';
-import { isTimingFailure, hasHardWait, suggestDeterministicWait } from '../../src/testing/healing/timing-healing';
+import { expect, test } from '@playwright/test';
+
+import { hasHardWait, isTimingFailure, suggestDeterministicWait } from '../../src/testing/healing/timing-healing';
 
 test('heal race condition with network-first pattern', async ({ page, context }) => {
   // Setup interception BEFORE navigation (prevent race)
@@ -284,21 +290,21 @@ export type DataFailure = {
  */
 export function isDynamicDataFailure(error: Error): boolean {
   const patterns = [
-    /expected.*\d+.*received.*\d+/i, // ID mismatches
+    /expected[^\d\n\r\u2028\u2029]*\d.*received.*\d/i, // ID mismatches
     /expected.*\d{4}-\d{2}-\d{2}.*received/i, // Date mismatches
-    /expected.*user.*\d+/i, // Dynamic user IDs
-    /expected.*order.*\d+/i, // Dynamic order IDs
-    /expected.*to.*contain.*\d+/i, // Numeric assertions
+    /expected.*user.*\d/i, // Dynamic user IDs
+    /expected.*order.*\d/i, // Dynamic order IDs
+    /expected.*to.*contain.*\d/i, // Numeric assertions
   ];
 
-  return patterns.some((pattern) => pattern.test(error.message));
+  return patterns.some(pattern => pattern.test(error.message));
 }
 
 /**
  * Suggest flexible assertion pattern
  */
 export function suggestFlexibleAssertion(errorMessage: string): string {
-  if (/expected.*user.*\d+/i.test(errorMessage)) {
+  if (/expected.*user.*\d/i.test(errorMessage)) {
     return `
 // ❌ Bad: Hardcoded ID
 // await expect(page.getByText('User 123')).toBeVisible()
@@ -325,7 +331,7 @@ await expect(page.getByTestId('created-date')).toHaveText(/\\d{4}-\\d{2}-\\d{2}/
     `.trim();
   }
 
-  if (/expected.*order.*\d+/i.test(errorMessage)) {
+  if (/expected.*order.*\d/i.test(errorMessage)) {
     return `
 // ❌ Bad: Hardcoded order ID
 // const orderId = '12345'
@@ -348,7 +354,7 @@ await expect(page.getByText(\`Order #\${orderId} confirmed\`)).toBeVisible()
 
 ```typescript
 // tests/healing/data-healing.spec.ts
-import { test, expect } from '@playwright/test';
+import { expect, test } from '@playwright/test';
 
 test('heal dynamic ID assertion with regex', async ({ page }) => {
   await page.goto('/users');
@@ -366,6 +372,7 @@ test('heal timestamp assertion with dynamic generation', async ({ page }) => {
 
   // ✅ Healed: Generate expected date dynamically
   const today = new Date().toISOString().split('T')[0];
+
   await expect(page.getByTestId('last-updated')).toContainText(today);
 });
 
@@ -378,6 +385,7 @@ test('heal order ID assertion with capture', async ({ page, request }) => {
 
   // ✅ Healed: Use captured dynamic ID
   await page.goto(`/orders/${orderId}`);
+
   await expect(page.getByText(`Order #${orderId}`)).toBeVisible();
 });
 ```
@@ -420,7 +428,7 @@ export function isNetworkFailure(error: Error): boolean {
     /fetch.*failed/i,
   ];
 
-  return patterns.some((pattern) => pattern.test(error.message));
+  return patterns.some(pattern => pattern.test(error.message));
 }
 
 /**
@@ -454,7 +462,7 @@ await page.goto('/page')
 
 ```typescript
 // tests/healing/network-healing.spec.ts
-import { test, expect } from '@playwright/test';
+import { expect, test } from '@playwright/test';
 
 test('heal network failure with route mocking', async ({ page, context }) => {
   // ✅ Healed: Mock API to prevent real network calls
@@ -564,7 +572,7 @@ cy.wait('@getData') // Deterministic
 
 ```typescript
 // tests/healing/hard-wait-healing.spec.ts
-import { test, expect } from '@playwright/test';
+import { expect, test } from '@playwright/test';
 
 test('heal hard wait with deterministic wait', async ({ page }) => {
   await page.goto('/dashboard');
@@ -575,7 +583,7 @@ test('heal hard wait with deterministic wait', async ({ page }) => {
   await page.getByTestId('loading-spinner').waitFor({ state: 'detached' });
 
   // OR wait for specific network response
-  await page.waitForResponse((resp) => resp.url().includes('/api/dashboard') && resp.ok());
+  await page.waitForResponse(resp => resp.url().includes('/api/dashboard') && resp.ok());
 
   await expect(page.getByText('Dashboard ready')).toBeVisible();
 });

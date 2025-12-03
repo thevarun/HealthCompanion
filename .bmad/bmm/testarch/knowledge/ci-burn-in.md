@@ -25,7 +25,7 @@ on:
     branches: [main, develop]
 
 env:
-  NODE_VERSION_FILE: '.nvmrc'
+  NODE_VERSION_FILE: .nvmrc
   CACHE_KEY: ${{ runner.os }}-node-${{ hashFiles('**/package-lock.json') }}
 
 jobs:
@@ -41,7 +41,7 @@ jobs:
         uses: actions/setup-node@v4
         with:
           node-version-file: ${{ env.NODE_VERSION_FILE }}
-          cache: 'npm'
+          cache: npm
 
       - name: Cache node modules
         uses: actions/cache@v4
@@ -79,7 +79,7 @@ jobs:
         uses: actions/setup-node@v4
         with:
           node-version-file: ${{ env.NODE_VERSION_FILE }}
-          cache: 'npm'
+          cache: npm
 
       - name: Restore dependencies
         uses: actions/cache@v4
@@ -139,7 +139,7 @@ jobs:
         uses: actions/setup-node@v4
         with:
           node-version-file: ${{ env.NODE_VERSION_FILE }}
-          cache: 'npm'
+          cache: npm
 
       - name: Restore dependencies
         uses: actions/cache@v4
@@ -337,16 +337,16 @@ exit 0
 
 ```javascript
 // scripts/run-sharded-tests.js
-const { spawn } = require('child_process');
-const fs = require('fs');
-const path = require('path');
+const { spawn } = require('node:child_process');
+const fs = require('node:fs');
+const path = require('node:path');
 
 /**
  * Run tests across multiple shards and aggregate results
  * Usage: node scripts/run-sharded-tests.js --shards=4 --env=staging
  */
 
-const SHARD_COUNT = parseInt(process.env.SHARD_COUNT || '4');
+const SHARD_COUNT = Number.parseInt(process.env.SHARD_COUNT || '4');
 const TEST_ENV = process.env.TEST_ENV || 'local';
 const RESULTS_DIR = path.join(__dirname, '../test-results');
 

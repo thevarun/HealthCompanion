@@ -18,7 +18,7 @@ Tests fail for two reasons: genuine bugs or poor error handling in the test itse
 
 ```typescript
 // tests/e2e/error-handling.spec.ts
-import { test, expect } from '@playwright/test';
+import { expect, test } from '@playwright/test';
 
 /**
  * Scoped Error Handling Pattern
@@ -42,7 +42,7 @@ test.describe('API Error Handling', () => {
     });
 
     // Arrange: Mock 500 error response
-    await page.route('**/api/users', (route) =>
+    await page.route('**/api/users', route =>
       route.fulfill({
         status: 500,
         contentType: 'application/json',
@@ -50,8 +50,7 @@ test.describe('API Error Handling', () => {
           error: 'Internal server error',
           code: 'INTERNAL_ERROR',
         }),
-      }),
-    );
+      }),);
 
     // Act: Navigate to page that fetches users
     await page.goto('/dashboard');
@@ -165,7 +164,7 @@ describe('API Error Handling', () => {
 
 ```typescript
 // tests/e2e/retry-resilience.spec.ts
-import { test, expect } from '@playwright/test';
+import { expect, test } from '@playwright/test';
 
 /**
  * Retry Validation Pattern
@@ -223,6 +222,7 @@ test.describe('Network Retry Logic', () => {
 
     // Assert: Telemetry logged retry events
     const telemetryEvents = await page.evaluate(() => (window as any).__TELEMETRY_EVENTS__ || []);
+
     expect(telemetryEvents).toContainEqual(
       expect.objectContaining({
         event: 'api_retry',
@@ -338,7 +338,7 @@ describe('Network Retry Logic', () => {
 
 ```typescript
 // tests/e2e/telemetry-logging.spec.ts
-import { test, expect } from '@playwright/test';
+import { expect, test } from '@playwright/test';
 
 /**
  * Telemetry Logging Pattern
@@ -378,12 +378,11 @@ test.describe('Error Telemetry', () => {
     });
 
     // Mock failing API
-    await page.route('**/api/orders', (route) =>
+    await page.route('**/api/orders', route =>
       route.fulfill({
         status: 500,
         body: JSON.stringify({ error: 'Payment processor unavailable' }),
-      }),
-    );
+      }),);
 
     // Act: Trigger error
     await page.goto('/checkout');
@@ -408,6 +407,7 @@ test.describe('Error Telemetry', () => {
 
     // Assert: Sensitive data NOT logged
     const logString = JSON.stringify(errorLogs);
+
     expect(logString).not.toContain('password');
     expect(logString).not.toContain('token');
     expect(logString).not.toContain('creditCard');
@@ -435,13 +435,14 @@ test.describe('Error Telemetry', () => {
     });
 
     // Mock failing API
-    await page.route('**/api/users', (route) => route.fulfill({ status: 403, body: { error: 'Forbidden' } }));
+    await page.route('**/api/users', route => route.fulfill({ status: 403, body: { error: 'Forbidden' } }));
 
     // Act
     await page.goto('/users');
 
     // Assert: Sentry captured error
     const events = await page.evaluate(() => (window as any).__SENTRY_EVENTS__);
+
     expect(events).toHaveLength(1);
     expect(events[0]).toMatchObject({
       error: expect.stringContaining('403'),
@@ -453,6 +454,7 @@ test.describe('Error Telemetry', () => {
 
     // Assert: Breadcrumbs include user actions
     const breadcrumbs = await page.evaluate(() => (window as any).__SENTRY_BREADCRUMBS__);
+
     expect(breadcrumbs).toContainEqual(
       expect.objectContaining({
         category: 'navigation',
@@ -520,12 +522,14 @@ const SENSITIVE_KEYS = ['password', 'token', 'creditCard', 'ssn', 'apiKey'];
  * Redact sensitive data from objects
  */
 function redactSensitiveData(obj: any): any {
-  if (typeof obj !== 'object' || obj === null) return obj;
+  if (typeof obj !== 'object' || obj === null) {
+    return obj;
+  }
 
   const redacted = { ...obj };
 
   for (const key of Object.keys(redacted)) {
-    if (SENSITIVE_KEYS.some((sensitive) => key.toLowerCase().includes(sensitive))) {
+    if (SENSITIVE_KEYS.some(sensitive => key.toLowerCase().includes(sensitive))) {
       redacted[key] = '[REDACTED]';
     } else if (typeof redacted[key] === 'object') {
       redacted[key] = redactSensitiveData(redacted[key]);
@@ -579,7 +583,7 @@ export function logError(error: Error, context?: ErrorContext) {
 
 ```typescript
 // tests/e2e/graceful-degradation.spec.ts
-import { test, expect } from '@playwright/test';
+import { expect, test } from '@playwright/test';
 
 /**
  * Graceful Degradation Pattern
@@ -608,7 +612,7 @@ test.describe('Service Unavailability', () => {
     // Mock API unavailable
     await page.route(
       '**/api/products',
-      (route) => route.abort('connectionrefused'), // Simulate server down
+      route => route.abort('connectionrefused'), // Simulate server down
     );
 
     // Act
@@ -628,7 +632,7 @@ test.describe('Service Unavailability', () => {
 
   test('should show fallback UI when analytics service fails', async ({ page }) => {
     // Mock analytics service down (non-critical)
-    await page.route('**/analytics/track', (route) => route.fulfill({ status: 503, body: 'Service unavailable' }));
+    await page.route('**/analytics/track', route => route.fulfill({ status: 503, body: 'Service unavailable' }));
 
     // Act: Navigate normally
     await page.goto('/dashboard');
@@ -639,7 +643,9 @@ test.describe('Service Unavailability', () => {
     // Assert: Analytics error logged but not shown to user
     const consoleErrors = [];
     page.on('console', (msg) => {
-      if (msg.type() === 'error') consoleErrors.push(msg.text());
+      if (msg.type() === 'error') {
+        consoleErrors.push(msg.text());
+      }
     });
 
     // Trigger analytics event
@@ -655,7 +661,7 @@ test.describe('Service Unavailability', () => {
   test('should fallback to local validation when API is slow', async ({ page }) => {
     // Mock slow API (> 5 seconds)
     await page.route('**/api/validate-email', async (route) => {
-      await new Promise((resolve) => setTimeout(resolve, 6000)); // 6 second delay
+      await new Promise(resolve => setTimeout(resolve, 6000)); // 6 second delay
       route.fulfill({
         status: 200,
         body: JSON.stringify({ valid: true }),
@@ -676,8 +682,8 @@ test.describe('Service Unavailability', () => {
 
   test('should maintain functionality with third-party script failure', async ({ page }) => {
     // Block third-party scripts (Google Analytics, Intercom, etc.)
-    await page.route('**/*.google-analytics.com/**', (route) => route.abort());
-    await page.route('**/*.intercom.io/**', (route) => route.abort());
+    await page.route('**/*.google-analytics.com/**', route => route.abort());
+    await page.route('**/*.intercom.io/**', route => route.abort());
 
     // Act
     await page.goto('/');
@@ -688,6 +694,7 @@ test.describe('Service Unavailability', () => {
 
     // Assert: Core functionality intact
     await page.getByTestId('nav-products').click();
+
     await expect(page).toHaveURL(/.*\/products/);
   });
 });

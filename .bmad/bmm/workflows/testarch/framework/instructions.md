@@ -195,6 +195,7 @@ Initialize a production-ready test framework architecture (Playwright or Cypress
 
    ```typescript
    import { test as base } from '@playwright/test';
+
    import { UserFactory } from './factories/user-factory';
 
    type TestFixtures = {
@@ -261,11 +262,12 @@ Initialize a production-ready test framework architecture (Playwright or Cypress
    Create `tests/e2e/example.spec.ts`:
 
    ```typescript
-   import { test, expect } from '../support/fixtures';
+   import { expect, test } from '../support/fixtures';
 
    test.describe('Example Test Suite', () => {
      test('should load homepage', async ({ page }) => {
        await page.goto('/');
+
        await expect(page).toHaveTitle(/Home/i);
      });
 

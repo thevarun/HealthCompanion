@@ -18,8 +18,9 @@ Traditional integration testing requires running both consumer and provider simu
 
 ```typescript
 // tests/contract/user-api.pact.spec.ts
-import { PactV3, MatchersV3 } from '@pact-foundation/pact';
-import { getUserById, createUser, User } from '@/api/user-service';
+import { MatchersV3, PactV3 } from '@pact-foundation/pact';
+
+import { createUser, getUserById, User } from '@/api/user-service';
 
 const { like, eachLike, string, integer } = MatchersV3;
 
@@ -124,7 +125,7 @@ describe('User API Contract', () => {
           path: '/users',
           headers: {
             'Content-Type': 'application/json',
-            Accept: 'application/json',
+            'Accept': 'application/json',
           },
           body: like(newUser),
         })
@@ -188,8 +189,9 @@ describe('User API Contract', () => {
 ```typescript
 // tests/contract/user-api.provider.spec.ts
 import { Verifier, VerifierOptions } from '@pact-foundation/pact';
+
 import { server } from '../../src/server'; // Your Express/Fastify app
-import { seedDatabase, resetDatabase } from '../support/db-helpers';
+import { resetDatabase, seedDatabase } from '../support/db-helpers';
 
 /**
  * Provider Verification Test
@@ -258,7 +260,7 @@ describe('Pact Provider Verification', () => {
       requestFilter: (req, res, next) => {
         // Mock authentication for verification
         req.headers['x-user-id'] = 'test-user';
-        req.headers['authorization'] = 'Bearer valid-test-token';
+        req.headers.authorization = 'Bearer valid-test-token';
         next();
       },
 
@@ -291,7 +293,7 @@ jobs:
       - name: Setup Node.js
         uses: actions/setup-node@v4
         with:
-          node-version-file: '.nvmrc'
+          node-version-file: .nvmrc
 
       - name: Install dependencies
         run: npm ci
@@ -354,7 +356,7 @@ jobs:
       - name: Setup Node.js
         uses: actions/setup-node@v4
         with:
-          node-version-file: '.nvmrc'
+          node-version-file: .nvmrc
 
       - name: Install dependencies
         run: npm ci
@@ -401,7 +403,7 @@ jobs:
       - name: Setup Node.js
         uses: actions/setup-node@v4
         with:
-          node-version-file: '.nvmrc'
+          node-version-file: .nvmrc
 
       - name: Install dependencies
         run: npm ci
@@ -491,8 +493,9 @@ jobs:
 
 ```typescript
 // tests/contract/user-api-resilience.pact.spec.ts
-import { PactV3, MatchersV3 } from '@pact-foundation/pact';
-import { getUserById, ApiError } from '@/api/user-service';
+import { MatchersV3, PactV3 } from '@pact-foundation/pact';
+
+import { ApiError, getUserById } from '@/api/user-service';
 
 const { like, string } = MatchersV3;
 
@@ -684,13 +687,13 @@ export async function getUserById(
 
       // Handle rate limiting
       if (error.response?.status === 429) {
-        const retryAfter = parseInt(error.response.headers['retry-after'] || '60');
+        const retryAfter = Number.parseInt(error.response.headers['retry-after'] || '60');
         throw new ApiError('Too many requests', 'RATE_LIMIT_EXCEEDED', false, retryAfter);
       }
 
       // Retry on 500 errors
       if (error.response?.status === 500 && attempt < retries) {
-        await new Promise((resolve) => setTimeout(resolve, retryDelay * attempt));
+        await new Promise(resolve => setTimeout(resolve, retryDelay * attempt));
         continue;
       }
 
@@ -737,7 +740,7 @@ export async function getUserById(
  * - Tag releases for environment tracking
  */
 
-import { execSync } from 'child_process';
+import { execSync } from 'node:child_process';
 
 const PACT_BROKER_URL = process.env.PACT_BROKER_URL!;
 const PACT_BROKER_TOKEN = process.env.PACT_BROKER_TOKEN!;

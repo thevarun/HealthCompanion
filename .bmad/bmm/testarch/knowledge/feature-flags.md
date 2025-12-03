@@ -106,7 +106,9 @@ export function validateFlag(flag: string): asserts flag is FlagKey {
  */
 export function isFlagExpired(flag: FlagKey): boolean {
   const metadata = FLAG_REGISTRY[flag];
-  if (!metadata.expiryDate) return false;
+  if (!metadata.expiryDate) {
+    return false;
+  }
 
   const expiry = new Date(metadata.expiryDate);
   return Date.now() > expiry.getTime();
@@ -116,7 +118,7 @@ export function isFlagExpired(flag: FlagKey): boolean {
  * Get all expired flags requiring cleanup
  */
 export function getExpiredFlags(): FlagMetadata[] {
-  return Object.values(FLAG_REGISTRY).filter((meta) => isFlagExpired(meta.key));
+  return Object.values(FLAG_REGISTRY).filter(meta => isFlagExpired(meta.key));
 }
 ```
 
@@ -152,7 +154,8 @@ export function Checkout() {
 
 ```typescript
 // tests/e2e/checkout-feature-flag.spec.ts
-import { test, expect } from '@playwright/test';
+import { expect, test } from '@playwright/test';
+
 import { FLAGS } from '@/utils/feature-flags';
 
 /**
@@ -208,6 +211,7 @@ test.describe('Checkout Flow - Feature Flag Variations', () => {
 
     // Assert: Telemetry event fired
     const analyticsEvents = await page.evaluate(() => (window as any).__ANALYTICS_EVENTS__ || []);
+
     expect(analyticsEvents).toContainEqual(
       expect.objectContaining({
         event: 'checkout_started',
@@ -245,6 +249,7 @@ test.describe('Checkout Flow - Feature Flag Variations', () => {
 
     // Assert: Telemetry event fired with correct variant
     const analyticsEvents = await page.evaluate(() => (window as any).__ANALYTICS_EVENTS__ || []);
+
     expect(analyticsEvents).toContainEqual(
       expect.objectContaining({
         event: 'checkout_started',
@@ -257,7 +262,7 @@ test.describe('Checkout Flow - Feature Flag Variations', () => {
 
   test('should handle flag evaluation errors gracefully', async ({ page, request }) => {
     // Arrange: Simulate flag service unavailable
-    await page.route('**/api/feature-flags/evaluate', (route) => route.fulfill({ status: 500, body: 'Service Unavailable' }));
+    await page.route('**/api/feature-flags/evaluate', route => route.fulfill({ status: 500, body: 'Service Unavailable' }));
 
     // Act: Navigate (should fallback to default state)
     await page.goto('/checkout', {
@@ -272,8 +277,11 @@ test.describe('Checkout Flow - Feature Flag Variations', () => {
     // Assert: Error logged but no user-facing error
     const consoleErrors = [];
     page.on('console', (msg) => {
-      if (msg.type() === 'error') consoleErrors.push(msg.text());
+      if (msg.type() === 'error') {
+        consoleErrors.push(msg.text());
+      }
     });
+
     expect(consoleErrors).toContain(expect.stringContaining('Feature flag evaluation failed'));
   });
 });
@@ -357,7 +365,8 @@ describe('Checkout Flow - Feature Flag Variations', () => {
 ```typescript
 // tests/support/feature-flag-helpers.ts
 import { request as playwrightRequest } from '@playwright/test';
-import { FLAGS, FlagKey } from '@/utils/feature-flags';
+
+import { FlagKey, FLAGS } from '@/utils/feature-flags';
 
 /**
  * LaunchDarkly API client configuration
@@ -373,10 +382,10 @@ type FlagVariation = boolean | string | number | object;
  * Uses LaunchDarkly API to create user target
  */
 export async function setFlagForUser(flagKey: FlagKey, userId: string, variation: FlagVariation): Promise<void> {
-  const response = await playwrightRequest.newContext().then((ctx) =>
+  const response = await playwrightRequest.newContext().then(ctx =>
     ctx.post(`${LD_API_BASE}/flags/${flagKey}/targeting`, {
       headers: {
-        Authorization: LD_SDK_KEY!,
+        'Authorization': LD_SDK_KEY!,
         'Content-Type': 'application/json',
       },
       data: {
@@ -400,7 +409,7 @@ export async function setFlagForUser(flagKey: FlagKey, userId: string, variation
  * CRITICAL for test cleanup
  */
 export async function removeFlagTarget(flagKey: FlagKey, userId: string): Promise<void> {
-  const response = await playwrightRequest.newContext().then((ctx) =>
+  const response = await playwrightRequest.newContext().then(ctx =>
     ctx.delete(`${LD_API_BASE}/flags/${flagKey}/targeting/users/${userId}`, {
       headers: {
         Authorization: LD_SDK_KEY!,
@@ -423,10 +432,10 @@ export async function setFlagRolloutPercentage(flagKey: FlagKey, percentage: num
     throw new Error('Percentage must be between 0 and 100');
   }
 
-  const response = await playwrightRequest.newContext().then((ctx) =>
+  const response = await playwrightRequest.newContext().then(ctx =>
     ctx.patch(`${LD_API_BASE}/flags/${flagKey}`, {
       headers: {
-        Authorization: LD_SDK_KEY!,
+        'Authorization': LD_SDK_KEY!,
         'Content-Type': 'application/json',
       },
       data: {
@@ -476,8 +485,10 @@ export function stubFeatureFlags(flags: Record<FlagKey, FlagVariation>): void {
 ```typescript
 // playwright/fixtures/feature-flag-fixture.ts
 import { test as base } from '@playwright/test';
-import { setFlagForUser, removeFlagTarget } from '../support/feature-flag-helpers';
+
 import { FlagKey } from '@/utils/feature-flags';
+
+import { removeFlagTarget, setFlagForUser } from '../support/feature-flag-helpers';
 
 type FeatureFlagFixture = {
   featureFlags: {
@@ -536,9 +547,10 @@ export const test = base.extend<FeatureFlagFixture>({
  * Run weekly to detect stale flags requiring cleanup
  */
 
-import { FLAG_REGISTRY, FLAGS, getExpiredFlags, FlagKey } from '../src/utils/feature-flags';
-import * as fs from 'fs';
-import * as path from 'path';
+import * as fs from 'node:fs';
+import * as path from 'node:path';
+
+import { FLAG_REGISTRY, FlagKey, FLAGS, getExpiredFlags } from '../src/utils/feature-flags';
 
 type AuditResult = {
   totalFlags: number;
@@ -554,20 +566,22 @@ type AuditResult = {
  */
 function auditFeatureFlags(): AuditResult {
   const allFlags = Object.keys(FLAG_REGISTRY) as FlagKey[];
-  const expiredFlags = getExpiredFlags().map((meta) => meta.key);
+  const expiredFlags = getExpiredFlags().map(meta => meta.key);
 
   // Flags expiring in next 30 days
   const thirtyDaysFromNow = Date.now() + 30 * 24 * 60 * 60 * 1000;
   const flagsNearingExpiry = allFlags.filter((flag) => {
     const meta = FLAG_REGISTRY[flag];
-    if (!meta.expiryDate) return false;
+    if (!meta.expiryDate) {
+      return false;
+    }
     const expiry = new Date(meta.expiryDate).getTime();
     return expiry > Date.now() && expiry < thirtyDaysFromNow;
   });
 
   // Missing metadata
-  const missingOwners = allFlags.filter((flag) => !FLAG_REGISTRY[flag].owner);
-  const missingDates = allFlags.filter((flag) => !FLAG_REGISTRY[flag].createdDate);
+  const missingOwners = allFlags.filter(flag => !FLAG_REGISTRY[flag].owner);
+  const missingDates = allFlags.filter(flag => !FLAG_REGISTRY[flag].createdDate);
 
   // Permanent flags (no expiry, requiresCleanup = false)
   const permanentFlags = allFlags.filter((flag) => {

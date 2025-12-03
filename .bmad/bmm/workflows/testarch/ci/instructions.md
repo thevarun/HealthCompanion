@@ -144,7 +144,7 @@ Scaffolds a production-ready CI/CD quality pipeline with test execution, burn-in
        - name: Setup Node
          uses: actions/setup-node@v4
          with:
-           node-version-file: '.nvmrc'
+           node-version-file: .nvmrc
 
        - name: Install dependencies
          run: npm ci

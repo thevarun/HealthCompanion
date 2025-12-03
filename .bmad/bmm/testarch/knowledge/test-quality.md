@@ -37,6 +37,7 @@ test('user can view dashboard - FLAKY', async ({ page }) => {
 
   // Random data without control
   const randomEmail = `user${Math.random()}@example.com`;
+
   await expect(page.getByText(randomEmail)).toBeVisible(); // Will fail randomly
 });
 
@@ -48,7 +49,7 @@ test('user can view dashboard', async ({ page, apiRequest }) => {
   await apiRequest.post('/api/users', { data: user });
 
   // Network-first: Intercept BEFORE navigate
-  const dashboardPromise = page.waitForResponse((resp) => resp.url().includes('/api/dashboard') && resp.status() === 200);
+  const dashboardPromise = page.waitForResponse(resp => resp.url().includes('/api/dashboard') && resp.status() === 200);
 
   await page.goto('/dashboard');
 
@@ -105,6 +106,12 @@ describe('Dashboard', () => {
 
 ```typescript
 // ❌ BAD: Test leaves data behind, pollutes other tests
+// ✅ GOOD: Test cleans up with fixture auto-cleanup
+// playwright/support/fixtures/database-fixture.ts
+import { test as base } from '@playwright/test';
+
+import { deleteRecord, seedDatabase } from '../helpers/db-helpers';
+
 test('admin can create user - POLLUTES STATE', async ({ page, apiRequest }) => {
   await page.goto('/admin/users');
 
@@ -118,11 +125,6 @@ test('admin can create user - POLLUTES STATE', async ({ page, apiRequest }) => {
   // NO CLEANUP - user remains in database
   // Next test run fails: "Email already exists"
 });
-
-// ✅ GOOD: Test cleans up with fixture auto-cleanup
-// playwright/support/fixtures/database-fixture.ts
-import { test as base } from '@playwright/test';
-import { deleteRecord, seedDatabase } from '../helpers/db-helpers';
 
 type DatabaseFixture = {
   seedUser: (userData: Partial<User>) => Promise<User>;
@@ -167,6 +169,7 @@ test('admin can create user', async ({ page, seedUser }) => {
 
   // Verify in database
   const createdUser = await seedUser({ email: newUserEmail });
+
   expect(createdUser.email).toBe(newUserEmail);
 
   // Auto-cleanup happens via fixture teardown
@@ -226,6 +229,7 @@ describe('Admin User Management', () => {
 // helpers/api-validators.ts
 export async function validateUserCreation(response: Response, expectedEmail: string) {
   const user = await response.json();
+
   expect(response.status()).toBe(201);
   expect(user.email).toBe(expectedEmail);
   expect(user.id).toBeTruthy();
@@ -253,6 +257,7 @@ test('create user via API', async ({ request }) => {
   expect(response.status()).toBe(201);
 
   const createdUser = await response.json();
+
   expect(createdUser.id).toBeTruthy();
   expect(createdUser.email).toBe(userData.email);
   expect(createdUser.name).toBe(userData.name);
@@ -349,6 +354,7 @@ test('complete user journey - TOO LONG', async ({ page, request }) => {
   await page.fill('[data-testid="email"]', admin.email);
   await page.fill('[data-testid="password"]', 'password123');
   await page.click('[data-testid="login"]');
+
   await expect(page).toHaveURL('/dashboard');
 
   // 100 lines of user creation
@@ -384,6 +390,7 @@ export const test = base.extend({
     await page.fill('[data-testid="email"]', admin.email);
     await page.fill('[data-testid="password"]', 'password123');
     await page.click('[data-testid="login"]');
+
     await expect(page).toHaveURL('/dashboard');
 
     await use(page); // Provide logged-in page
@@ -408,6 +415,7 @@ test('admin can create user', async ({ adminPage, seedUser }) => {
 
   // Verify in database
   const created = await seedUser({ email: newUser.email });
+
   expect(created.role).toBe('user');
 });
 
@@ -426,6 +434,7 @@ test('admin can assign permissions', async ({ adminPage, seedUser }) => {
   // Verify permissions assigned
   const response = await adminPage.request.get(`/api/users/${user.id}`);
   const updated = await response.json();
+
   expect(updated.permissions).toContain('read');
   expect(updated.permissions).toContain('write');
 });
@@ -445,6 +454,7 @@ test('admin can update notification preferences', async ({ adminPage, seedUser }
   // Verify preferences
   const response = await adminPage.request.get(`/api/users/${user.id}/preferences`);
   const prefs = await response.json();
+
   expect(prefs.emailEnabled).toBe(true);
   expect(prefs.smsEnabled).toBe(false);
   expect(prefs.frequency).toBe('daily');
@@ -520,7 +530,7 @@ test('user completes order', async ({ page, apiRequest }) => {
           emailVerified: true, // Skip verification
         }),
       })
-      .then((r) => r.json()),
+      .then(r => r.json()),
 
     // Create product via API (fast)
     apiRequest
@@ -531,7 +541,7 @@ test('user completes order', async ({ page, apiRequest }) => {
           stock: 10,
         }),
       })
-      .then((r) => r.json()),
+      .then(r => r.json()),
   ]);
 
   // Step 2: Auth setup via storage state (instant, 0 seconds)

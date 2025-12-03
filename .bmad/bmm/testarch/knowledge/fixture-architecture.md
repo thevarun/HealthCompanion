@@ -92,11 +92,12 @@ export const test = base.extend<{ apiRequest: typeof apiRequest }>({
 
 ```typescript
 // playwright/support/fixtures/merged-fixtures.ts
-import { test as base, mergeTests } from '@playwright/test';
+import { mergeTests, test as base } from '@playwright/test';
+
 import { test as apiRequestFixture } from './api-request-fixture';
-import { test as networkFixture } from './network-fixture';
 import { test as authFixture } from './auth-fixture';
 import { test as logFixture } from './log-fixture';
+import { test as networkFixture } from './network-fixture';
 
 // Compose all fixtures for comprehensive capabilities
 export const test = mergeTests(base, apiRequestFixture, networkFixture, authFixture, logFixture);
@@ -176,6 +177,15 @@ export const test = base.extend({
 ```typescript
 // shared/helpers/http-helper.ts
 // Pure, framework-agnostic function
+// Playwright fixture wrapper
+// playwright/support/fixtures/http-fixture.ts
+import { test as base } from '@playwright/test';
+
+import { makeHttpRequest } from '../../shared/helpers/http-helper';
+// Cypress command wrapper
+// cypress/support/commands.ts
+import { makeHttpRequest } from '../../shared/helpers/http-helper';
+
 type HttpHelperParams = {
   baseUrl: string;
   endpoint: string;
@@ -207,22 +217,13 @@ export async function makeHttpRequest({ baseUrl, endpoint, method, body, headers
   return response.json();
 }
 
-// Playwright fixture wrapper
-// playwright/support/fixtures/http-fixture.ts
-import { test as base } from '@playwright/test';
-import { makeHttpRequest } from '../../shared/helpers/http-helper';
-
 export const test = base.extend({
   httpHelper: async ({}, use) => {
     const baseUrl = process.env.API_BASE_URL || 'http://localhost:3000';
 
-    await use((params) => makeHttpRequest({ baseUrl, ...params }));
+    await use(params => makeHttpRequest({ baseUrl, ...params }));
   },
 });
-
-// Cypress command wrapper
-// cypress/support/commands.ts
-import { makeHttpRequest } from '../../shared/helpers/http-helper';
 
 Cypress.Commands.add('apiRequest', (params) => {
   const baseUrl = Cypress.env('API_BASE_URL') || 'http://localhost:3000';
@@ -246,7 +247,8 @@ Cypress.Commands.add('apiRequest', (params) => {
 ```typescript
 // playwright/support/fixtures/database-fixture.ts
 import { test as base } from '@playwright/test';
-import { seedDatabase, deleteRecord } from '../helpers/db-helpers';
+
+import { deleteRecord, seedDatabase } from '../helpers/db-helpers';
 
 type DatabaseFixture = {
   seedUser: (userData: Partial<User>) => Promise<User>;

@@ -27,7 +27,7 @@ Non-functional requirements (security, performance, reliability, maintainability
 
 ```typescript
 // tests/nfr/security.spec.ts
-import { test, expect } from '@playwright/test';
+import { expect, test } from '@playwright/test';
 
 test.describe('Security NFR: Authentication & Authorization', () => {
   test('unauthenticated users cannot access protected routes', async ({ page }) => {
@@ -40,6 +40,7 @@ test.describe('Security NFR: Authentication & Authorization', () => {
 
     // Verify no sensitive data leaked in response
     const pageContent = await page.content();
+
     expect(pageContent).not.toContain('user_id');
     expect(pageContent).not.toContain('api_key');
   });
@@ -52,6 +53,7 @@ test.describe('Security NFR: Authentication & Authorization', () => {
     await page.getByRole('button', { name: 'Sign In' }).click();
 
     const token = await page.evaluate(() => localStorage.getItem('auth_token'));
+
     expect(token).toBeTruthy();
 
     // Wait 16 minutes (use mock clock in real tests)
@@ -63,7 +65,9 @@ test.describe('Security NFR: Authentication & Authorization', () => {
     });
 
     expect(response.status()).toBe(401);
+
     const body = await response.json();
+
     expect(body.error).toContain('expired');
   });
 
@@ -75,7 +79,7 @@ test.describe('Security NFR: Authentication & Authorization', () => {
 
     // Monitor console for password leaks
     const consoleLogs: string[] = [];
-    page.on('console', (msg) => consoleLogs.push(msg.text()));
+    page.on('console', msg => consoleLogs.push(msg.text()));
 
     await page.getByRole('button', { name: 'Sign In' }).click();
 
@@ -84,6 +88,7 @@ test.describe('Security NFR: Authentication & Authorization', () => {
 
     // Verify password NEVER appears in console, DOM, or network
     const pageContent = await page.content();
+
     expect(pageContent).not.toContain('WrongPassword123!');
     expect(consoleLogs.join('\n')).not.toContain('WrongPassword123!');
   });
@@ -98,7 +103,9 @@ test.describe('Security NFR: Authentication & Authorization', () => {
     });
 
     expect(response.status()).toBe(403); // Forbidden
+
     const body = await response.json();
+
     expect(body.error).toContain('insufficient permissions');
   });
 
@@ -106,7 +113,7 @@ test.describe('Security NFR: Authentication & Authorization', () => {
     await page.goto('/search');
 
     // Attempt SQL injection
-    await page.getByPlaceholder('Search products').fill("'; DROP TABLE users; --");
+    await page.getByPlaceholder('Search products').fill('\'; DROP TABLE users; --');
     await page.getByRole('button', { name: 'Search' }).click();
 
     // Should return empty results, NOT crash or expose error
@@ -114,6 +121,7 @@ test.describe('Security NFR: Authentication & Authorization', () => {
 
     // Verify app still works (table not dropped)
     await page.goto('/dashboard');
+
     await expect(page.getByText('Welcome')).toBeVisible();
   });
 
@@ -169,8 +177,8 @@ async function login(request: any, email: string, password: string): Promise<str
 
 ```javascript
 // tests/nfr/performance.k6.js
-import http from 'k6/http';
 import { check, sleep } from 'k6';
+import http from 'k6/http';
 import { Rate, Trend } from 'k6/metrics';
 
 // Custom metrics
@@ -200,8 +208,8 @@ export default function () {
   // Test 1: Homepage load performance
   const homepageResponse = http.get(`${__ENV.BASE_URL}/`);
   check(homepageResponse, {
-    'homepage status is 200': (r) => r.status === 200,
-    'homepage loads in <2s': (r) => r.timings.duration < 2000,
+    'homepage status is 200': r => r.status === 200,
+    'homepage loads in <2s': r => r.timings.duration < 2000,
   });
   errorRate.add(homepageResponse.status !== 200);
 
@@ -210,8 +218,8 @@ export default function () {
     headers: { Authorization: `Bearer ${__ENV.API_TOKEN}` },
   });
   check(apiResponse, {
-    'API status is 200': (r) => r.status === 200,
-    'API responds in <500ms': (r) => r.timings.duration < 500,
+    'API status is 200': r => r.status === 200,
+    'API responds in <500ms': r => r.timings.duration < 500,
   });
   apiDuration.add(apiResponse.timings.duration);
   errorRate.add(apiResponse.status !== 200);
@@ -219,9 +227,9 @@ export default function () {
   // Test 3: Search endpoint under load
   const searchResponse = http.get(`${__ENV.BASE_URL}/api/search?q=laptop&limit=100`);
   check(searchResponse, {
-    'search status is 200': (r) => r.status === 200,
-    'search responds in <1s': (r) => r.timings.duration < 1000,
-    'search returns results': (r) => JSON.parse(r.body).results.length > 0,
+    'search status is 200': r => r.status === 200,
+    'search responds in <1s': r => r.timings.duration < 1000,
+    'search returns results': r => JSON.parse(r.body).results.length > 0,
   });
   errorRate.add(searchResponse.status !== 200);
 
@@ -240,7 +248,7 @@ export function handleSummary(data) {
 
   return {
     'summary.json': JSON.stringify(data),
-    stdout: `
+    'stdout': `
 Performance NFR Results:
 - P95 request duration: ${p95Duration < 500 ? '✅ PASS' : '❌ FAIL'} (${p95Duration.toFixed(2)}ms / 500ms threshold)
 - P99 API duration: ${p99ApiDuration < 1000 ? '✅ PASS' : '❌ FAIL'} (${p99ApiDuration.toFixed(2)}ms / 1000ms threshold)
@@ -297,7 +305,7 @@ k6 run --out json=performance-results.json tests/nfr/performance.k6.js
 
 ```typescript
 // tests/nfr/reliability.spec.ts
-import { test, expect } from '@playwright/test';
+import { expect, test } from '@playwright/test';
 
 test.describe('Reliability NFR: Error Handling & Recovery', () => {
   test('app remains functional when API returns 500 error', async ({ page, context }) => {
@@ -314,6 +322,7 @@ test.describe('Reliability NFR: Error Handling & Recovery', () => {
 
     // App navigation still works (graceful degradation)
     await page.getByRole('link', { name: 'Home' }).click();
+
     await expect(page).toHaveURL('/');
   });
 
@@ -365,6 +374,7 @@ test.describe('Reliability NFR: Error Handling & Recovery', () => {
     expect(response.status()).toBe(200);
 
     const health = await response.json();
+
     expect(health).toHaveProperty('status', 'healthy');
     expect(health).toHaveProperty('timestamp');
     expect(health).toHaveProperty('services');
@@ -528,7 +538,7 @@ jobs:
 
 ```typescript
 // tests/nfr/observability.spec.ts
-import { test, expect } from '@playwright/test';
+import { expect, test } from '@playwright/test';
 
 test.describe('Maintainability NFR: Observability Validation', () => {
   test('critical errors are reported to monitoring service', async ({ page, context }) => {
@@ -589,6 +599,7 @@ test.describe('Maintainability NFR: Observability Validation', () => {
     // Note: In real scenarios, validate logs in monitoring system (Datadog, CloudWatch)
     // This test validates the logging contract exists (Server-Timing, trace IDs in headers)
     const traceId = response.headers()['x-trace-id'];
+
     expect(traceId).toBeTruthy(); // Confirms structured logging with correlation IDs
   });
 });

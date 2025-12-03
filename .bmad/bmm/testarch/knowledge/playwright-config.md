@@ -18,8 +18,9 @@ Environment-specific configuration prevents hardcoded URLs, timeouts, and creden
 
 ```typescript
 // playwright.config.ts - Central config loader
+import path from 'node:path';
+
 import { config as dotenvConfig } from 'dotenv';
-import path from 'path';
 
 // Load .env from project root
 dotenvConfig({
@@ -49,8 +50,9 @@ export default envConfigMap[environment as keyof typeof envConfigMap];
 
 ```typescript
 // playwright/config/base.config.ts - Shared base configuration
+import path from 'node:path';
+
 import { defineConfig } from '@playwright/test';
-import path from 'path';
 
 export const baseConfig = defineConfig({
   testDir: path.resolve(__dirname, '../tests'),
@@ -80,6 +82,7 @@ export const baseConfig = defineConfig({
 ```typescript
 // playwright/config/local.config.ts - Local environment
 import { defineConfig } from '@playwright/test';
+
 import { baseConfig } from './base.config';
 
 export default defineConfig({
@@ -101,6 +104,7 @@ export default defineConfig({
 ```typescript
 // playwright/config/staging.config.ts - Staging environment
 import { defineConfig } from '@playwright/test';
+
 import { baseConfig } from './base.config';
 
 export default defineConfig({
@@ -116,6 +120,7 @@ export default defineConfig({
 ```typescript
 // playwright/config/production.config.ts - Production environment
 import { defineConfig } from '@playwright/test';
+
 import { baseConfig } from './base.config';
 
 export default defineConfig({
@@ -200,7 +205,7 @@ export { expect } from '@playwright/test';
 
 ```typescript
 // Usage in tests - Standard timeouts (implicit)
-import { test, expect } from '@playwright/test';
+import { expect, test } from '@playwright/test';
 
 test('user can log in', async ({ page }) => {
   await page.goto('/login'); // Uses 30s navigation timeout
@@ -213,7 +218,7 @@ test('user can log in', async ({ page }) => {
 
 ```typescript
 // Usage in tests - Per-test timeout override
-import { test, expect } from '../support/fixtures/timeout-fixture';
+import { expect, test } from '../support/fixtures/timeout-fixture';
 
 test('slow data processing operation', async ({ page, extendedTimeout }) => {
   // Override default 60s timeout for this slow test
@@ -258,8 +263,9 @@ test('API returns quickly', async ({ page }) => {
 
 ```typescript
 // playwright.config.ts - Artifact configuration
+import path from 'node:path';
+
 import { defineConfig } from '@playwright/test';
-import path from 'path';
 
 export default defineConfig({
   // Output directory for test artifacts
@@ -302,9 +308,10 @@ export default defineConfig({
 
 ```typescript
 // playwright/support/fixtures/artifact-fixture.ts - Custom artifact capture
+import fs from 'node:fs';
+import path from 'node:path';
+
 import { test as base } from '@playwright/test';
-import fs from 'fs';
-import path from 'path';
 
 export const test = base.extend({
   // Auto-capture console logs on failure
@@ -343,7 +350,7 @@ jobs:
       - uses: actions/checkout@v4
       - uses: actions/setup-node@v4
         with:
-          node-version-file: '.nvmrc'
+          node-version-file: .nvmrc
 
       - name: Install dependencies
         run: npm ci
@@ -381,6 +388,7 @@ test('capture screenshot on specific error', async ({ page }) => {
 
   try {
     await page.click('[data-testid="submit-payment"]');
+
     await expect(page.getByText('Order Confirmed')).toBeVisible();
   } catch (error) {
     // Capture custom screenshot with timestamp
@@ -411,8 +419,9 @@ test('capture screenshot on specific error', async ({ page }) => {
 
 ```typescript
 // playwright.config.ts - Parallelization settings
+import os from 'node:os';
+
 import { defineConfig } from '@playwright/test';
-import os from 'os';
 
 export default defineConfig({
   // Run tests in parallel within single file
@@ -433,8 +442,8 @@ export default defineConfig({
   shard:
     process.env.SHARD_INDEX && process.env.SHARD_TOTAL
       ? {
-          current: parseInt(process.env.SHARD_INDEX, 10),
-          total: parseInt(process.env.SHARD_TOTAL, 10),
+          current: Number.parseInt(process.env.SHARD_INDEX, 10),
+          total: Number.parseInt(process.env.SHARD_TOTAL, 10),
         }
       : undefined,
 });
@@ -456,7 +465,7 @@ jobs:
       - uses: actions/checkout@v4
       - uses: actions/setup-node@v4
         with:
-          node-version-file: '.nvmrc'
+          node-version-file: .nvmrc
 
       - name: Install dependencies
         run: npm ci
@@ -482,6 +491,7 @@ jobs:
 ```typescript
 // playwright/config/serial.config.ts - Serial execution for flaky tests
 import { defineConfig } from '@playwright/test';
+
 import { baseConfig } from './base.config';
 
 export default defineConfig({
@@ -584,8 +594,9 @@ export default defineConfig({
 
 ```typescript
 // playwright.config.ts - Authenticated vs. unauthenticated projects
+import path from 'node:path';
+
 import { defineConfig } from '@playwright/test';
-import path from 'path';
 
 export default defineConfig({
   projects: [
@@ -616,8 +627,9 @@ export default defineConfig({
 
 ```typescript
 // playwright/support/global-setup.ts - Setup project for auth
+import path from 'node:path';
+
 import { chromium, FullConfig } from '@playwright/test';
-import path from 'path';
 
 async function globalSetup(config: FullConfig) {
   const browser = await chromium.launch();
@@ -658,7 +670,7 @@ npx playwright test
 
 ```typescript
 // Usage: Project-specific test
-import { test, expect } from '@playwright/test';
+import { expect, test } from '@playwright/test';
 
 test('mobile navigation works', async ({ page, isMobile }) => {
   await page.goto('/');
@@ -669,6 +681,7 @@ test('mobile navigation works', async ({ page, isMobile }) => {
   }
 
   await page.click('[data-testid="products-link"]');
+
   await expect(page).toHaveURL(/.*products/);
 });
 ```
