@@ -1,3 +1,17 @@
+# [1.1.0](https://github.com/thevarun/HealthCompanion/compare/v1.0.0...v1.1.0) (2025-12-03)
+
+
+### Bug Fixes
+
+* chat messages reaching server but frontend not displaying response ([685c66d](https://github.com/thevarun/HealthCompanion/commit/685c66d45bb354fddb2f3f669314467744349906))
+* packages updated to fix dev server ([99d36b1](https://github.com/thevarun/HealthCompanion/commit/99d36b198a912c7840c6156df6db89baa5ab6e93))
+
+
+### Features
+
+* complete story 1.2 Dify integration with Middleware for Auth ([6776223](https://github.com/thevarun/HealthCompanion/commit/67762238f16aaee70961cef2ac6b48ba0274523b))
+* story 1.3 integration with assistent ui is now dev-done ([1bf3995](https://github.com/thevarun/HealthCompanion/commit/1bf3995fa2503297d314766427b5aa8a81f47c42))
+
 # 1.0.0 (2025-12-02)
 
 
