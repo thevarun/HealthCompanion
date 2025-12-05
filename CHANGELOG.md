@@ -1,3 +1,10 @@
+## [1.4.3](https://github.com/thevarun/HealthCompanion/compare/v1.4.2...v1.4.3) (2025-12-05)
+
+
+### Bug Fixes
+
+* added needed env variables for github ci tests ([5f207a7](https://github.com/thevarun/HealthCompanion/commit/5f207a7f606a2dad97f03c3068d3ffb715cb46a4))
+
 ## [1.4.2](https://github.com/thevarun/HealthCompanion/compare/v1.4.1...v1.4.2) (2025-12-05)
 
 
