@@ -1,3 +1,10 @@
+## [1.4.4](https://github.com/thevarun/HealthCompanion/compare/v1.4.3...v1.4.4) (2025-12-05)
+
+
+### Bug Fixes
+
+* failing copywrite test fixed ([208a852](https://github.com/thevarun/HealthCompanion/commit/208a85253f7874a6e3d1dd93c9ed938480dc60eb))
+
 ## [1.4.3](https://github.com/thevarun/HealthCompanion/compare/v1.4.2...v1.4.3) (2025-12-05)
 
 
