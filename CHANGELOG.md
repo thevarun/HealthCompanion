@@ -1,3 +1,10 @@
+## [1.4.5](https://github.com/thevarun/HealthCompanion/compare/v1.4.4...v1.4.5) (2025-12-08)
+
+
+### Bug Fixes
+
+* align Storybook packages to 8.6.14 and pin webpack to 5.101.2 ([f743223](https://github.com/thevarun/HealthCompanion/commit/f7432239a95e7178dcc7643b948e9fc22ecb79a9)), closes [#19966985284](https://github.com/thevarun/HealthCompanion/issues/19966985284)
+
 ## [1.4.4](https://github.com/thevarun/HealthCompanion/compare/v1.4.3...v1.4.4) (2025-12-05)
 
 
