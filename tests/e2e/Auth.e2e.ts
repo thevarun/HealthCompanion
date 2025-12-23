@@ -1,13 +1,18 @@
-import { expect, test } from '@playwright/test';
+import { expect, test as base } from '@playwright/test';
+
+import { AuthPage } from './helpers/AuthPage';
 
 /**
  * E2E tests for Supabase authentication flows
  * Covers sign-up, sign-in, sign-out, and protected route access
  */
 
-// Test user credentials
+// Test user credentials (for one-off sign-up tests)
 const TEST_EMAIL = `test-${Date.now()}@example.com`;
 const TEST_PASSWORD = 'TestPassword123!';
+
+// Use base test for unauthenticated scenarios
+const test = base;
 
 test.describe('Authentication', () => {
   test.describe('Sign Up Flow', () => {
@@ -72,15 +77,18 @@ test.describe('Authentication', () => {
       await expect(page.getByText(/invalid/i)).toBeVisible();
     });
 
-    // Note: Full sign-in test requires verified email which needs manual setup
-    test.skip('should sign in with valid credentials and redirect to dashboard', async ({ page }) => {
-      // This test requires a verified user account
-      // Skip in automated runs, use for manual testing
-      await page.goto('/sign-in');
+    test('should sign in with valid credentials and redirect to dashboard', async ({ page }) => {
+      // Use test account created in setup.ts (email verification disabled in test env)
+      const authPage = new AuthPage(page);
 
-      await page.fill('input[name="email"]', 'verified@example.com');
-      await page.fill('input[name="password"]', 'VerifiedPassword123!');
-      await page.click('button[type="submit"]');
+      const testEmail = process.env.TEST_USER_EMAIL;
+      const testPassword = process.env.TEST_USER_PASSWORD;
+
+      if (!testEmail || !testPassword) {
+        throw new Error('Test credentials not found. Ensure setup.ts ran successfully.');
+      }
+
+      await authPage.signIn(testEmail, testPassword);
 
       // Should redirect to dashboard after successful sign in
       await expect(page).toHaveURL(/\/dashboard/);
@@ -102,16 +110,18 @@ test.describe('Authentication', () => {
       await expect(page).toHaveURL(/\/sign-in/);
     });
 
-    // Note: Session persistence test requires authenticated session
-    test.skip('should maintain session across page refreshes', async ({ page }) => {
-      // This test requires a verified, signed-in user
-      // Skip in automated runs
+    test('should maintain session across page refreshes', async ({ page }) => {
+      const authPage = new AuthPage(page);
 
-      // Sign in first (implementation depends on having verified credentials)
-      await page.goto('/sign-in');
-      await page.fill('input[name="email"]', 'verified@example.com');
-      await page.fill('input[name="password"]', 'VerifiedPassword123!');
-      await page.click('button[type="submit"]');
+      const testEmail = process.env.TEST_USER_EMAIL;
+      const testPassword = process.env.TEST_USER_PASSWORD;
+
+      if (!testEmail || !testPassword) {
+        throw new Error('Test credentials not found.');
+      }
+
+      // Sign in first
+      await authPage.signIn(testEmail, testPassword);
 
       await expect(page).toHaveURL(/\/dashboard/);
 
@@ -124,18 +134,26 @@ test.describe('Authentication', () => {
   });
 
   test.describe('Sign Out Flow', () => {
-    test.skip('should sign out user and redirect to home page', async ({ page }) => {
-      // This test requires a signed-in user
-      // Skip in automated runs
+    test('should sign out user and redirect to home page', async ({ page }) => {
+      const authPage = new AuthPage(page);
 
-      // Assume user is signed in and on dashboard
-      await page.goto('/dashboard');
+      const testEmail = process.env.TEST_USER_EMAIL;
+      const testPassword = process.env.TEST_USER_PASSWORD;
 
-      // Click sign out button (implementation depends on UI structure)
-      await page.click('button:has-text("Sign Out")');
+      if (!testEmail || !testPassword) {
+        throw new Error('Test credentials not found.');
+      }
 
-      // Should redirect to home or sign-in page
-      await expect(page).toHaveURL(/\/(sign-in)?$/);
+      // Sign in first to establish session
+      await authPage.signIn(testEmail, testPassword);
+
+      await expect(page).toHaveURL(/\/dashboard/);
+
+      // Navigate to sign-out page
+      await authPage.goToSignOut();
+
+      // Should redirect to home or sign-in page after sign out
+      await expect(page).toHaveURL(/\/(en|fr)?\/?$/);
 
       // Attempting to access dashboard should redirect back to sign-in
       await page.goto('/dashboard');

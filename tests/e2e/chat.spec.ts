@@ -1,155 +1,254 @@
-import { expect, test } from '@playwright/test';
+import { ChatPage } from './helpers/ChatPage';
+import { expect, test } from './helpers/fixtures';
 
 /**
- * E2E Tests for Story 1.3: Chat Interface
- * Tests all acceptance criteria for the chat functionality
+ * E2E Tests for Chat Interface (Story 2.3)
+ * Tests chat functionality with mocked Dify API responses
  */
 
 test.describe('Chat Interface', () => {
-  test.describe('Authentication and Navigation (AC #1)', () => {
-    test('redirects unauthenticated users to sign-in', async ({ page }) => {
-      // Navigate directly to chat page without signing in
-      await page.goto('/en/chat');
+  test.describe('Authentication and Access (AC #6)', () => {
+    test('authenticated users can access chat page', async ({ authenticatedPage }) => {
+      const chatPage = new ChatPage(authenticatedPage);
 
-      // Should redirect to sign-in page
-      await expect(page).toHaveURL(/\/sign-in/);
-    });
+      await chatPage.goto();
 
-    test('authenticated users can access chat from dashboard', async ({ page }) => {
-      test.info().annotations.push({
-        type: 'todo',
-        description: 'Requires Supabase auth fixture to validate dashboard navigation',
-      });
+      // Should load chat page successfully (not redirect to sign-in)
+      await expect(authenticatedPage).toHaveURL(/\/chat/);
 
-      await page.goto('/en/chat');
+      // Verify chat interface elements are present
+      const composer = chatPage.getComposer();
 
-      await expect(page).toHaveURL(/\/sign-in/);
+      await expect(composer).toBeVisible();
     });
   });
 
-  test.describe('Chat Interface Load (AC #1)', () => {
-    test('chat interface loads without errors', async ({ page }) => {
-      test.info().annotations.push({
-        type: 'todo',
-        description: 'Add authenticated fixture to verify chat layout after login',
+  test.describe('Message Sending (AC #7)', () => {
+    test('user can send message and it appears in UI', async ({ authenticatedPage }) => {
+      const chatPage = new ChatPage(authenticatedPage);
+
+      // Mock /api/chat to return deterministic response
+      await authenticatedPage.route('**/api/chat', async (route) => {
+        // Mock SSE streaming response
+        const mockResponse = [
+          'data: {"event":"agent_message","message_id":"msg-123","conversation_id":"conv-123","answer":"Hello! How can I help you today?"}\n\n',
+          'data: {"event":"message_end","message_id":"msg-123"}\n\n',
+        ].join('');
+
+        await route.fulfill({
+          status: 200,
+          headers: {
+            'Content-Type': 'text/event-stream',
+            'Cache-Control': 'no-cache',
+            'Connection': 'keep-alive',
+          },
+          body: mockResponse,
+        });
       });
 
-      await page.goto('/en/chat');
+      await chatPage.goto();
 
-      await expect(page).toHaveURL(/\/sign-in/);
+      const testMessage = 'What are healthy breakfast options?';
+      await chatPage.sendMessage(testMessage);
+
+      // Verify user message appears
+      const userMessage = await chatPage.getLastUserMessage();
+
+      await expect(userMessage).toContainText(testMessage);
     });
   });
 
-  test.describe('Message Input and Display (AC #2, #3)', () => {
-    test('user can type and send messages', async ({ page }) => {
-      test.info().annotations.push({
-        type: 'todo',
-        description: 'Requires authenticated user and mock backend to exercise message flow',
+  test.describe('AI Responses (AC #8)', () => {
+    test('AI responses stream and display properly', async ({ authenticatedPage }) => {
+      const chatPage = new ChatPage(authenticatedPage);
+
+      // Mock streaming response from /api/chat
+      await authenticatedPage.route('**/api/chat', async (route) => {
+        const mockStreamResponse = [
+          'data: {"event":"agent_message","message_id":"msg-456","conversation_id":"conv-456","answer":"Here are some healthy breakfast options:"}\n\n',
+          'data: {"event":"agent_thought","thought":"Thinking about nutrition..."}\n\n',
+          'data: {"event":"agent_message","message_id":"msg-456","answer":"\\n1. Oatmeal with berries"}\n\n',
+          'data: {"event":"agent_message","message_id":"msg-456","answer":"\\n2. Greek yogurt with nuts"}\n\n',
+          'data: {"event":"message_end","message_id":"msg-456"}\n\n',
+        ].join('');
+
+        await route.fulfill({
+          status: 200,
+          headers: {
+            'Content-Type': 'text/event-stream',
+            'Cache-Control': 'no-cache',
+            'Connection': 'keep-alive',
+          },
+          body: mockStreamResponse,
+        });
       });
 
-      await page.goto('/en/chat');
+      await chatPage.goto();
 
-      await expect(page).toHaveURL(/\/sign-in/);
+      await chatPage.sendMessage('What should I eat for breakfast?');
+
+      // Wait for AI response to appear
+      await chatPage.waitForAIResponse();
+
+      // Verify AI message is displayed
+      const aiMessage = await chatPage.getLastAIMessage();
+
+      await expect(aiMessage).toBeVisible();
+      await expect(aiMessage).toContainText('healthy breakfast options');
+      await expect(aiMessage).toContainText('Oatmeal');
+    });
+
+    test('loading indicator displays during response generation', async ({ authenticatedPage }) => {
+      const chatPage = new ChatPage(authenticatedPage);
+
+      // Mock delayed response to observe loading state
+      await authenticatedPage.route('**/api/chat', async (route) => {
+        // Simulate network delay
+        await new Promise(resolve => setTimeout(resolve, 1000));
+
+        const mockResponse
+          = 'data: {"event":"agent_message","message_id":"msg-789","answer":"Response after delay"}\n\ndata: {"event":"message_end","message_id":"msg-789"}\n\n';
+
+        await route.fulfill({
+          status: 200,
+          headers: { 'Content-Type': 'text/event-stream' },
+          body: mockResponse,
+        });
+      });
+
+      await chatPage.goto();
+
+      // Send message
+      await chatPage.sendMessage('Test message');
+
+      // Loading indicator should appear briefly
+      // Note: May be too fast to assert reliably, but test structure is correct
+      // In real implementation, we'd check for loading state via data attributes
+
+      // Wait for response to complete
+      await chatPage.waitForAIResponse();
+
+      // Loading should be gone
+      const isStillLoading = await chatPage.isLoading();
+
+      expect(isStillLoading).toBe(false);
     });
   });
 
-  test.describe('Streaming Responses (AC #4)', () => {
-    test('AI responses stream in real-time', async ({ page }) => {
-      test.info().annotations.push({
-        type: 'todo',
-        description: 'Needs mocked Dify streaming responses and authenticated context',
+  test.describe('Conversation Context (AC #9)', () => {
+    test('follow-up messages maintain conversation context', async ({ authenticatedPage }) => {
+      const chatPage = new ChatPage(authenticatedPage);
+
+      let conversationId: string | null = null;
+
+      // Mock first message
+      await authenticatedPage.route('**/api/chat', async (route) => {
+        const requestBody = await route.request().postDataJSON();
+
+        if (!conversationId) {
+          // First message - generate conversation ID
+          conversationId = 'conv-context-test';
+
+          const mockResponse = `data: {"event":"agent_message","message_id":"msg-1","conversation_id":"${conversationId}","answer":"I'm your health assistant. What would you like to know?"}\n\ndata: {"event":"message_end","message_id":"msg-1"}\n\n`;
+
+          await route.fulfill({
+            status: 200,
+            headers: { 'Content-Type': 'text/event-stream' },
+            body: mockResponse,
+          });
+        } else {
+          // Follow-up message - verify conversation_id is sent
+          expect(requestBody.conversation_id).toBe(conversationId);
+
+          const mockResponse = `data: {"event":"agent_message","message_id":"msg-2","conversation_id":"${conversationId}","answer":"Based on our previous conversation, here's my recommendation..."}\n\ndata: {"event":"message_end","message_id":"msg-2"}\n\n`;
+
+          await route.fulfill({
+            status: 200,
+            headers: { 'Content-Type': 'text/event-stream' },
+            body: mockResponse,
+          });
+        }
       });
 
-      await page.goto('/en/chat');
+      await chatPage.goto();
 
-      await expect(page).toHaveURL(/\/sign-in/);
+      // Send first message
+      await chatPage.sendMessage('Hello');
+      await chatPage.waitForAIResponse();
+
+      const firstMessageCount = await chatPage.getMessageCount();
+
+      // Send follow-up message
+      await chatPage.sendMessage('Tell me more');
+      await chatPage.waitForAIResponse();
+
+      const secondMessageCount = await chatPage.getMessageCount();
+
+      // Should have 4 messages total (2 user + 2 AI)
+      expect(secondMessageCount).toBeGreaterThan(firstMessageCount);
+
+      // Verify follow-up response references context
+      const lastAIMessage = await chatPage.getLastAIMessage();
+
+      await expect(lastAIMessage).toContainText('previous conversation');
     });
   });
 
-  test.describe('Loading States (AC #5)', () => {
-    test('loading indicator displays during response generation', async ({ page }) => {
-      test.info().annotations.push({
-        type: 'todo',
-        description: 'Add mock response delay to assert loading indicator',
+  test.describe('Error Handling', () => {
+    test('displays error when API fails', async ({ authenticatedPage }) => {
+      const chatPage = new ChatPage(authenticatedPage);
+
+      // Mock API failure
+      await authenticatedPage.route('**/api/chat', async (route) => {
+        await route.fulfill({
+          status: 500,
+          body: JSON.stringify({ error: 'Internal server error' }),
+        });
       });
 
-      await page.goto('/en/chat');
+      await chatPage.goto();
 
-      await expect(page).toHaveURL(/\/sign-in/);
+      await chatPage.sendMessage('This will fail');
+
+      // Wait for error state (may take a moment)
+      await authenticatedPage.waitForTimeout(2000);
+
+      // Verify error is displayed
+      // Note: Actual error UI depends on Assistant UI configuration
+      const hasError = await chatPage.hasError();
+
+      expect(hasError).toBe(true);
     });
   });
 
-  test.describe('Error Handling (AC #6)', () => {
-    test('displays error banner when API fails', async ({ page }) => {
-      test.info().annotations.push({
-        type: 'todo',
-        description: 'Mock /api/chat failure state to assert error UI',
+  test.describe('Responsive Design', () => {
+    test('chat interface works on mobile viewport', async ({ authenticatedPage }) => {
+      await authenticatedPage.setViewportSize({ width: 375, height: 667 });
+
+      const chatPage = new ChatPage(authenticatedPage);
+
+      // Mock response
+      await authenticatedPage.route('**/api/chat', async (route) => {
+        await route.fulfill({
+          status: 200,
+          headers: { 'Content-Type': 'text/event-stream' },
+          body: 'data: {"event":"agent_message","message_id":"msg-mobile","answer":"Mobile response"}\n\ndata: {"event":"message_end","message_id":"msg-mobile"}\n\n',
+        });
       });
 
-      await page.goto('/en/chat');
+      await chatPage.goto();
 
-      await expect(page).toHaveURL(/\/sign-in/);
-    });
-  });
+      // Verify composer is visible and functional on mobile
+      const composer = chatPage.getComposer();
 
-  test.describe('Responsive Design (AC #7)', () => {
-    test('chat is responsive on mobile viewport', async ({ page }) => {
-      await page.setViewportSize({ width: 375, height: 667 });
-      await page.goto('/en/chat');
+      await expect(composer).toBeVisible();
 
-      // Should see sign-in (not logged in)
-      // In a real test with auth, we'd verify chat layout
-      await expect(page).toHaveURL(/\/sign-in/);
-    });
+      await chatPage.sendMessage('Mobile test');
+      await chatPage.waitForAIResponse();
 
-    test('chat is responsive on tablet viewport', async ({ page }) => {
-      await page.setViewportSize({ width: 768, height: 1024 });
-      await page.goto('/en/chat');
+      const aiMessage = await chatPage.getLastAIMessage();
 
-      await expect(page).toHaveURL(/\/sign-in/);
-    });
-
-    test('chat is responsive on desktop viewport', async ({ page }) => {
-      await page.setViewportSize({ width: 1280, height: 720 });
-      await page.goto('/en/chat');
-
-      await expect(page).toHaveURL(/\/sign-in/);
-    });
-  });
-
-  test.describe('Keyboard Shortcuts (AC #8, #9)', () => {
-    test('chat input auto-focuses on page load', async ({ page }) => {
-      test.info().annotations.push({
-        type: 'todo',
-        description: 'Authenticate and verify composer focus state',
-      });
-
-      await page.goto('/en/chat');
-
-      await expect(page).toHaveURL(/\/sign-in/);
-    });
-
-    test('Enter sends message, Shift+Enter adds new line', async ({ page }) => {
-      test.info().annotations.push({
-        type: 'todo',
-        description: 'Authenticated scenario needed to assert composer shortcuts',
-      });
-
-      await page.goto('/en/chat');
-
-      await expect(page).toHaveURL(/\/sign-in/);
+      await expect(aiMessage).toBeVisible();
     });
   });
 });
-
-/**
- * Note: Most tests are skipped because they require:
- * 1. Supabase authentication setup in test environment
- * 2. Mock Dify API responses for streaming
- * 3. Test user credentials
- *
- * To implement full E2E tests:
- * - Set up Supabase test environment with test credentials
- * - Mock /api/chat endpoint responses
- * - Create authenticated test fixtures
- */

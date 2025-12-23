@@ -32,7 +32,16 @@ export default defineConfig({
     url: baseURL,
     timeout: 2 * 60 * 1000,
     reuseExistingServer: !process.env.CI,
+    // Disable Sentry Spotlight/Sidecar overlays during E2E to keep DOM stable
+    env: {
+      SPOTLIGHT_DISABLED: '1',
+      PLAYWRIGHT: 'true',
+    },
   },
+
+  // Ensure test user is created/cleaned even when running a single spec
+  globalSetup: './tests/e2e/setup.ts',
+  globalTeardown: './tests/e2e/teardown.ts',
 
   // Shared settings for all the projects below. See https://playwright.dev/docs/api/class-testoptions.
   use: {
@@ -48,25 +57,15 @@ export default defineConfig({
   },
 
   projects: [
-    // `setup` and `teardown` are used to run code before and after all E2E tests.
-    // These functions can be used to configure Clerk for testing purposes. For example, bypassing bot detection.
-    // In the `setup` file, you can create an account in `Test mode`.
-    // For each test, an organization can be created within this account to ensure total isolation.
-    // After all tests are completed, the `teardown` file can delete the account and all associated organizations.
-    // You can find the `setup` and `teardown` files at: https://nextjs-boilerplate.com/pro-saas-starter-kit
-    { name: 'setup', testMatch: /.*\.setup\.ts/, teardown: 'teardown' },
-    { name: 'teardown', testMatch: /.*\.teardown\.ts/ },
     {
       name: 'chromium',
       use: { ...devices['Desktop Chrome'] },
-      dependencies: ['setup'],
     },
     ...(process.env.CI
       ? [
           {
             name: 'firefox',
             use: { ...devices['Desktop Firefox'] },
-            dependencies: ['setup'],
           },
         ]
       : []),
