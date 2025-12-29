@@ -307,6 +307,8 @@ Add placeholder navigation items (Pricing, Feature 1, Feature 2), implement all 
 - ✅ AC #8: Production build succeeds, no console errors
 - ✅ AC #9: DevTools excluded from production bundle (verify with bundle analyzer)
 - ✅ AC #10: Accessibility: Keyboard navigation works, ARIA labels correct, focus management proper
+- ✅ AC #11: AssistantIf component used for conditional rendering (loading states, empty states, message-based conditions)
+- ✅ AC #12: Typing indicator displays during assistant response streaming
 
 #### Technical Notes
 
@@ -317,11 +319,18 @@ Add placeholder navigation items (Pricing, Feature 1, Feature 2), implement all 
 - Dark mode: Verify all new components use theme-aware classes
 - Run bundle analyzer: `ANALYZE=true npm run build`
 - Manual QA: Test on Chrome, Safari, Firefox (desktop + mobile)
+- **AssistantIf Implementation:**
+  - Replace ThreadPrimitive.Empty with `<AssistantIf hasMessages={false}>`
+  - Add `<AssistantIf running>` for typing indicator during streaming
+  - Use `<AssistantIf lastMessage={{ role: "assistant" }}>` for conditional UI elements
+  - Reference: https://www.assistant-ui.com/docs/ui/Thread#assistantif
+  - File: `src/components/chat/Thread.tsx` (update message rendering logic)
 
 #### Definition of Done
 
 - [ ] Navigation items added and functional
 - [ ] All empty/loading/error states implemented
+- [ ] AssistantIf component integrated (typing indicator, conditional rendering)
 - [ ] Dark mode verified working
 - [ ] Responsive design QA passed (all devices)
 - [ ] Manual QA checklist completed
