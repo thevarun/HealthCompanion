@@ -50,7 +50,7 @@ development_status:
   epic-3: backlog
   3-1-database-schema-thread-crud-apis: done
   3-2-thread-persistence-on-first-message: done
-  3-3-assistant-ui-integration-spike: review
+  3-3-assistant-ui-integration-spike: done
   3-4-threadlist-sidebar-component: backlog
   3-5-thread-component-integration: backlog
   3-6-navigation-polish: backlog

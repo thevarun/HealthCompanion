@@ -1,6 +1,6 @@
 # Story 3.3: Assistant UI Integration Spike
 
-Status: review
+Status: done
 
 ## Story
 
