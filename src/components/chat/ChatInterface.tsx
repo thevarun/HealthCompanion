@@ -1,12 +1,56 @@
 'use client';
 
-import type { ChatModelAdapter } from '@assistant-ui/react';
+import type { ChatModelAdapter, ThreadHistoryAdapter } from '@assistant-ui/react';
 import { AssistantRuntimeProvider, useLocalRuntime } from '@assistant-ui/react';
-import { useEffect, useState } from 'react';
+import { DevToolsModal } from '@assistant-ui/react-devtools';
+import { useEffect, useMemo, useState } from 'react';
 
 import type { DifyStreamEvent } from '@/libs/dify/types';
 
 import { Thread } from './Thread';
+
+/**
+ * Helper to create a full ThreadMessage for user messages
+ * Based on internal fromThreadMessageLike conversion
+ */
+function createUserMessage(id: string, text: string, createdAt: Date) {
+  return {
+    id,
+    role: 'user' as const,
+    content: [{ type: 'text' as const, text }],
+    createdAt,
+    attachments: [],
+    metadata: {
+      custom: {},
+    },
+  };
+}
+
+/**
+ * Helper to create a full ThreadMessage for assistant messages
+ * Based on internal fromThreadMessageLike conversion
+ */
+function createAssistantMessage(id: string, text: string, createdAt: Date) {
+  return {
+    id,
+    role: 'assistant' as const,
+    content: [{ type: 'text' as const, text }],
+    createdAt,
+    status: { type: 'complete' as const, reason: 'stop' as const },
+    metadata: {
+      unstable_state: null,
+      unstable_annotations: [],
+      unstable_data: [],
+      custom: {},
+      steps: [],
+    },
+  };
+}
+
+type ChatInterfaceProps = {
+  threadId?: string;
+  conversationId?: string | null;
+};
 
 /**
  * ChatInterface Component
@@ -24,26 +68,36 @@ import { Thread } from './Thread';
  * - AC #8: Chat input field auto-focuses on page load
  * - AC #9: Enter key sends message, Shift+Enter adds new line
  */
-export function ChatInterface() {
-  const [conversationId, setConversationId] = useState<string | null>(null);
+export function ChatInterface({ threadId, conversationId: initialConversationId }: ChatInterfaceProps = {}) {
+  const [conversationId, setConversationId] = useState<string | null>(initialConversationId ?? null);
   const [error, setError] = useState<string | null>(null);
 
-  // Persist conversation ID to localStorage for thread history continuity
+  // Persist conversation ID to localStorage for thread history continuity (legacy support)
   useEffect(() => {
+    // If we have a threadId prop, use the prop conversationId instead of localStorage
+    if (threadId) {
+      return;
+    }
+
     const stored = localStorage.getItem('dify_conversation_id');
     if (stored) {
       setConversationId(stored);
     }
-  }, []);
+  }, [threadId]);
 
   useEffect(() => {
+    // Don't persist to localStorage if we're in thread mode
+    if (threadId) {
+      return;
+    }
+
     if (conversationId) {
       localStorage.setItem('dify_conversation_id', conversationId);
     }
-  }, [conversationId]);
+  }, [conversationId, threadId]);
 
-  // Create custom adapter for Dify backend
-  const adapter: ChatModelAdapter = {
+  // Create custom adapter for Dify backend (stable reference)
+  const adapter = useMemo<ChatModelAdapter>(() => ({
     async *run({ messages, abortSignal }) {
       try {
         setError(null);
@@ -128,6 +182,24 @@ export function ChatInterface() {
                 if (event.conversation_id) {
                   setConversationId(event.conversation_id);
                 }
+
+                // AC #4: Update thread metadata after message completes
+                if (threadId) {
+                  // AC #4.1: Extract last message preview (first 100 chars)
+                  const preview = fullText.slice(0, 100);
+
+                  // AC #4.2, #4.3, #4.5: PATCH thread metadata, handle errors gracefully
+                  fetch(`/api/threads/${threadId}`, {
+                    method: 'PATCH',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                      lastMessagePreview: preview,
+                    }),
+                  }).catch((err) => {
+                    // AC #4.5: Log error, don't block chat
+                    console.error('Failed to update thread metadata:', err);
+                  });
+                }
               } else if (event.event === 'error') {
                 throw new Error(event.message || 'Unknown error from Dify');
               }
@@ -143,56 +215,150 @@ export function ChatInterface() {
         throw err;
       }
     },
-  };
+  }), [conversationId, threadId]); // Stable adapter reference
 
-  // Create runtime with custom adapter
-  const runtime = useLocalRuntime(adapter);
+  // Thread history adapter - loads existing messages from Dify
+  const historyAdapter = useMemo<ThreadHistoryAdapter | undefined>(() => {
+    // Only load history for existing threads with conversation ID
+    if (!threadId || !conversationId) {
+      return undefined;
+    }
+
+    return {
+      async load() {
+        try {
+          const response = await fetch(`/api/chat/messages?conversation_id=${conversationId}`);
+          if (!response.ok) {
+            console.error('[ChatInterface] Failed to load message history, status:', response.status);
+            return { headId: null, messages: [] };
+          }
+
+          const data = await response.json();
+
+          // Validate response structure
+          if (!data.data || !Array.isArray(data.data)) {
+            console.error('Invalid message history response:', data);
+            return { headId: null, messages: [] };
+          }
+
+          // Transform Dify messages to ExportedMessageRepository format
+          // This is the internal format expected by repository.import()
+          const exportedMessages: Array<{
+            message: any;
+            parentId: string | null;
+          }> = [];
+
+          let lastMessageId: string | null = null;
+
+          for (const msg of data.data) {
+            // Skip invalid messages
+            if (!msg || !msg.id) {
+              console.warn('[ChatInterface] Skipping invalid message:', msg);
+              continue;
+            }
+
+            // Add user message if query exists
+            if (msg.query) {
+              const userMessageId = `${msg.id}-user`;
+              const createdAt = msg.created_at ? new Date(msg.created_at * 1000) : new Date();
+              const userMessage = createUserMessage(userMessageId, msg.query, createdAt);
+
+              exportedMessages.push({
+                message: userMessage,
+                parentId: lastMessageId,
+              });
+              lastMessageId = userMessageId;
+            }
+
+            // Add assistant message only if answer exists and is non-empty
+            if (msg.answer) {
+              const assistantMessageId = `${msg.id}-assistant`;
+              const createdAt = msg.created_at ? new Date(msg.created_at * 1000) : new Date();
+              const assistantMessage = createAssistantMessage(assistantMessageId, msg.answer, createdAt);
+
+              exportedMessages.push({
+                message: assistantMessage,
+                parentId: lastMessageId,
+              });
+              lastMessageId = assistantMessageId;
+            }
+          }
+
+          // Return in ExportedMessageRepository format
+          return {
+            headId: lastMessageId,
+            messages: exportedMessages,
+          };
+        } catch (error) {
+          console.error('[ChatInterface] Failed to load conversation history:', error);
+          return { headId: null, messages: [] }; // Don't block UI on error
+        }
+      },
+
+      // Optional: append method for persisting new messages
+      // Currently messages are persisted via the /api/chat endpoint's thread persistence
+      async append() {
+        // No-op: messages are already persisted via the chat endpoint
+      },
+    };
+  }, [threadId, conversationId]);
+
+  // Create runtime with custom adapter and history
+  const runtime = useLocalRuntime(adapter, {
+    adapters: historyAdapter ? { history: historyAdapter } : undefined,
+  });
 
   return (
     <AssistantRuntimeProvider runtime={runtime}>
-      {/* AC #6: Error banner */}
-      {error && (
-        <div className="flex items-center gap-2 border-b border-destructive/50 bg-destructive/15 px-4 py-3 text-destructive">
-          <svg
-            xmlns="http://www.w3.org/2000/svg"
-            className="size-5 shrink-0"
-            viewBox="0 0 20 20"
-            fill="currentColor"
-          >
-            <path
-              fillRule="evenodd"
-              d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7 4a1 1 0 11-2 0 1 1 0 012 0zm-1-9a1 1 0 00-1 1v4a1 1 0 102 0V6a1 1 0 00-1-1z"
-              clipRule="evenodd"
-            />
-          </svg>
-          <div>
-            <p className="font-medium">Error</p>
-            <p className="text-sm">{error}</p>
-          </div>
-          <button
-            type="button"
-            onClick={() => setError(null)}
-            className="ml-auto"
-            aria-label="Dismiss error"
-          >
+      {/* Wrapper with min-h-0 for proper flex overflow scrolling */}
+      <div className="flex min-h-0 flex-1 flex-col overflow-hidden">
+        {/* AC #6.2, #6.3: DevTools only in development */}
+        {process.env.NODE_ENV === 'development' && <DevToolsModal />}
+
+        {/* AC #6: Error banner */}
+        {error && (
+          <div className="flex shrink-0 items-center gap-2 border-b border-destructive/50 bg-destructive/15 px-4 py-3 text-destructive">
             <svg
               xmlns="http://www.w3.org/2000/svg"
-              className="size-5"
+              className="size-5 shrink-0"
               viewBox="0 0 20 20"
               fill="currentColor"
             >
               <path
                 fillRule="evenodd"
-                d="M4.293 4.293a1 1 0 011.414 0L10 8.586l4.293-4.293a1 1 0 111.414 1.414L11.414 10l4.293 4.293a1 1 0 01-1.414 1.414L10 11.414l-4.293 4.293a1 1 0 01-1.414-1.414L8.586 10 4.293 5.707a1 1 0 010-1.414z"
+                d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7 4a1 1 0 11-2 0 1 1 0 012 0zm-1-9a1 1 0 00-1 1v4a1 1 0 102 0V6a1 1 0 00-1-1z"
                 clipRule="evenodd"
               />
             </svg>
-          </button>
-        </div>
-      )}
+            <div>
+              <p className="font-medium">Error</p>
+              <p className="text-sm">{error}</p>
+            </div>
+            <button
+              type="button"
+              onClick={() => setError(null)}
+              className="ml-auto"
+              aria-label="Dismiss error"
+            >
+              <svg
+                xmlns="http://www.w3.org/2000/svg"
+                className="size-5"
+                viewBox="0 0 20 20"
+                fill="currentColor"
+              >
+                <path
+                  fillRule="evenodd"
+                  d="M4.293 4.293a1 1 0 011.414 0L10 8.586l4.293-4.293a1 1 0 111.414 1.414L11.414 10l4.293 4.293a1 1 0 01-1.414 1.414L10 11.414l-4.293 4.293a1 1 0 01-1.414-1.414L8.586 10 4.293 5.707a1 1 0 010-1.414z"
+                  clipRule="evenodd"
+                />
+              </svg>
+            </button>
+          </div>
+        )}
 
-      {/* AC #1, #2, #3, #4, #5, #7, #8, #9: Thread component with all chat functionality */}
-      <Thread className="flex-1" />
+        {/* AC #1, #2, #3, #4, #5, #7, #8, #9: Thread component with all chat functionality */}
+        <Thread className="min-h-0 flex-1" />
+      </div>
     </AssistantRuntimeProvider>
   );
 }

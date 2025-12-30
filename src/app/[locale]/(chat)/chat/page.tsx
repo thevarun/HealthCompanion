@@ -21,6 +21,7 @@ export async function generateMetadata(props: { params: Promise<{ locale: string
 export default async function ChatPage() {
   const t = await getTranslations('ChatPage');
 
+  // AC #7.1, #7.2: Root /chat route shows empty state when no threadId
   return (
     <div className="space-y-6">
       <TitleBar
@@ -30,6 +31,7 @@ export default async function ChatPage() {
 
       <div className="h-[calc(100vh-12rem)]">
         <AppShell sidebar={<ThreadListSidebar />}>
+          {/* Show ChatInterface with composer (ThreadPrimitive.Empty handles empty state) */}
           <ChatInterface />
         </AppShell>
       </div>

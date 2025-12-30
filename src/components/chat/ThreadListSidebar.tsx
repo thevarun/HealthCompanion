@@ -32,9 +32,11 @@ export function ThreadListSidebar({ onNavigate }: { onNavigate?: () => void }) {
   const [collapsed, setCollapsed] = useState(false);
   const router = useRouter();
 
-  const fetchThreads = async () => {
+  const fetchThreads = async (showLoading = true) => {
     try {
-      setLoading(true);
+      if (showLoading) {
+        setLoading(true);
+      }
       setError(null);
 
       const response = await fetch('/api/threads');
@@ -48,7 +50,23 @@ export function ThreadListSidebar({ onNavigate }: { onNavigate?: () => void }) {
       const activeThreads = (data.threads || []).filter(
         (thread: Thread) => !thread.archived,
       );
-      setThreads(activeThreads);
+
+      // Optimized comparison - only update if data changed (prevents jarring refresh)
+      setThreads((prev) => {
+        // Quick check: same length?
+        if (prev.length !== activeThreads.length) {
+          return activeThreads;
+        }
+
+        // Check if any thread changed (by ID and updated_at timestamp)
+        const hasChanges = activeThreads.some((newThread: Thread, i: number) =>
+          prev[i]?.id !== newThread.id
+          || prev[i]?.updated_at !== newThread.updated_at
+          || prev[i]?.title !== newThread.title,
+        );
+
+        return hasChanges ? activeThreads : prev; // No changes = keep prev (no re-render)
+      });
     } catch {
       setError('Failed to load threads');
     } finally {
@@ -59,6 +77,33 @@ export function ThreadListSidebar({ onNavigate }: { onNavigate?: () => void }) {
   // AC #2: Fetch threads on mount
   useEffect(() => {
     fetchThreads();
+  }, []);
+
+  // Refetch when window regains focus (no polling to avoid flickering)
+  useEffect(() => {
+    const handleFocus = () => {
+      fetchThreads(false); // false = don't show loading skeleton
+    };
+    window.addEventListener('focus', handleFocus);
+
+    return () => {
+      window.removeEventListener('focus', handleFocus);
+    };
+  }, []);
+
+  // Listen for thread updates (title edits) and update optimistically
+  useEffect(() => {
+    const handleThreadUpdate = (event: Event) => {
+      const customEvent = event as CustomEvent<{ threadId: string; title: string }>;
+      setThreads(prev => prev.map(thread =>
+        thread.id === customEvent.detail.threadId
+          ? { ...thread, title: customEvent.detail.title }
+          : thread,
+      ));
+    };
+
+    window.addEventListener('thread-updated', handleThreadUpdate);
+    return () => window.removeEventListener('thread-updated', handleThreadUpdate);
   }, []);
 
   // AC #3: Navigate to new thread (empty composer)

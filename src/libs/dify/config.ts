@@ -9,6 +9,7 @@ export const DIFY_CONFIG = {
   apiUrl: Env.DIFY_API_URL,
   endpoints: {
     chatMessages: '/chat-messages',
+    messages: '/messages', // Conversation history endpoint
   },
   defaultTimeout: 30000, // 30 seconds
 } as const;

@@ -64,3 +64,26 @@ export type DifyError = {
   code: string;
   message: string;
 };
+
+// Message history types
+export type DifyMessage = {
+  id: string;
+  conversation_id: string;
+  inputs: Record<string, any>;
+  query: string; // User message
+  answer: string; // Assistant message
+  message_files: any[];
+  feedback: any | null;
+  retriever_resources: any[];
+  created_at: number;
+  agent_thoughts: any[];
+  message_metadata: any;
+  status: string;
+  error: string | null;
+};
+
+export type DifyMessagesResponse = {
+  limit: number;
+  has_more: boolean;
+  data: DifyMessage[];
+};

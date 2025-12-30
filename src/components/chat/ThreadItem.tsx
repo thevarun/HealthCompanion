@@ -28,7 +28,8 @@ export function ThreadItem({ thread, onArchive, onNavigate, collapsed }: ThreadI
   const pathname = usePathname();
 
   // AC #5: Determine if this thread is active (matches current URL)
-  const isActive = pathname === `/chat/${thread.id}`;
+  // Use endsWith to handle locale prefix (pathname = "/en/chat/abc", not "/chat/abc")
+  const isActive = pathname.endsWith(`/chat/${thread.id}`);
 
   // AC #4: Navigate to thread on click
   const handleClick = () => {

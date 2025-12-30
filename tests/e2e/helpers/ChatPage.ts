@@ -116,4 +116,97 @@ export class ChatPage {
   async sendWithEnter() {
     await this.page.keyboard.press('Enter');
   }
+
+  // Thread navigation
+  async gotoThread(threadId: string) {
+    await this.page.goto(`/chat/${threadId}`);
+  }
+
+  // History/scroll methods for regression testing
+
+  /**
+   * Get all rendered messages (both user and assistant)
+   * Used to verify history loaded correctly
+   */
+  async getHistoricalMessages() {
+    return this.page.locator('[data-message-role]').all();
+  }
+
+  /**
+   * Get the role attributes of all messages in order
+   * Used to verify correct user/assistant alternation
+   */
+  async getMessageRoles(): Promise<(string | null)[]> {
+    const messages = await this.page.locator('[data-message-role]').all();
+    return Promise.all(messages.map(m => m.getAttribute('data-message-role')));
+  }
+
+  /**
+   * Check if the thread viewport is scrollable
+   * Returns true if content exceeds visible area
+   */
+  async isViewportScrollable(): Promise<boolean> {
+    return this.page.evaluate(() => {
+      const viewport = document.querySelector('[class*="overflow-y-auto"]');
+      return viewport ? viewport.scrollHeight > viewport.clientHeight : false;
+    });
+  }
+
+  /**
+   * Get scroll metrics from the thread viewport
+   */
+  async getViewportScrollMetrics(): Promise<{ scrollHeight: number; clientHeight: number; scrollTop: number } | null> {
+    return this.page.evaluate(() => {
+      const viewport = document.querySelector('[class*="overflow-y-auto"]');
+      if (!viewport) {
+        return null;
+      }
+      return {
+        scrollHeight: viewport.scrollHeight,
+        clientHeight: viewport.clientHeight,
+        scrollTop: viewport.scrollTop,
+      };
+    });
+  }
+
+  /**
+   * Scroll the thread viewport to the top
+   */
+  async scrollToTop() {
+    await this.page.evaluate(() => {
+      const viewport = document.querySelector('[class*="overflow-y-auto"]');
+      if (viewport) {
+        viewport.scrollTop = 0;
+      }
+    });
+  }
+
+  /**
+   * Scroll the thread viewport to the bottom
+   */
+  async scrollToBottom() {
+    await this.page.evaluate(() => {
+      const viewport = document.querySelector('[class*="overflow-y-auto"]');
+      if (viewport) {
+        viewport.scrollTop = viewport.scrollHeight;
+      }
+    });
+  }
+
+  /**
+   * Check if the page body has vertical overflow
+   * Should be false - chat should scroll internally, not the page
+   */
+  async hasPageOverflow(): Promise<boolean> {
+    return this.page.evaluate(() => {
+      return document.body.scrollHeight > document.body.clientHeight;
+    });
+  }
+
+  /**
+   * Get the "Jump to latest" scroll button
+   */
+  getScrollToBottomButton() {
+    return this.page.getByText('Jump to latest');
+  }
 }

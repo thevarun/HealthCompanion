@@ -183,3 +183,78 @@ export const MockResponses = {
   error: () =>
     createErrorEvent(500, 'INTERNAL_ERROR', 'Internal server error'),
 };
+
+/**
+ * Message history types for /api/chat/messages endpoint
+ */
+type DifyHistoryMessage = {
+  id: string;
+  query: string;
+  answer: string;
+  created_at: number;
+};
+
+/**
+ * Creates a history response for /api/chat/messages endpoint
+ * This mirrors the format returned by Dify's getMessages API
+ */
+export function createHistoryResponse(
+  messages: Array<{
+    id: string;
+    query: string;
+    answer: string;
+    createdAt?: number;
+  }>,
+): { data: DifyHistoryMessage[] } {
+  return {
+    data: messages.map(m => ({
+      id: m.id,
+      query: m.query,
+      answer: m.answer,
+      created_at: m.createdAt || Math.floor(Date.now() / 1000),
+    })),
+  };
+}
+
+/**
+ * Pre-configured mock history responses for chat history tests
+ */
+export const MockHistoryResponses = {
+  /**
+   * Single message exchange
+   */
+  singleMessage: () =>
+    createHistoryResponse([
+      { id: 'msg-1', query: 'Hello', answer: 'Hi there! How can I help you today?' },
+    ]),
+
+  /**
+   * Multi-turn conversation
+   */
+  conversation: () =>
+    createHistoryResponse([
+      { id: 'msg-1', query: 'What is healthy eating?', answer: 'Healthy eating involves consuming a balanced diet rich in nutrients.' },
+      { id: 'msg-2', query: 'Give me examples', answer: 'Some examples include fruits, vegetables, whole grains, and lean proteins.' },
+      { id: 'msg-3', query: 'What about snacks?', answer: 'Healthy snacks include nuts, yogurt, and fresh fruit.' },
+    ]),
+
+  /**
+   * Long conversation (for scroll testing)
+   */
+  longConversation: () =>
+    createHistoryResponse([
+      { id: 'msg-1', query: 'Hello', answer: 'Hello! I\'m your AI health coach. How can I help you today?' },
+      { id: 'msg-2', query: 'Tell me about nutrition', answer: 'Nutrition is the science of how food affects your body. It includes studying nutrients like carbohydrates, proteins, fats, vitamins, and minerals.' },
+      { id: 'msg-3', query: 'What should I eat for breakfast?', answer: 'A healthy breakfast should include protein, fiber, and healthy fats. Options include oatmeal with berries, eggs with whole grain toast, or Greek yogurt with nuts.' },
+      { id: 'msg-4', query: 'And for lunch?', answer: 'For lunch, aim for a balance of lean protein, complex carbs, and vegetables. A salad with grilled chicken, quinoa bowls, or whole grain sandwiches are great choices.' },
+      { id: 'msg-5', query: 'What about dinner?', answer: 'Dinner should be lighter but still nutritious. Consider grilled fish with roasted vegetables, stir-fries with tofu, or lean meat with a side salad.' },
+      { id: 'msg-6', query: 'Any snack recommendations?', answer: 'Healthy snacks include fresh fruit, raw vegetables with hummus, nuts and seeds, or a small portion of cheese with whole grain crackers.' },
+      { id: 'msg-7', query: 'How much water should I drink?', answer: 'The general recommendation is 8 glasses (64 ounces) per day, but this can vary based on activity level, climate, and individual needs.' },
+      { id: 'msg-8', query: 'Thanks for all the tips!', answer: 'You\'re welcome! Remember, consistency is key. Small, sustainable changes lead to lasting health improvements. Feel free to ask if you have more questions!' },
+    ]),
+
+  /**
+   * Empty history (new thread)
+   */
+  empty: () => ({ data: [] }),
+};

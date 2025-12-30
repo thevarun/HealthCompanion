@@ -79,6 +79,7 @@ export function AppShell({ sidebar, children }: AppShellProps) {
             : 'w-16'
         }`}
       >
+        {/* AC #11.5: Collapse control in sidebar header only */}
         <div className="flex h-full flex-col overflow-hidden">
           {sidebarOpen
             ? (
@@ -92,28 +93,18 @@ export function AppShell({ sidebar, children }: AppShellProps) {
                     onClick={() => setSidebarOpen(true)}
                     aria-label="Expand sidebar"
                     className="shrink-0"
+                    title="Expand sidebar"
                   >
                     <Menu className="size-5" />
                   </Button>
                 </div>
               )}
         </div>
-
-        {/* Collapse toggle button (desktop only) */}
-        {sidebarOpen && (
-          <Button
-            variant="ghost"
-            size="sm"
-            onClick={() => setSidebarOpen(false)}
-            className="m-2 text-xs"
-          >
-            Collapse
-          </Button>
-        )}
       </aside>
 
       {/* AC #1: Main content area */}
-      <div className="flex min-w-0 flex-1 flex-col rounded-lg border bg-card shadow-sm">
+      {/* min-h-0 required for flex child to allow overflow scrolling */}
+      <div className="flex min-h-0 min-w-0 flex-1 flex-col overflow-hidden rounded-lg border bg-card shadow-sm">
         {children}
       </div>
     </div>

@@ -1,5 +1,5 @@
 import { DIFY_CONFIG } from './config';
-import type { DifyChatRequest, DifyChatResponse, DifyError } from './types';
+import type { DifyChatRequest, DifyChatResponse, DifyError, DifyMessagesResponse } from './types';
 
 /**
  * Dify API Client
@@ -78,6 +78,46 @@ export class DifyClient {
 
       throw error;
     }
+  }
+
+  /**
+   * Get conversation message history
+   * @param conversationId The conversation ID
+   * @param userId The user ID (must match the user who created the conversation)
+   * @param options Optional query parameters (limit, firstId)
+   * @returns Message history response
+   */
+  async getMessages(
+    conversationId: string,
+    userId: string,
+    options?: {
+      limit?: number;
+      firstId?: string;
+    },
+  ): Promise<DifyMessagesResponse> {
+    const url = new URL(`${this.baseUrl}${DIFY_CONFIG.endpoints.messages}`);
+    url.searchParams.set('conversation_id', conversationId);
+    url.searchParams.set('user', userId); // Must match user who created the conversation
+
+    if (options?.limit) {
+      url.searchParams.set('limit', String(options.limit));
+    }
+    if (options?.firstId) {
+      url.searchParams.set('first_id', options.firstId);
+    }
+
+    const response = await fetch(url.toString(), {
+      method: 'GET',
+      headers: {
+        Authorization: `Bearer ${this.apiKey}`,
+      },
+    });
+
+    if (!response.ok) {
+      throw await this.handleError(response);
+    }
+
+    return await response.json() as DifyMessagesResponse;
   }
 
   /**
