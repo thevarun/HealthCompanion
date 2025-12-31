@@ -44,41 +44,44 @@ export function ThreadItem({ thread, onArchive, onNavigate, collapsed }: ThreadI
   };
 
   return (
-    <div
-      onClick={handleClick}
-      onKeyDown={(e) => {
-        if (e.key === 'Enter' || e.key === ' ') {
-          e.preventDefault();
-          handleClick();
-        }
-      }}
-      role="button"
-      tabIndex={0}
-      className={`group flex w-full cursor-pointer items-center justify-between rounded-xl border bg-background p-3 text-left shadow-sm transition hover:-translate-y-px hover:shadow-md ${
-        isActive ? 'border-primary/40 ring-1 ring-primary/30' : 'border-transparent'
-      } ${collapsed ? 'justify-center p-2' : ''}`}
-    >
-      <div className="flex min-w-0 flex-col">
-        <span className={`truncate text-sm font-semibold ${collapsed ? 'sr-only' : ''}`}>
-          {thread.title || 'New Conversation'}
-        </span>
-        <span className={`truncate text-xs text-muted-foreground ${collapsed ? 'sr-only' : ''}`}>
-          {thread.last_message_preview || 'Start a conversation'}
-        </span>
-      </div>
+    <li>
       <div
-        className={`flex items-center gap-1 opacity-0 transition group-hover:opacity-100 ${collapsed ? 'hidden' : ''}`}
+        onClick={handleClick}
+        onKeyDown={(e) => {
+          if (e.key === 'Enter' || e.key === ' ') {
+            e.preventDefault();
+            handleClick();
+          }
+        }}
+        role="button"
+        tabIndex={0}
+        aria-label={`Open conversation: ${thread.title || 'New Conversation'}`}
+        className={`group flex w-full cursor-pointer items-center justify-between rounded-xl border bg-background p-3 text-left shadow-sm transition hover:-translate-y-px hover:shadow-md ${
+          isActive ? 'border-primary/40 ring-1 ring-primary/30' : 'border-transparent'
+        } ${collapsed ? 'justify-center p-2' : ''}`}
       >
-        <Button
-          variant="ghost"
-          size="icon"
-          onClick={handleArchive}
-          className="size-6 rounded p-1 text-muted-foreground hover:bg-muted"
-          aria-label="Archive thread"
+        <div className="flex min-w-0 flex-col">
+          <span className={`truncate text-sm font-semibold ${collapsed ? 'sr-only' : ''}`}>
+            {thread.title || 'New Conversation'}
+          </span>
+          <span className={`truncate text-xs text-muted-foreground ${collapsed ? 'sr-only' : ''}`}>
+            {thread.last_message_preview || 'Start a conversation'}
+          </span>
+        </div>
+        <div
+          className={`flex items-center gap-1 opacity-0 transition group-hover:opacity-100 ${collapsed ? 'hidden' : ''}`}
         >
-          <Archive className="size-4" />
-        </Button>
+          <Button
+            variant="ghost"
+            size="icon"
+            onClick={handleArchive}
+            className="size-6 rounded p-1 text-muted-foreground hover:bg-muted"
+            aria-label="Archive thread"
+          >
+            <Archive className="size-4" />
+          </Button>
+        </div>
       </div>
-    </div>
+    </li>
   );
 }

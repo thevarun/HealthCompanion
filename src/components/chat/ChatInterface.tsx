@@ -5,6 +5,7 @@ import { AssistantRuntimeProvider, useLocalRuntime } from '@assistant-ui/react';
 import { DevToolsModal } from '@assistant-ui/react-devtools';
 import { useEffect, useMemo, useState } from 'react';
 
+import { useToast } from '@/hooks/use-toast';
 import type { DifyStreamEvent } from '@/libs/dify/types';
 
 import { Thread } from './Thread';
@@ -71,6 +72,7 @@ type ChatInterfaceProps = {
 export function ChatInterface({ threadId, conversationId: initialConversationId }: ChatInterfaceProps = {}) {
   const [conversationId, setConversationId] = useState<string | null>(initialConversationId ?? null);
   const [error, setError] = useState<string | null>(null);
+  const { toast } = useToast();
 
   // Persist conversation ID to localStorage for thread history continuity (legacy support)
   useEffect(() => {
@@ -181,6 +183,12 @@ export function ChatInterface({ threadId, conversationId: initialConversationId 
                 // Store conversation ID for next message
                 if (event.conversation_id) {
                   setConversationId(event.conversation_id);
+
+                  // AC #13: Dispatch event for new thread creation (when no threadId prop)
+                  // This triggers sidebar refetch to show the new thread
+                  if (!threadId) {
+                    window.dispatchEvent(new CustomEvent('thread-created'));
+                  }
                 }
 
                 // AC #4: Update thread metadata after message completes
@@ -198,6 +206,11 @@ export function ChatInterface({ threadId, conversationId: initialConversationId 
                   }).catch((err) => {
                     // AC #4.5: Log error, don't block chat
                     console.error('Failed to update thread metadata:', err);
+                    // AC #4: Show toast for metadata update failure
+                    toast({
+                      title: 'Warning',
+                      description: 'Failed to update thread preview. Your message was still sent.',
+                    });
                   });
                 }
               } else if (event.event === 'error') {
@@ -215,7 +228,7 @@ export function ChatInterface({ threadId, conversationId: initialConversationId 
         throw err;
       }
     },
-  }), [conversationId, threadId]); // Stable adapter reference
+  }), [conversationId, threadId, toast]); // Stable adapter reference
 
   // Thread history adapter - loads existing messages from Dify
   const historyAdapter = useMemo<ThreadHistoryAdapter | undefined>(() => {

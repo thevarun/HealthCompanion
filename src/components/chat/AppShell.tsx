@@ -52,14 +52,14 @@ export function AppShell({ sidebar, children }: AppShellProps) {
 
   return (
     <div className="flex h-full gap-4">
-      {/* AC #8: Mobile Sheet Overlay */}
-      <div className="md:hidden">
+      {/* AC #8: Mobile Sheet Overlay - AC #14: Fixed mobile header spacing */}
+      <div className="lg:hidden">
         <Sheet open={mobileSheetOpen} onOpenChange={setMobileSheetOpen}>
           <SheetTrigger asChild>
             <Button
               variant="outline"
               size="icon"
-              className="fixed left-4 top-4 z-40"
+              className="fixed left-3 top-3 z-40 shadow-md"
               aria-label="Open sidebar"
             >
               <Menu className="size-5" />
@@ -102,9 +102,9 @@ export function AppShell({ sidebar, children }: AppShellProps) {
         </div>
       </aside>
 
-      {/* AC #1: Main content area */}
+      {/* AC #1: Main content area - AC #15: Smooth transition when sidebar collapses */}
       {/* min-h-0 required for flex child to allow overflow scrolling */}
-      <div className="flex min-h-0 min-w-0 flex-1 flex-col overflow-hidden rounded-lg border bg-card shadow-sm">
+      <div className="flex min-h-0 min-w-0 flex-1 flex-col overflow-hidden rounded-lg border bg-card shadow-sm transition-all duration-300">
         {children}
       </div>
     </div>

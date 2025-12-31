@@ -5,10 +5,11 @@ import { useRouter } from 'next/navigation';
 import { useEffect, useState } from 'react';
 
 import { Button } from '@/components/ui/button';
+import { useToast } from '@/hooks/use-toast';
 import type { Thread } from '@/libs/supabase/threads';
 import { cn } from '@/utils/Helpers';
 
-import { EmptyThreadState } from './EmptyThreadState';
+import { ErrorThreadState } from './ErrorThreadState';
 import { ThreadItem } from './ThreadItem';
 import { ThreadListSkeleton } from './ThreadListSkeleton';
 
@@ -31,6 +32,7 @@ export function ThreadListSidebar({ onNavigate }: { onNavigate?: () => void }) {
   const [error, setError] = useState<string | null>(null);
   const [collapsed, setCollapsed] = useState(false);
   const router = useRouter();
+  const { toast } = useToast();
 
   const fetchThreads = async (showLoading = true) => {
     try {
@@ -69,6 +71,12 @@ export function ThreadListSidebar({ onNavigate }: { onNavigate?: () => void }) {
       });
     } catch {
       setError('Failed to load threads');
+      // AC #4: Show toast for fetch error
+      toast({
+        title: 'Error',
+        description: 'Failed to load threads. Please try again.',
+        variant: 'destructive',
+      });
     } finally {
       setLoading(false);
     }
@@ -106,6 +114,19 @@ export function ThreadListSidebar({ onNavigate }: { onNavigate?: () => void }) {
     return () => window.removeEventListener('thread-updated', handleThreadUpdate);
   }, []);
 
+  // AC #13: Listen for new thread creation and refetch to show in sidebar
+  useEffect(() => {
+    const handleThreadCreated = () => {
+      // Refetch threads after a short delay to allow server to complete thread creation
+      setTimeout(() => {
+        fetchThreads(false); // false = don't show loading skeleton
+      }, 500);
+    };
+
+    window.addEventListener('thread-created', handleThreadCreated);
+    return () => window.removeEventListener('thread-created', handleThreadCreated);
+  }, []);
+
   // AC #3: Navigate to new thread (empty composer)
   const handleNewThread = () => {
     router.push('/chat');
@@ -129,7 +150,11 @@ export function ThreadListSidebar({ onNavigate }: { onNavigate?: () => void }) {
       // Success - thread is already removed from UI
     } catch {
       // Rollback on error
-      setError('Failed to archive thread');
+      toast({
+        title: 'Error',
+        description: 'Failed to archive thread. Please try again.',
+        variant: 'destructive',
+      });
       await fetchThreads(); // Refetch to restore state
     }
   };
@@ -180,11 +205,12 @@ export function ThreadListSidebar({ onNavigate }: { onNavigate?: () => void }) {
         </Button>
       </div>
 
-      {/* Error message */}
-      {error && (
-        <div className="mx-4 mt-3 rounded-md border border-amber-200 bg-amber-50 px-3 py-2 text-xs text-amber-800">
-          {error}
-        </div>
+      {/* AC #4: Error state with retry */}
+      {error && !loading && (
+        <ErrorThreadState
+          error={error}
+          onRetry={() => fetchThreads()}
+        />
       )}
 
       {/* Thread list */}
@@ -192,22 +218,28 @@ export function ThreadListSidebar({ onNavigate }: { onNavigate?: () => void }) {
         {/* AC #10: Loading state */}
         {loading && <ThreadListSkeleton />}
 
-        {/* AC #11: Empty state */}
-        {!loading && threads.length === 0 && <EmptyThreadState />}
-
-        {/* AC #2: Thread list */}
-        {!loading && threads.length > 0 && (
-          <div className="space-y-1 px-2 pt-2">
-            {threads.map(thread => (
-              <ThreadItem
-                key={thread.id}
-                thread={thread}
-                onArchive={handleArchive}
-                onNavigate={onNavigate}
-                collapsed={collapsed}
-              />
-            ))}
+        {/* AC #11, AC #3: Minimal sidebar empty state (full empty state in main area) */}
+        {!loading && !error && threads.length === 0 && (
+          <div className="px-3 py-6 text-center">
+            <p className="text-xs text-muted-foreground">No conversations yet</p>
           </div>
+        )}
+
+        {/* AC #2, AC #10: Thread list with ARIA roles */}
+        {!loading && threads.length > 0 && (
+          <nav aria-label="Conversation threads">
+            <ul className="space-y-1 px-2 pt-2">
+              {threads.map(thread => (
+                <ThreadItem
+                  key={thread.id}
+                  thread={thread}
+                  onArchive={handleArchive}
+                  onNavigate={onNavigate}
+                  collapsed={collapsed}
+                />
+              ))}
+            </ul>
+          </nav>
         )}
       </div>
     </aside>

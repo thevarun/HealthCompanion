@@ -220,7 +220,7 @@ describe('ThreadListSidebar', () => {
 
       await waitFor(() => {
         expect(
-          screen.getByText(/start your first conversation/i),
+          screen.getByText(/no conversations yet/i),
         ).toBeInTheDocument();
       });
     });

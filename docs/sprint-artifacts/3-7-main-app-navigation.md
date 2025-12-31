@@ -1,6 +1,6 @@
 # Story 3.7: Main App Navigation
 
-Status: review
+Status: done
 
 ## Story
 

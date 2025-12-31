@@ -15,7 +15,7 @@ export function EmptyThreadState() {
       </div>
       <h3 className="text-base font-semibold">Start your first conversation</h3>
       <p className="mt-2 max-w-xs text-sm text-muted-foreground">
-        Click the "New Thread" button above to begin chatting with your AI health coach.
+        Click the "New Thread" button in the sidebar to begin chatting with your AI health coach.
       </p>
     </div>
   );

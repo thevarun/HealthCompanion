@@ -1,6 +1,6 @@
 # Story 3.5: thread-component-integration
 
-Status: review
+Status: done
 
 ## Story
 

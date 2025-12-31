@@ -3,6 +3,8 @@
 import { useRouter } from 'next/navigation';
 import { useEffect, useRef, useState } from 'react';
 
+import { useToast } from '@/hooks/use-toast';
+
 type ThreadTitleEditorProps = {
   threadId: string;
   initialTitle: string | null;
@@ -21,6 +23,7 @@ export function ThreadTitleEditor({ threadId, initialTitle }: ThreadTitleEditorP
   const [isSaving, setIsSaving] = useState(false);
   const inputRef = useRef<HTMLInputElement>(null);
   const router = useRouter();
+  const { toast } = useToast();
 
   // AC #5.3: Auto-focus and select all text when entering edit mode
   useEffect(() => {
@@ -68,6 +71,12 @@ export function ThreadTitleEditor({ threadId, initialTitle }: ThreadTitleEditorP
       // AC #5.7: Revert to original title if PATCH fails
       setTitle(initialTitle || '');
       console.error('Failed to update thread title:', error);
+      // AC #4: Show toast for update failure
+      toast({
+        title: 'Error',
+        description: 'Failed to update thread title. Please try again.',
+        variant: 'destructive',
+      });
     } finally {
       setIsSaving(false);
     }

@@ -8,6 +8,7 @@ import {
 import type { FC } from 'react';
 
 import { EmptyThreadState } from './EmptyThreadState';
+import { TypingIndicator } from './TypingIndicator';
 
 /**
  * Thread Component
@@ -62,6 +63,11 @@ export const Thread: FC<ThreadProps> = ({ className }) => {
           }}
         />
 
+        {/* AC #12: Typing indicator during streaming */}
+        <ThreadPrimitive.If running>
+          <TypingIndicator />
+        </ThreadPrimitive.If>
+
         <ThreadPrimitive.ViewportFooter className="sticky bottom-0 left-0 mt-auto flex w-full justify-center border-t bg-gradient-to-t from-background/95 via-background/85 to-transparent pb-3 pt-4 backdrop-blur">
           <div className="flex w-full max-w-[var(--thread-max-width)] flex-col items-center gap-2 px-1">
             <ComposerPrimitive.Root className="flex w-full items-end gap-2 rounded-2xl border bg-background px-3 py-2 shadow-sm ring-1 ring-muted/60 transition focus-within:ring-primary/60 hover:-translate-y-px hover:shadow-md sm:px-4 sm:py-3">
@@ -76,9 +82,12 @@ export const Thread: FC<ThreadProps> = ({ className }) => {
               </ComposerPrimitive.Send>
             </ComposerPrimitive.Root>
 
-            <ThreadPrimitive.ScrollToBottom className="inline-flex items-center gap-1 rounded-full border bg-background/90 px-3 py-1.5 text-xs font-medium text-muted-foreground shadow-sm transition hover:-translate-y-px hover:shadow-md">
-              Jump to latest
-            </ThreadPrimitive.ScrollToBottom>
+            {/* AC #16: Hide when at bottom or empty, show only when scrolled up */}
+            <ThreadPrimitive.If empty={false}>
+              <ThreadPrimitive.ScrollToBottom className="inline-flex items-center gap-1 rounded-full border bg-background/90 px-3 py-1.5 text-xs font-medium text-muted-foreground shadow-sm transition hover:-translate-y-px hover:shadow-md disabled:pointer-events-none disabled:opacity-0">
+                Jump to latest
+              </ThreadPrimitive.ScrollToBottom>
+            </ThreadPrimitive.If>
           </div>
         </ThreadPrimitive.ViewportFooter>
       </ThreadPrimitive.Viewport>

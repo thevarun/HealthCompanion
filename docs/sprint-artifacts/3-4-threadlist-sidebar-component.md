@@ -1,6 +1,6 @@
 # Story 3.4: threadlist-sidebar-component
 
-Status: review
+Status: done
 
 ## Story
 

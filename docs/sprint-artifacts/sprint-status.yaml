@@ -47,12 +47,12 @@ development_status:
   2-3-e2e-test-suite: done
   2-4-documentation-overhaul: done
   epic-2-retrospective: optional
-  epic-3: backlog
+  epic-3: done
   3-1-database-schema-thread-crud-apis: done
   3-2-thread-persistence-on-first-message: done
   3-3-assistant-ui-integration-spike: done
-  3-4-threadlist-sidebar-component: review
-  3-5-thread-component-integration: review
-  3-6-navigation-polish: in-progress
-  3-7-main-app-navigation: review
+  3-4-threadlist-sidebar-component: done
+  3-5-thread-component-integration: done
+  3-6-navigation-polish: done
+  3-7-main-app-navigation: done
   epic-3-retrospective: optional
