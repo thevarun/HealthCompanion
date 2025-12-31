@@ -10,7 +10,7 @@ so that **I can easily navigate between features and always understand where I a
 
 ## Acceptance Criteria
 
-1. AC #1: Main navigation sidebar visible on all logged-in routes (/dashboard, /chat, /onboarding, and future routes)
+1. AC #1: Main navigation sidebar visible on all logged-in routes (/dashboard, /chat, and future routes)
 2. AC #2: Navigation items include: Home/Dashboard, Chat/Threads, Pricing, Settings, Profile (with appropriate icons)
 3. AC #3: Active state management - current route highlighted in navigation
 4. AC #4: Placeholder items (Pricing, Settings, Profile) show "Coming Soon" toast on click

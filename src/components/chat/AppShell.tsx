@@ -37,10 +37,10 @@ export function AppShell({ sidebar, children }: AppShellProps) {
     localStorage.setItem('sidebar_collapsed', sidebarOpen ? 'true' : 'false');
   }, [sidebarOpen]);
 
-  // AC #9: Keyboard shortcut (Cmd/Ctrl+B) toggles sidebar
+  // AC #9: Keyboard shortcut (Cmd/Ctrl+Shift+B) toggles chat sidebar
   useEffect(() => {
     const handleKeyboard = (e: KeyboardEvent) => {
-      if ((e.metaKey || e.ctrlKey) && e.key === 'b') {
+      if ((e.metaKey || e.ctrlKey) && e.shiftKey && e.key === 'B') {
         e.preventDefault();
         setSidebarOpen(prev => !prev);
       }
@@ -53,7 +53,7 @@ export function AppShell({ sidebar, children }: AppShellProps) {
   return (
     <div className="flex h-full gap-4">
       {/* AC #8: Mobile Sheet Overlay */}
-      <div className="lg:hidden">
+      <div className="md:hidden">
         <Sheet open={mobileSheetOpen} onOpenChange={setMobileSheetOpen}>
           <SheetTrigger asChild>
             <Button

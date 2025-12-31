@@ -49,13 +49,13 @@ export default async function ThreadPage(props: {
   }
 
   return (
-    <div className="space-y-6">
+    <div className="flex h-full flex-col gap-6">
       <TitleBar
         title={t('title')}
         description={t('description')}
       />
 
-      <div className="h-[calc(100vh-12rem)]">
+      <div className="min-h-0 flex-1">
         <AppShell sidebar={<ThreadListSidebar />}>
           <ThreadView thread={thread} />
         </AppShell>
