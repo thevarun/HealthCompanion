@@ -1,0 +1,68 @@
+# Agent Creator Registry
+# Tracks successfully created agents for reuse and learning
+
+# Last updated by skill
+last_updated: null
+
+# Successfully created agents that can be reused
+# Format:
+#   - name: agent-name (without tmp- prefix)
+#     purpose: what task/specialization it handles
+#     tools: [list of tools]
+#     model: model used
+#     created: date
+#     project_context: what project/task it was created for
+#     success_notes: what worked well
+#     template_file: path to the template if saved
+#     reuse_count: how many times this pattern was reused
+
+successful_agents: []
+
+# Example entry:
+# successful_agents:
+#   - name: api-integrator
+#     purpose: External API integration with error handling
+#     tools: [Read, Write, WebFetch, Bash]
+#     model: sonnet
+#     created: "2025-01-15"
+#     project_context: "HealthCompanion - Dify API integration"
+#     success_notes: "Good at handling SSE streams, rate limiting"
+#     template_file: ".claude/skills/agent-creator/templates/api-integrator.md"
+#     reuse_count: 0
+
+# Agent patterns that didn't work well (learn from failures)
+failed_patterns: []
+
+# Example:
+# failed_patterns:
+#   - name: mega-agent
+#     reason: "Too many responsibilities, confused context"
+#     lesson: "Keep agents single-purpose"
+
+# Preferred combinations for common tasks
+recommended_combinations:
+  feature_development:
+    description: "Full feature implementation workflow"
+    agents: [explorer, implementer, tester, reviewer]
+
+  bug_fix:
+    description: "Debug and fix issues"
+    agents: [debugger, tester]
+
+  refactor:
+    description: "Code restructuring"
+    agents: [explorer, refactorer, tester]
+
+  api_integration:
+    description: "External service integration"
+    agents: [api-integrator, tester]
+
+  documentation:
+    description: "Documentation updates"
+    agents: [explorer, documenter]
+
+# Statistics
+stats:
+  total_agents_created: 0
+  total_reuses: 0
+  most_reused_agent: null
