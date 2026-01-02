@@ -1,3 +1,11 @@
+# [1.7.0](https://github.com/thevarun/HealthCompanion/compare/v1.6.1...v1.7.0) (2026-01-02)
+
+
+### Features
+
+* chat ux polish story 3.6 ([6ed7173](https://github.com/thevarun/HealthCompanion/commit/6ed7173d6967377b6cd2b1b441fc19c393b01ff9))
+* new agent creator claude skill ([b874817](https://github.com/thevarun/HealthCompanion/commit/b874817b3cf60c3502190fec56920f430fb68ad6))
+
 ## [1.6.1](https://github.com/thevarun/HealthCompanion/compare/v1.6.0...v1.6.1) (2025-12-31)
 
 
