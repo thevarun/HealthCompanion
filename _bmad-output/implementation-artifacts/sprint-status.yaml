@@ -51,7 +51,7 @@ development_status:
   1-7-standardize-api-error-handling: done
   1-8-validate-cicd-pipeline: done
   1-9-validate-existing-features-post-upgrade: done
-  epic-1-retrospective: optional
+  epic-1-retrospective: done
 
   # Epic 2: Complete Authentication Experience
   epic-2: backlog
