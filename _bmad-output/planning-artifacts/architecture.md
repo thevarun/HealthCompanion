@@ -19,6 +19,8 @@ date: '2026-01-05'
 lastStep: 8
 status: 'complete'
 completedAt: '2026-01-06'
+lastUpdated: '2026-01-12'
+updateNotes: 'Added SEO Foundations (FR-SEO-001-004), Go-To-Market Infrastructure (FR-GTM-001-006), Auth UI/UX Tier 1 (FR-AUTH-005), and Founder Analytics Dashboard (FR-ANALYTICS-004) sections to align with updated PRD'
 ---
 
 # Architecture Decision Document
@@ -257,6 +259,22 @@ Must preserve these production-proven patterns:
   - No tight coupling between features
   - Navigation configurable (remove links cleanly)
 - **AI Agent Implication**: New features SHOULD be self-contained. Avoid dependencies on optional features.
+
+**9. SEO & Discoverability** (affects: all public pages, social sharing)
+- **Scope**: hreflang for i18n, Open Graph metadata, dynamic OG images, sitemap, robots.txt
+- **Architectural impact**:
+  - Metadata API usage in layouts and pages
+  - Edge-compatible OG image generation (`@vercel/og`)
+  - Sitemap generation in `app/sitemap.ts`
+- **AI Agent Implication**: New public pages MUST include appropriate metadata. Shareable content SHOULD use dynamic OG images.
+
+**10. Go-To-Market Infrastructure** (affects: growth, marketing, launch)
+- **Scope**: Share widgets, referral tracking, waitlist capture, social proof, changelog automation
+- **Architectural impact**:
+  - Database schemas for referrals, shareable links, waitlist
+  - Component library for social proof widgets
+  - GitHub Actions for changelog-to-content automation
+- **AI Agent Implication**: GTM features are OPTIONAL modules. Implement following established patterns if needed.
 
 ## Starter Template Evaluation
 
@@ -781,6 +799,215 @@ These can be added later without architectural refactoring:
 - **Affects**: All data storage, all network communication
 - **Provided by Starter**: Yes (Supabase + Vercel infrastructure)
 
+**FR-AUTH-005: Authentication UI/UX (Tier 1)**
+
+Complete authentication user experience with all necessary UI flows and states.
+
+**Forgot/Reset Password Flow:**
+
+- **Implementation**: Multi-step flow with Supabase Auth `resetPasswordForEmail`
+- **Pages Required**:
+  - `/sign-in` - "Forgot password?" link visible
+  - `/forgot-password` - Email input form
+  - `/reset-password` - New password form (accessed via email token)
+- **Pattern**:
+  ```typescript
+  // Forgot password page
+  'use client';
+  import { createBrowserClient } from '@/libs/supabase/client';
+
+  async function handleForgotPassword(email: string) {
+    const supabase = createBrowserClient();
+    const { error } = await supabase.auth.resetPasswordForEmail(email, {
+      redirectTo: `${window.location.origin}/reset-password`,
+    });
+    if (error) throw error;
+    // Show success: "Check your email for reset link"
+  }
+
+  // Reset password page (with token)
+  async function handleResetPassword(newPassword: string) {
+    const supabase = createBrowserClient();
+    const { error } = await supabase.auth.updateUser({ password: newPassword });
+    if (error) throw error;
+    // Redirect to sign-in with success message
+  }
+  ```
+- **Error Handling**:
+  - Invalid/expired token → "This link has expired. Request a new one."
+  - Rate limiting → "Too many requests. Please try again later."
+- **Affects**: Auth pages, email templates
+- **Provided by Starter**: Partial (Supabase configured, UI to be built)
+
+**Social Authentication Buttons:**
+
+- **Implementation**: OAuth buttons for Google and GitHub
+- **Pattern**:
+  ```typescript
+  // Social auth component
+  'use client';
+
+  export function SocialAuthButtons({ mode }: { mode: 'sign-in' | 'sign-up' }) {
+    const supabase = createBrowserClient();
+    const [loading, setLoading] = useState<string | null>(null);
+
+    const handleOAuth = async (provider: 'google' | 'github') => {
+      setLoading(provider);
+      const { error } = await supabase.auth.signInWithOAuth({
+        provider,
+        options: {
+          redirectTo: `${window.location.origin}/api/auth/callback`,
+        },
+      });
+      if (error) {
+        setLoading(null);
+        toast.error(`Failed to ${mode} with ${provider}`);
+      }
+    };
+
+    return (
+      <div className="flex flex-col gap-2">
+        <Button
+          variant="outline"
+          onClick={() => handleOAuth('google')}
+          disabled={loading !== null}
+        >
+          {loading === 'google' ? <Spinner /> : <GoogleIcon />}
+          Continue with Google
+        </Button>
+        <Button
+          variant="outline"
+          onClick={() => handleOAuth('github')}
+          disabled={loading !== null}
+        >
+          {loading === 'github' ? <Spinner /> : <GitHubIcon />}
+          Continue with GitHub
+        </Button>
+      </div>
+    );
+  }
+  ```
+- **Supabase Setup**: Configure OAuth providers in Supabase dashboard
+- **Styling**: Consistent with template design system (shadcn/ui Button variants)
+- **Affects**: Sign-in, sign-up pages
+- **Provided by Starter**: No (to be added per FR-AUTH-005)
+
+**Email Verification UI:**
+
+- **Implementation**: Post-signup verification state handling
+- **Pattern**:
+  ```typescript
+  // After signup - show verification prompt
+  function VerificationPrompt({ email }: { email: string }) {
+    const [resending, setResending] = useState(false);
+    const [cooldown, setCooldown] = useState(0);
+
+    const handleResend = async () => {
+      setResending(true);
+      const supabase = createBrowserClient();
+      await supabase.auth.resend({ type: 'signup', email });
+      setResending(false);
+      setCooldown(60); // 60 second cooldown
+    };
+
+    return (
+      <Card>
+        <CardHeader>
+          <CardTitle>Verify your email</CardTitle>
+          <CardDescription>
+            We sent a verification link to {email}
+          </CardDescription>
+        </CardHeader>
+        <CardContent>
+          <Button
+            onClick={handleResend}
+            disabled={resending || cooldown > 0}
+          >
+            {cooldown > 0 ? `Resend in ${cooldown}s` : 'Resend verification email'}
+          </Button>
+        </CardContent>
+      </Card>
+    );
+  }
+
+  // Verification success page (after clicking email link)
+  // /verify-email?token_hash=xxx&type=signup
+  ```
+- **Blocked State**: If user tries to access protected routes without verification, show message with resend option
+- **Affects**: Sign-up flow, protected route middleware
+- **Provided by Starter**: No (to be added per FR-AUTH-005)
+
+**Loading & Error States:**
+
+- **Implementation**: Consistent UX patterns across all auth forms
+- **Pattern**:
+  ```typescript
+  // Form submission with loading state
+  const [isSubmitting, setIsSubmitting] = useState(false);
+
+  const onSubmit = async (data: FormData) => {
+    setIsSubmitting(true);
+    try {
+      await authAction(data);
+      toast.success('Success message');
+    } catch (error) {
+      toast.error(getErrorMessage(error));
+    } finally {
+      setIsSubmitting(false);
+    }
+  };
+
+  // Button disabled during submission
+  <Button type="submit" disabled={isSubmitting}>
+    {isSubmitting ? <Spinner className="mr-2" /> : null}
+    {isSubmitting ? 'Signing in...' : 'Sign in'}
+  </Button>
+
+  // Field-level validation errors (React Hook Form + Zod)
+  <FormField
+    control={form.control}
+    name="email"
+    render={({ field }) => (
+      <FormItem>
+        <FormLabel>Email</FormLabel>
+        <FormControl>
+          <Input {...field} />
+        </FormControl>
+        <FormMessage /> {/* Auto-displays Zod validation errors */}
+      </FormItem>
+    )}
+  />
+  ```
+- **Toast Notifications**: Use shadcn/ui toast for success/error feedback
+- **Network Error Recovery**: "Connection lost. Check your internet and try again."
+- **Affects**: All auth forms
+- **Provided by Starter**: Partial (toast configured, patterns to be applied consistently)
+
+**Responsive Auth Design:**
+
+- **Implementation**: Mobile-first auth forms
+- **Pattern**:
+  ```typescript
+  // Auth page layout
+  export default function AuthLayout({ children }: { children: React.ReactNode }) {
+    return (
+      <div className="min-h-screen flex items-center justify-center p-4">
+        <Card className="w-full max-w-md">
+          {children}
+        </Card>
+      </div>
+    );
+  }
+
+  // Form responsive considerations
+  // - Touch-friendly button sizes (min-h-11 for mobile)
+  // - Adequate spacing between form fields
+  // - Input type="email" for mobile keyboard optimization
+  // - Proper focus states for accessibility
+  ```
+- **Affects**: All auth pages on mobile/tablet/desktop
+- **Provided by Starter**: Partial (layout exists, responsive polish to be added)
+
 ---
 
 ### API & Communication Patterns
@@ -1141,6 +1368,139 @@ These can be added later without architectural refactoring:
 - **Trade-offs**: 20KB bundle for SDK, privacy considerations (mitigated with GDPR controls), but critical for understanding template user behavior
 - **Provided by Starter**: No (to be added per FR-ANALYTICS)
 
+**FR-ANALYTICS-004: Founder Analytics Dashboard**
+
+Internal analytics dashboard powered by PostgreSQL - no external provider dependency for core metrics.
+
+- **Implementation**: Server-side dashboard with direct database queries
+- **Route**: `/admin/analytics` or `/dashboard/analytics` (protected)
+- **Database Schema**:
+  ```typescript
+  // Analytics events table (optional, for detailed tracking)
+  export const analyticsEvents = vtSaasSchema.table('analytics_events', {
+    id: uuid('id').primaryKey().defaultRandom(),
+    event_type: text('event_type').notNull(), // 'signup', 'onboarding_complete', 'feature_used'
+    user_id: uuid('user_id').references(() => users.id),
+    properties: jsonb('properties'), // Additional event data
+    created_at: timestamp('created_at').defaultNow(),
+  });
+
+  // User profiles table (extend existing)
+  // Add: onboarding_completed_at, referral_source, activation_date
+  ```
+- **Metrics Implementation**:
+  ```typescript
+  // Server Component: app/[locale]/(auth)/admin/analytics/page.tsx
+  import { db } from '@/libs/DB';
+  import { sql } from 'drizzle-orm';
+
+  export default async function AnalyticsDashboard() {
+    // Total signups (all-time)
+    const totalSignups = await db.execute(sql`
+      SELECT COUNT(*) FROM auth.users
+    `);
+
+    // Signups by time range
+    const signupsThisWeek = await db.execute(sql`
+      SELECT COUNT(*) FROM auth.users
+      WHERE created_at > NOW() - INTERVAL '7 days'
+    `);
+
+    // Activation rate (completed onboarding / total signups)
+    const activationRate = await db.execute(sql`
+      SELECT
+        (SELECT COUNT(*) FROM user_profiles WHERE onboarding_completed_at IS NOT NULL)::float /
+        NULLIF((SELECT COUNT(*) FROM auth.users), 0) * 100 as rate
+    `);
+
+    // Referral metrics
+    const referralStats = await db.execute(sql`
+      SELECT
+        referral_source,
+        COUNT(*) as count
+      FROM user_profiles
+      WHERE referral_source IS NOT NULL
+      GROUP BY referral_source
+      ORDER BY count DESC
+      LIMIT 10
+    `);
+
+    // Conversion funnel
+    const funnel = await db.execute(sql`
+      SELECT
+        (SELECT COUNT(*) FROM auth.users) as signed_up,
+        (SELECT COUNT(*) FROM auth.users WHERE email_confirmed_at IS NOT NULL) as verified,
+        (SELECT COUNT(*) FROM user_profiles WHERE onboarding_completed_at IS NOT NULL) as onboarded,
+        (SELECT COUNT(*) FROM user_profiles WHERE last_active_at > NOW() - INTERVAL '7 days') as active
+    `);
+
+    return (
+      <div className="space-y-6">
+        <h1>Founder Analytics</h1>
+        <TimeRangeFilter options={['7d', '30d', '90d', 'all-time']} />
+
+        {/* Key Metrics Cards */}
+        <div className="grid grid-cols-4 gap-4">
+          <MetricCard title="Total Signups" value={totalSignups} />
+          <MetricCard title="This Week" value={signupsThisWeek} />
+          <MetricCard title="Activation Rate" value={`${activationRate}%`} />
+          <MetricCard title="Waitlist" value={waitlistCount} />
+        </div>
+
+        {/* Conversion Funnel */}
+        <FunnelChart data={funnel} />
+
+        {/* Top Referrers */}
+        <ReferralTable data={referralStats} />
+
+        {/* Export Button */}
+        <ExportCSVButton />
+      </div>
+    );
+  }
+  ```
+- **Time Range Filter**:
+  ```typescript
+  // URL-based state: /admin/analytics?range=30d
+  const ranges = {
+    '7d': 'NOW() - INTERVAL \'7 days\'',
+    '30d': 'NOW() - INTERVAL \'30 days\'',
+    '90d': 'NOW() - INTERVAL \'90 days\'',
+    'all-time': '\'1970-01-01\'::timestamp',
+  };
+  ```
+- **CSV Export**:
+  ```typescript
+  // API route: GET /api/admin/analytics/export
+  export async function GET(request: NextRequest) {
+    const { searchParams } = new URL(request.url);
+    const range = searchParams.get('range') || '30d';
+
+    const data = await getAnalyticsData(range);
+    const csv = convertToCSV(data);
+
+    return new Response(csv, {
+      headers: {
+        'Content-Type': 'text/csv',
+        'Content-Disposition': `attachment; filename="analytics-${range}.csv"`,
+      },
+    });
+  }
+  ```
+- **Key Metrics Displayed**:
+  - Total signups (all-time, this week, this month)
+  - Activation rate (onboarding completed / signups)
+  - Referral metrics (signups via referral links, top referrers)
+  - Pre-launch waitlist count (if applicable)
+  - Conversion funnel visualization
+- **Design Principles**:
+  - Refreshes on page load (no real-time, keeps implementation simple)
+  - Server-side queries only (no client-side data fetching)
+  - Mobile-responsive dashboard layout
+- **Affects**: Admin functionality, founder insights
+- **Trade-offs**: No real-time updates, but avoids complexity of WebSocket/polling
+- **Provided by Starter**: No (to be added per FR-ANALYTICS-004)
+
 **Email Service: Resend**
 
 - **Version**: resend@latest, react-email@latest
@@ -1191,6 +1551,388 @@ These can be added later without architectural refactoring:
 - **Affects**: Cost structure, deployment complexity (none), performance at scale
 - **Trade-offs**: Cold start latency (mitigated by edge runtime for middleware), function timeout (10s free, 60s Pro), but zero ops burden
 - **Provided by Starter**: Yes (Vercel deployment configured)
+
+---
+
+### SEO Foundations
+
+**SEO Strategy: Next.js Metadata API + Edge-Compatible OG Generation**
+
+VT SaaS Template provides essential SEO infrastructure out of the box, enabling template users to rank well without extensive configuration.
+
+**FR-SEO-001: Internationalization SEO (hreflang)**
+
+- **Implementation**: Next.js `generateMetadata` with `alternates.languages`
+- **Pattern**:
+  ```typescript
+  // app/[locale]/layout.tsx
+  export async function generateMetadata({ params }: { params: Promise<{ locale: string }> }) {
+    const { locale } = await params;
+    return {
+      alternates: {
+        languages: {
+          'en': '/en',
+          'hi': '/hi',
+          'bn': '/bn',
+        },
+        canonical: `/${locale}`,
+      },
+    };
+  }
+  ```
+- **Rationale**: Prevents duplicate content penalties across language versions. Helps search engines serve correct language version to users.
+- **Affects**: All pages, root layout metadata
+- **Provided by Starter**: Partial (next-intl configured, hreflang to be added)
+
+**FR-SEO-002: Social Sharing (Open Graph)**
+
+- **Implementation**: Next.js Metadata API with Open Graph and Twitter Card support
+- **Pattern**:
+  ```typescript
+  // Default OG metadata in root layout
+  export const metadata: Metadata = {
+    metadataBase: new URL('https://yourdomain.com'),
+    openGraph: {
+      type: 'website',
+      locale: 'en_US',
+      siteName: 'VT SaaS Template',
+      images: [{ url: '/og-default.png', width: 1200, height: 630 }],
+    },
+    twitter: {
+      card: 'summary_large_image',
+      site: '@yourhandle',
+    },
+  };
+  ```
+- **Rationale**: Social sharing drives organic growth. Consistent branding across platforms.
+- **Affects**: All shareable pages, social media previews
+- **Trade-offs**: Default OG image needs to be created by template user (placeholder provided)
+- **Provided by Starter**: No (to be added per FR-SEO-002)
+
+**FR-SEO-003: Crawler Configuration (robots.txt)**
+
+- **Implementation**: Static `robots.txt` in `/public` directory
+- **Pattern**:
+  ```txt
+  # /public/robots.txt
+  User-agent: *
+  Allow: /
+  Disallow: /api/
+  Disallow: /dashboard
+  Disallow: /admin
+  Disallow: /onboarding
+  Disallow: /chat
+
+  Sitemap: https://yourdomain.com/sitemap.xml
+  ```
+- **Rationale**: Prevents crawling of authenticated routes (reduces crawl budget waste, prevents indexing of user-specific content).
+- **Affects**: Search engine crawling behavior
+- **Provided by Starter**: No (to be added per FR-SEO-003)
+
+**FR-SEO-004: Dynamic Open Graph Images**
+
+- **Implementation**: `@vercel/og` for edge-compatible image generation
+- **Pattern**:
+  ```typescript
+  // app/api/og/route.tsx
+  import { ImageResponse } from '@vercel/og';
+
+  export const runtime = 'edge';
+
+  export async function GET(request: Request) {
+    const { searchParams } = new URL(request.url);
+    const title = searchParams.get('title') || 'VT SaaS Template';
+
+    return new ImageResponse(
+      (
+        <div style={{ display: 'flex', flexDirection: 'column', width: '100%', height: '100%', background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)', padding: 60 }}>
+          <div style={{ color: 'white', fontSize: 60, fontWeight: 'bold' }}>{title}</div>
+          <div style={{ color: 'rgba(255,255,255,0.8)', fontSize: 30, marginTop: 20 }}>VT SaaS Template</div>
+        </div>
+      ),
+      { width: 1200, height: 630 }
+    );
+  }
+  ```
+- **Usage in Pages**:
+  ```typescript
+  export async function generateMetadata({ params }) {
+    const title = 'Page Title';
+    return {
+      openGraph: {
+        images: [`/api/og?title=${encodeURIComponent(title)}`],
+      },
+    };
+  }
+  ```
+- **Rationale**: Dynamic OG images improve click-through rates on social media. Edge runtime ensures fast generation globally.
+- **Affects**: Social sharing, link previews, SEO for shareable content
+- **Trade-offs**: Adds API route, requires font embedding for custom fonts (or use system fonts)
+- **Provided by Starter**: No (to be added per FR-SEO-004)
+
+**Sitemap Generation:**
+
+- **Implementation**: Next.js `sitemap.ts` in app directory
+- **Pattern**:
+  ```typescript
+  // app/sitemap.ts
+  import { MetadataRoute } from 'next';
+
+  export default function sitemap(): MetadataRoute.Sitemap {
+    const baseUrl = 'https://yourdomain.com';
+    const locales = ['en', 'hi', 'bn'];
+
+    const staticPages = ['', '/features', '/pricing'];
+
+    return locales.flatMap((locale) =>
+      staticPages.map((page) => ({
+        url: `${baseUrl}/${locale}${page}`,
+        lastModified: new Date(),
+        changeFrequency: 'weekly' as const,
+        priority: page === '' ? 1 : 0.8,
+      }))
+    );
+  }
+  ```
+- **Affects**: Search engine discovery, indexing efficiency
+- **Provided by Starter**: No (to be added with SEO foundations)
+
+---
+
+### Go-To-Market Infrastructure
+
+**GTM Strategy: Built-in Growth Features for SaaS Launch**
+
+VT SaaS Template includes essential go-to-market infrastructure to help template users launch and grow their SaaS products without building common growth features from scratch.
+
+**FR-GTM-001: Referral/Share Widget**
+
+- **Implementation**: Reusable share component with native share API fallback
+- **Pattern**:
+  ```typescript
+  // src/components/share/ShareWidget.tsx
+  'use client';
+
+  interface ShareWidgetProps {
+    url: string;
+    title: string;
+    text?: string;
+    referralCode?: string;
+  }
+
+  export function ShareWidget({ url, title, text, referralCode }: ShareWidgetProps) {
+    const shareUrl = referralCode ? `${url}?ref=${referralCode}` : url;
+
+    const handleNativeShare = async () => {
+      if (navigator.share) {
+        await navigator.share({ title, text, url: shareUrl });
+      }
+    };
+
+    return (
+      <div className="flex gap-2">
+        {/* Social buttons: Twitter, LinkedIn, Facebook, WhatsApp */}
+        <Button onClick={() => window.open(`https://twitter.com/intent/tweet?url=${encodeURIComponent(shareUrl)}&text=${encodeURIComponent(title)}`)}>
+          Twitter
+        </Button>
+        {/* Copy link button */}
+        <Button onClick={() => navigator.clipboard.writeText(shareUrl)}>Copy Link</Button>
+        {/* Native share (mobile) */}
+        {typeof navigator !== 'undefined' && navigator.share && (
+          <Button onClick={handleNativeShare}>Share</Button>
+        )}
+      </div>
+    );
+  }
+  ```
+- **Database Schema** (optional referral tracking):
+  ```typescript
+  // src/models/Schema.ts - add to schema
+  export const referrals = vtSaasSchema.table('referrals', {
+    id: uuid('id').primaryKey().defaultRandom(),
+    referrer_id: uuid('referrer_id').references(() => users.id),
+    referred_id: uuid('referred_id').references(() => users.id),
+    referral_code: text('referral_code').notNull(),
+    created_at: timestamp('created_at').defaultNow(),
+  });
+  ```
+- **Affects**: User growth, viral loops, content sharing
+- **Trade-offs**: Referral tracking requires database schema addition (optional)
+- **Provided by Starter**: No (to be added per FR-GTM-001)
+
+**FR-GTM-002: Private Shareable URLs**
+
+- **Implementation**: Unique token-based URL generation with access control
+- **Pattern**:
+  ```typescript
+  // Database schema for shareable links
+  export const shareableLinks = vtSaasSchema.table('shareable_links', {
+    id: uuid('id').primaryKey().defaultRandom(),
+    token: text('token').notNull().unique(), // Unguessable token
+    resource_type: text('resource_type').notNull(), // 'report', 'dashboard', etc.
+    resource_id: uuid('resource_id').notNull(),
+    owner_id: uuid('owner_id').references(() => users.id),
+    access_level: text('access_level').notNull().default('view'), // 'view', 'edit'
+    expires_at: timestamp('expires_at'), // Optional expiration
+    view_count: integer('view_count').default(0),
+    created_at: timestamp('created_at').defaultNow(),
+  });
+
+  // API route: POST /api/share
+  // Generates: https://app.com/share/{token}
+  ```
+- **Access Control Patterns**:
+  - `public`: Anyone with link can view
+  - `authenticated`: Must be logged in
+  - `private`: Link-only access (no auth required, but link is secret)
+- **Affects**: Content sharing, collaboration features
+- **Trade-offs**: Adds complexity, but pattern is reusable across any shareable content type
+- **Provided by Starter**: No (to be added per FR-GTM-002)
+
+**FR-GTM-003: Changelog-to-Content Automation**
+
+- **Implementation**: GitHub Action + LLM transformation + n8n webhook
+- **Architecture**:
+  ```
+  Tagged Release → GitHub Action
+    → Read CHANGELOG.md or commit messages
+    → Send to LLM API (OpenAI/Anthropic)
+    → Generate: Tweet, LinkedIn post, Release notes
+    → Create PR with generated content
+    → On PR merge: Webhook to n8n
+    → n8n schedules/publishes to social platforms
+  ```
+- **GitHub Action Pattern**:
+  ```yaml
+  # .github/workflows/release-content.yml
+  name: Generate Release Content
+  on:
+    release:
+      types: [published]
+  jobs:
+    generate:
+      runs-on: ubuntu-latest
+      steps:
+        - uses: actions/checkout@v4
+        - name: Generate social content
+          env:
+            OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
+          run: |
+            # Script to read release notes and generate content
+            node scripts/generate-release-content.js
+        - name: Create PR with content
+          uses: peter-evans/create-pull-request@v5
+          with:
+            title: 'docs: release content for ${{ github.event.release.tag_name }}'
+            body: 'Auto-generated social content for review'
+  ```
+- **n8n Workflow**: Example workflow JSON provided in `docs/n8n-release-workflow.json`
+- **Affects**: Marketing automation, content creation, release announcements
+- **Trade-offs**: Requires LLM API key, n8n instance (self-hosted or cloud)
+- **Provided by Starter**: No (to be added per FR-GTM-003, example workflow provided)
+
+**FR-GTM-004: Programmatic SEO Infrastructure**
+
+- **Implementation**: Dynamic route generation from JSON data source
+- **Pattern**:
+  ```typescript
+  // data/seo-pages.json
+  {
+    "categories": [
+      {
+        "slug": "tools",
+        "title": "SaaS Tools",
+        "items": [
+          { "slug": "analytics", "title": "Analytics Tools", "description": "..." },
+          { "slug": "crm", "title": "CRM Tools", "description": "..." }
+        ]
+      }
+    ]
+  }
+
+  // app/[locale]/[category]/[item]/page.tsx
+  import seoData from '@/data/seo-pages.json';
+
+  export async function generateStaticParams() {
+    return seoData.categories.flatMap(cat =>
+      cat.items.map(item => ({
+        category: cat.slug,
+        item: item.slug,
+      }))
+    );
+  }
+
+  export async function generateMetadata({ params }) {
+    const { category, item } = await params;
+    const data = findItem(category, item);
+    return {
+      title: data.title,
+      description: data.description,
+      openGraph: { images: [`/api/og?title=${encodeURIComponent(data.title)}`] },
+    };
+  }
+  ```
+- **Sitemap Integration**: Auto-include programmatic pages in `sitemap.ts`
+- **Affects**: SEO traffic, long-tail keyword targeting, content scaling
+- **Trade-offs**: Requires content strategy, JSON data maintenance
+- **Provided by Starter**: No (to be added per FR-GTM-004, example implementation provided)
+
+**FR-GTM-005: Pre-Launch Landing Page**
+
+- **Implementation**: Dedicated waitlist route with email capture
+- **Pattern**:
+  ```typescript
+  // Database schema
+  export const waitlist = vtSaasSchema.table('waitlist', {
+    id: uuid('id').primaryKey().defaultRandom(),
+    email: text('email').notNull().unique(),
+    source: text('source'), // utm_source tracking
+    created_at: timestamp('created_at').defaultNow(),
+  });
+
+  // app/[locale]/waitlist/page.tsx
+  // - Email capture form
+  // - Success state with share prompt
+  // - Social proof counter
+
+  // Redirect logic in middleware
+  if (process.env.PRE_LAUNCH === 'true' && pathname === '/') {
+    return NextResponse.redirect(new URL('/waitlist', request.url));
+  }
+  ```
+- **Admin View**: `/admin/waitlist` - list signups, export CSV
+- **Email Integration**: Send confirmation email on signup via Resend
+- **Affects**: Pre-launch marketing, audience building
+- **Trade-offs**: Requires `PRE_LAUNCH` env var management
+- **Provided by Starter**: No (to be added per FR-GTM-005)
+
+**FR-GTM-006: Social Proof Widgets**
+
+- **Implementation**: Static/configurable components for trust signals
+- **Pattern**:
+  ```typescript
+  // src/components/social-proof/SignupCounter.tsx
+  interface SignupCounterProps {
+    count: number; // Hardcoded or from config
+    label?: string;
+  }
+
+  export function SignupCounter({ count, label = 'people signed up' }: SignupCounterProps) {
+    return (
+      <div className="flex items-center gap-2 text-muted-foreground">
+        <Users className="h-4 w-4" />
+        <span>{count.toLocaleString()} {label}</span>
+      </div>
+    );
+  }
+
+  // src/components/social-proof/Testimonial.tsx
+  // src/components/social-proof/TrustBadges.tsx
+  ```
+- **Configuration**: Update via component props or config file (no database queries)
+- **Affects**: Conversion rates, trust building
+- **Trade-offs**: Manual updates required (intentionally simple)
+- **Provided by Starter**: No (to be added per FR-GTM-006)
 
 ---
 
@@ -3196,7 +3938,7 @@ All functional requirement categories have complete architectural support:
 
 | FR Category | Architectural Support | Status |
 |-------------|----------------------|--------|
-| FR-AUTH | Middleware + Supabase clients + Protected routes + OAuth callback | ✅ Complete |
+| FR-AUTH | Middleware + Supabase clients + Protected routes + OAuth callback + Tier 1 UI/UX patterns | ✅ Complete |
 | FR-ONB | Route structure + State management via Context/API | ✅ Complete |
 | FR-FEED | API route CRUD pattern + Database via Drizzle | ✅ Complete |
 | FR-ADMIN | Protected route pattern + Role-based access + DB queries | ✅ Complete |
@@ -3206,14 +3948,16 @@ All functional requirement categories have complete architectural support:
 | FR-ERROR | Error boundaries + Consistent API format + Sentry | ✅ Complete |
 | FR-UI | shadcn/ui library + Responsive design + Dark mode support | ✅ Complete |
 | FR-CHAT | SSE streaming + API proxy + Thread management (REMOVABLE example) | ✅ Complete |
-| FR-ANALYTICS | PostHog integration + Event naming pattern + Privacy-respecting | ✅ Complete |
+| FR-ANALYTICS | PostHog integration + Event naming + Founder Dashboard (PostgreSQL) | ✅ Complete |
+| FR-SEO | hreflang + Open Graph + robots.txt + Dynamic OG images + Sitemap | ✅ Complete |
+| FR-GTM | Share widget + Private URLs + Changelog automation + pSEO + Waitlist + Social proof | ✅ Complete |
 
-**Coverage: 11/11 functional requirement categories (100%)**
+**Coverage: 13/13 functional requirement categories (100%)**
 
 **Functional Requirements Coverage:**
 
 Every functional requirement has clear architectural implementation path:
-- **Authentication**: Complete auth flow defined (middleware → Supabase → protected routes)
+- **Authentication**: Complete auth flow defined (middleware → Supabase → protected routes) + Tier 1 UI/UX (forgot password, social auth, email verification, loading/error states)
 - **Onboarding**: Page structure + state persistence pattern established
 - **Feedback**: CRUD API pattern demonstrated (threads as example)
 - **Admin Panel**: Access control via route protection + DB queries
@@ -3223,7 +3967,9 @@ Every functional requirement has clear architectural implementation path:
 - **Error Handling**: Multi-level boundaries (app, route, component) + consistent API format
 - **UI/UX**: Component library (14 primitives) + responsive patterns + theme system
 - **Chat**: Advanced pattern example (SSE streaming, real-time, state management) - REMOVABLE
-- **Analytics**: Event tracking infrastructure (PostHog) + event naming standard
+- **Analytics**: Event tracking infrastructure (PostHog) + Founder Dashboard (PostgreSQL-based internal metrics)
+- **SEO**: hreflang for i18n, Open Graph metadata, robots.txt, dynamic OG images via @vercel/og, sitemap generation
+- **Go-To-Market**: Share widget, private shareable URLs, changelog automation (GitHub Action + LLM + n8n), programmatic SEO, pre-launch waitlist, social proof widgets
 
 **Non-Functional Requirements Coverage:**
 
@@ -3362,7 +4108,7 @@ No validation issues were discovered during comprehensive coherence, coverage, a
 - [x] Project context thoroughly analyzed (57 requirements: 30+ FRs, 15 NFRs, 12 Technical)
 - [x] Scale and complexity assessed (Medium complexity, brownfield transformation)
 - [x] Technical constraints identified (Serverless, Next.js 15, TypeScript strict, performance budgets)
-- [x] Cross-cutting concerns mapped (8 identified: Auth, i18n, Error Handling, Analytics, Responsive, Theme, Accessibility, Modular Features)
+- [x] Cross-cutting concerns mapped (10 identified: Auth, i18n, Error Handling, Analytics, Responsive, Theme, Accessibility, Modular Features, SEO & Discoverability, Go-To-Market Infrastructure)
 
 **✅ Architectural Decisions**
 
@@ -3393,7 +4139,7 @@ No validation issues were discovered during comprehensive coherence, coverage, a
 
 Based on comprehensive validation results:
 - **Coherence**: All decisions compatible, patterns consistent, structure aligned
-- **Coverage**: 100% of requirements architecturally supported (11 FR categories, 7 NFR categories, 8 cross-cutting concerns)
+- **Coverage**: 100% of requirements architecturally supported (13 FR categories, 7 NFR categories, 10 cross-cutting concerns)
 - **Readiness**: Complete documentation with versions, rationale, examples, and enforcement guidelines
 - **Quality**: Zero validation issues found, zero critical gaps identified
 

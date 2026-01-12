@@ -247,6 +247,16 @@ The template will serve as the foundation for future projects, providing proven 
    - E2E test suite for critical paths
    - Visual regression testing setup
 
+6. **Go-To-Market Features**
+   - Referral/share widget for user-generated content
+   - Private shareable URLs with access control
+   - Changelog-to-content automation (GitHub Action + LLM + n8n)
+   - Programmatic SEO infrastructure (JSON data source + page templates)
+   - Pre-launch landing page with waitlist capture
+   - Social proof widgets (static testimonials, counters, trust badges)
+   - Dynamic Open Graph image generation
+   - Founder analytics dashboard (internal metrics from PostgreSQL)
+
 ### Vision (Future)
 
 **Future Enhancements When Template Is Proven:**
@@ -617,6 +627,72 @@ Unlike healthcare, fintech, or legal tech applications, this template does NOT r
 - Proper indexing directives for public vs. private routes
 - Sensible defaults that template users can customize
 
+**FR-SEO-004: Dynamic Open Graph Images**
+- Auto-generated OG images for shareable pages
+- Template-based image generation (title, description, branding)
+- Uses `@vercel/og` or similar edge-compatible library
+- Default branded template included
+- Customizable per-page or per-content-type
+- Twitter Card large image support
+- Cache headers for performance
+
+### Go-To-Market Features
+
+**FR-GTM-001: Referral/Share Widget**
+- Reusable share component for user-generated content
+- Share targets: Twitter/X, LinkedIn, Facebook, WhatsApp, copy link
+- Generates shareable URL with optional referral tracking parameter
+- Works with any user artifact (template users define what's shareable)
+- Mobile-friendly share sheet (native share API where supported)
+
+**FR-GTM-002: Private Shareable URLs**
+- Generate unique, unguessable URLs for user-created content
+- Access control: public, private (link-only), or authenticated
+- Optional expiration for time-limited sharing
+- View tracking (who accessed, when)
+- Revoke/regenerate link capability
+- Infrastructure pattern—template users implement for their specific artifacts
+
+**FR-GTM-003: Changelog-to-Content Automation**
+- GitHub Action triggered on tagged releases
+- Reads conventional commit messages or changelog entries
+- LLM transforms technical changelog into:
+  - Tweet-length announcement (280 chars)
+  - LinkedIn post (longer form, professional tone)
+  - Short documentation entry (user-facing release notes)
+- Creates PR for human review (default behavior)
+- On PR merge: GitHub Action sends webhook to n8n instance
+- n8n workflow schedules and publishes posts to Twitter/LinkedIn at configured time
+- Template includes example n8n workflow JSON for import
+- Configurable: LLM provider (OpenAI/Anthropic), tone, publish schedule
+- Future enhancement: auto-commit option once confidence is established
+
+**FR-GTM-004: Programmatic SEO Infrastructure**
+- Page template system for generating many pages from data
+- Data source: JSON file (e.g., `/data/seo-pages.json`)
+- Dynamic route generation (`/[category]/[item]` pattern)
+- SEO metadata generation per page (title, description, OG tags)
+- Sitemap auto-generation including programmatic pages
+- Example implementation with sample dataset
+- Documentation for template users to add their own JSON data
+
+**FR-GTM-005: Pre-Launch Landing Page**
+- Dedicated route (e.g., `/coming-soon` or `/waitlist`)
+- Interest capture form: email required, additional questions configurable
+- Email stored in database with timestamp
+- Success state with share prompt ("Tell your friends!")
+- Redirect logic: main landing page redirects here if `PRE_LAUNCH=true` env var
+- Simple admin view: list of signups, export to CSV
+- Integrates with email system for confirmation/welcome
+
+**FR-GTM-006: Social Proof Widgets**
+- Static/hardcoded data (template users update values manually)
+- "X people signed up" counter component
+- Testimonial/quote display component
+- Trust badges component (logos, certifications, stats)
+- Easy to update via config file or component props
+- No database queries, no real-time updates
+
 ### Example Integration (AI Chat)
 
 **FR-CHAT-001: AI Chat Interface (Example Code)**
@@ -656,6 +732,19 @@ Unlike healthcare, fintech, or legal tech applications, this template does NOT r
 - Development mode: log events to console instead of sending to provider
 - Documentation and examples for common tracking patterns
 - Easy to swap providers or disable completely
+
+**FR-ANALYTICS-004: Founder Analytics Dashboard**
+- Internal dashboard route (`/admin/analytics` or `/dashboard/analytics`)
+- Data sourced from PostgreSQL (no external provider dependency)
+- Key metrics displayed:
+  - Total signups (all-time, this week, this month)
+  - Activation rate (completed onboarding / total signups)
+  - Referral metrics (signups via referral links, top referrers)
+  - Pre-launch waitlist count (if applicable)
+  - Conversion funnel visualization (signup → verified → onboarded → active)
+- Simple time-range filter (7d, 30d, 90d, all-time)
+- Export data as CSV
+- Refreshes on page load (no real-time, keeps it simple)
 
 ## Non-Functional Requirements
 
