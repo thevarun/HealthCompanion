@@ -6,51 +6,83 @@ on:
   pull_request:
     branches: [main]
 
-jobs:
-  build:
-    strategy:
-      matrix:
-        node-version: [20.x, 22.6] # Need to use 22.6 due to Next.js build errors: https://github.com/vercel/next.js/issues/69263
-        # See supported Node.js release schedule at https://nodejs.org/en/about/releases/
+env:
+  PLAYWRIGHT_BROWSERS_PATH: ~/.cache/ms-playwright
 
-    name: Build with ${{ matrix.node-version }}
+jobs:
+  # ============================================
+  # Lint & Type Check
+  # ============================================
+  lint:
+    name: Lint & Types
     runs-on: ubuntu-latest
+    timeout-minutes: 10
 
     steps:
-      - uses: actions/checkout@v3
-      - name: Use Node.js ${{ matrix.node-version }}
-        uses: actions/setup-node@v3
+      - uses: actions/checkout@v4
         with:
-          node-version: ${{ matrix.node-version }}
-          cache: npm
-      - run: npm ci
-      - run: npm run build
+          fetch-depth: 0
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version-file: '.nvmrc'
+          cache: 'npm'
+
+      - run: npm ci --prefer-offline --no-audit
+
+      - name: Validate commits (PR only)
+        if: github.event_name == 'pull_request'
+        run: npx commitlint --from ${{ github.event.pull_request.base.sha }} --to ${{ github.event.pull_request.head.sha }} --verbose
+
+      - run: npm run lint
+      - run: npm run check-types
+
+  # ============================================
+  # Unit Tests
+  # ============================================
+  unit-tests:
+    name: Unit Tests
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    needs: lint
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version-file: '.nvmrc'
+          cache: 'npm'
+
+      - run: npm ci --prefer-offline --no-audit
+
+      - run: npm run test -- --coverage
         env:
           DIFY_API_KEY: ${{ secrets.DIFY_API_KEY }}
           DIFY_API_URL: ${{ secrets.DIFY_API_URL }}
           NEXT_PUBLIC_SUPABASE_URL: ${{ secrets.NEXT_PUBLIC_SUPABASE_URL }}
           NEXT_PUBLIC_SUPABASE_ANON_KEY: ${{ secrets.NEXT_PUBLIC_SUPABASE_ANON_KEY }}
 
-  test:
-    strategy:
-      matrix:
-        node-version: [20.x]
-
-    name: Run all tests
+  # ============================================
+  # Build & E2E Tests
+  # ============================================
+  e2e:
+    name: Build & E2E
     runs-on: ubuntu-latest
+    timeout-minutes: 20
+    needs: lint
 
     steps:
-      - uses: actions/checkout@v3
-        with:
-          fetch-depth: 0 # Retrieve Git history, needed to verify commits
-      - name: Use Node.js ${{ matrix.node-version }}
-        uses: actions/setup-node@v3
-        with:
-          node-version: ${{ matrix.node-version }}
-          cache: npm
-      - run: npm ci
+      - uses: actions/checkout@v4
 
-      - name: Build Next.js for E2E tests
+      - uses: actions/setup-node@v4
+        with:
+          node-version-file: '.nvmrc'
+          cache: 'npm'
+
+      - run: npm ci --prefer-offline --no-audit
+
+      - name: Build
         run: npm run build
         env:
           SENTRY_AUTH_TOKEN: ${{ secrets.SENTRY_AUTH_TOKEN }}
@@ -59,45 +91,36 @@ jobs:
           NEXT_PUBLIC_SUPABASE_URL: ${{ secrets.NEXT_PUBLIC_SUPABASE_URL }}
           NEXT_PUBLIC_SUPABASE_ANON_KEY: ${{ secrets.NEXT_PUBLIC_SUPABASE_ANON_KEY }}
 
-      - if: github.event_name == 'pull_request'
-        name: Validate all commits from PR
-        run: npx commitlint --from ${{ github.event.pull_request.base.sha }} --to ${{ github.event.pull_request.head.sha }} --verbose
+      - name: Cache Playwright browsers
+        uses: actions/cache@v4
+        id: playwright-cache
+        with:
+          path: ${{ env.PLAYWRIGHT_BROWSERS_PATH }}
+          key: playwright-${{ runner.os }}-${{ hashFiles('**/package-lock.json') }}
 
-      - name: Linter
-        run: npm run lint
+      - name: Install Playwright browsers
+        if: steps.playwright-cache.outputs.cache-hit != 'true'
+        run: npx playwright install --with-deps chromium firefox
 
-      - name: Type checking
-        run: npm run check-types
+      - name: Install Playwright deps
+        if: steps.playwright-cache.outputs.cache-hit == 'true'
+        run: npx playwright install-deps chromium firefox
 
-      - name: Run unit tests
-        run: npm run test -- --coverage
+      - name: Run E2E tests
+        run: npm run test:e2e
         env:
+          CI: true
           DIFY_API_KEY: ${{ secrets.DIFY_API_KEY }}
           DIFY_API_URL: ${{ secrets.DIFY_API_URL }}
           NEXT_PUBLIC_SUPABASE_URL: ${{ secrets.NEXT_PUBLIC_SUPABASE_URL }}
           NEXT_PUBLIC_SUPABASE_ANON_KEY: ${{ secrets.NEXT_PUBLIC_SUPABASE_ANON_KEY }}
 
-      # - name: Upload coverage reports to Codecov
-      #   uses: codecov/codecov-action@v4
-      #   env:
-      #     CODECOV_TOKEN: ${{ secrets.CODECOV_TOKEN }}
-
-      # - name: Install Playwright (used for Storybook and E2E tests)
-      #   run: npx playwright install --with-deps
-
-      # - name: Run storybook tests
-      #   run: npm run test-storybook:ci
-      #   env:
-      #     STORYBOOK: 'true'
-
-      # - name: Run E2E tests
-      #   run: npx percy exec -- npm run test:e2e
-      #   env:
-      #     PERCY_TOKEN: ${{ secrets.PERCY_TOKEN }}
-
-      - uses: actions/upload-artifact@v4
-        if: always()
+      - name: Upload test artifacts
+        if: failure()
+        uses: actions/upload-artifact@v4
         with:
           name: test-results
-          path: test-results/
-          retention-days: 7
+          path: |
+            test-results/
+            playwright-report/
+          retention-days: 14
