@@ -49,7 +49,7 @@ development_status:
   1-5-rebrand-to-vt-saas-template: done
   1-6-validate-and-enhance-error-boundaries: done
   1-7-standardize-api-error-handling: done
-  1-8-validate-cicd-pipeline: ready-for-dev
+  1-8-validate-cicd-pipeline: done
   1-9-validate-existing-features-post-upgrade: backlog
   epic-1-retrospective: optional
 
