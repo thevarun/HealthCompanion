@@ -64,6 +64,69 @@ src/app/[locale]/
     └── chat/         # Dify proxy endpoint
 ```
 
+### API Error Handling
+
+All API endpoints return errors in a consistent format:
+
+```typescript
+// Error response format
+{
+  error: string;        // Human-readable message
+  code: string;         // Machine-readable code
+  details?: object;     // Optional (validation errors, debug info)
+}
+```
+
+**Quick Reference:**
+
+| Code | Status | When |
+|------|--------|------|
+| `AUTH_REQUIRED` | 401 | Not authenticated |
+| `FORBIDDEN` | 403 | Not authorized |
+| `VALIDATION_ERROR` | 400 | Input validation failed |
+| `NOT_FOUND` | 404 | Resource doesn't exist |
+| `CONFLICT` | 409 | Duplicate resource |
+| `DB_ERROR` | 500 | Database error |
+| `INTERNAL_ERROR` | 500 | Unexpected server error |
+
+**Server-side:**
+```typescript
+import {
+  unauthorizedError,
+  validationError,
+  formatZodErrors,
+  logApiError,
+} from '@/libs/api/errors';
+
+// In API route
+if (authError || !user) {
+  return unauthorizedError();
+}
+
+const result = schema.safeParse(body);
+if (!result.success) {
+  const errors = formatZodErrors(result.error);
+  return validationError(errors);
+}
+```
+
+**Client-side:**
+```typescript
+import { parseApiError, getErrorMessage, isAuthError } from '@/libs/api/client';
+
+const response = await fetch('/api/threads', { method: 'POST', body });
+
+if (!response.ok) {
+  const error = await parseApiError(response);
+  if (isAuthError(error.code)) {
+    router.push('/sign-in');
+  }
+  toast.error(getErrorMessage(error.code, t));
+}
+```
+
+📖 **Full documentation:** [docs/api-error-handling.md](docs/api-error-handling.md)
+
 ## Environment Variables
 
 ### Required for Development
