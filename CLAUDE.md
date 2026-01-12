@@ -154,6 +154,62 @@ npm run storybook        # Start Storybook
    ```
 3. Crowdin syncs translations automatically via GitHub Actions on push to `main`
 
+### Error Handling
+
+The project implements a comprehensive error handling strategy with multiple layers of protection:
+
+**Error Boundary Hierarchy:**
+1. **Global Error Boundary** (`src/app/global-error.tsx`) - Catches errors in root layout (last resort)
+2. **Locale Error Boundary** (`src/app/[locale]/error.tsx`) - Catches errors in all locale routes
+3. **Auth Routes Error Boundary** (`src/app/[locale]/(auth)/error.tsx`) - Isolates dashboard errors
+4. **Chat Route Error Boundary** (`src/app/[locale]/(auth)/chat/error.tsx`) - Isolates chat errors
+5. **Component Error Boundary** (`src/components/errors/ErrorBoundary.tsx`) - Reusable wrapper for critical components
+
+**When to Use Each:**
+- **File-based boundaries** (`error.tsx`): Use for route-level isolation (automatic by Next.js)
+- **Component boundaries**: Use for critical components with:
+  - Complex async operations (API calls, streaming)
+  - Third-party integrations
+  - Heavy data processing
+  - High-risk state management
+
+**Adding Error Boundaries to Components:**
+```typescript
+import { ErrorBoundary, CardErrorFallback } from '@/components/errors';
+
+export function MyComponent() {
+  return (
+    <ErrorBoundary
+      fallback={(error, reset) => (
+        <CardErrorFallback
+          error={error}
+          onReset={reset}
+          message="Custom error message"
+        />
+      )}
+    >
+      <CriticalComponent />
+    </ErrorBoundary>
+  );
+}
+```
+
+**Recovery Patterns:**
+- All error boundaries provide "Try Again" buttons that reset the error state
+- Navigation escape routes (homepage, dashboard, chat)
+- Graceful degradation (preserve conversation state, show partial data)
+
+**Error Logging:**
+- All errors are automatically logged to Sentry with context
+- Development: Sentry Spotlight shows errors in real-time
+- Production: Errors include user ID, route context, and error digest
+
+**What Error Boundaries DON'T Catch:**
+- Event handler errors (use try/catch)
+- Async code outside rendering (use try/catch or .catch())
+- Errors in the error boundary itself
+- Server-side errors (use API error handling)
+
 ### Error Monitoring
 - **Development**: Sentry Spotlight runs automatically with `npm run dev`
 - **Production**: Update `org` and `project` in `next.config.mjs` and add DSN to `sentry.*.config.ts` files
@@ -172,9 +228,9 @@ npm run storybook        # Start Storybook
 - CI runs production build, local dev runs dev server
 - Setup/teardown files handle test account creation
 
-### Visual Development 
+### Visual Development
 
-**Quick Visual Check** 
+**Quick Visual Check**
 IMMEDIATELY after implementing any front-end change:
 
 1. Identify what changed - Review the modified components/pages
@@ -242,8 +298,7 @@ Note: API routes use URL searchParams (not affected by this change)
 - **Formatting**: Prettier + ESLint with auto-fix on save
 - **Git Hooks**: Husky runs linting on staged files + commit message validation
 
-## Research 
+## Research
 
 - During planning, use targeted web search early to find proven approaches; prefer established libraries/repos over building from scratch.
 - After 1–2 failed debugging attempts, online search for known issues/solutions before continuing.
-  
