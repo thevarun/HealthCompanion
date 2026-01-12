@@ -4,7 +4,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 ## Project Overview
 
-Health Companion is a SaaS application built on Next.js 14 with App Router. The project has been customized from a SaaS boilerplate to include:
+This is the user's customized SaaS template, which they would be using for building multiple SaaS applications down the road. At this time, the project includes:
 
 1. **Supabase Authentication** (replaced Clerk) - Custom authentication with SSR support
 2. **Dify AI Integration** - Chat-based AI health assistant via proxy API
