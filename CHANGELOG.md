@@ -1,3 +1,10 @@
+# [1.9.0](https://github.com/thevarun/HealthCompanion/compare/v1.8.0...v1.9.0) (2026-01-12)
+
+
+### Features
+
+* added serena + edited claude.md to nudge visual check & research ([da5cc9c](https://github.com/thevarun/HealthCompanion/commit/da5cc9c9482bc78cac5c5e8c8922415c1421d3f2))
+
 # [1.8.0](https://github.com/thevarun/HealthCompanion/compare/v1.7.0...v1.8.0) (2026-01-04)
 
 
