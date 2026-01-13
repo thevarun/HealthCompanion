@@ -34,8 +34,8 @@ jobs:
 
       - run: npm ci --prefer-offline --no-audit --legacy-peer-deps
 
-      - name: Validate commits (PR only)
-        if: github.event_name == 'pull_request'
+      - name: Validate commits (PR only, skip Dependabot)
+        if: github.event_name == 'pull_request' && github.event.pull_request.user.login != 'dependabot[bot]'
         run: npx commitlint --from ${{ github.event.pull_request.base.sha }} --to ${{ github.event.pull_request.head.sha }} --verbose
 
       - run: npm run lint
