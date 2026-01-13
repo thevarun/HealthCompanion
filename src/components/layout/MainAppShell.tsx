@@ -12,6 +12,7 @@ import {
 import { usePathname } from 'next/navigation';
 import { type ReactNode, useEffect, useState } from 'react';
 
+import { ThemeToggle } from '@/components/theme';
 import { Button } from '@/components/ui/button';
 import { Sheet, SheetContent } from '@/components/ui/sheet';
 
@@ -102,7 +103,7 @@ export function MainAppShell({ children }: MainAppShellProps) {
               role="navigation"
               aria-label="Main navigation"
             >
-              <ul className="space-y-1">
+              <ul className="flex-1 space-y-1">
                 {navItems.map(item => (
                   <NavItem
                     key={item.href}
@@ -116,6 +117,10 @@ export function MainAppShell({ children }: MainAppShellProps) {
                   />
                 ))}
               </ul>
+              {/* Mobile theme toggle */}
+              <div className="border-t pt-2">
+                <ThemeToggle showLabel />
+              </div>
             </nav>
           </SheetContent>
         </Sheet>
@@ -144,8 +149,18 @@ export function MainAppShell({ children }: MainAppShellProps) {
           </ul>
         </nav>
 
-        {/* AC #7: Collapse toggle button */}
-        <div className="border-t p-2">
+        {/* Theme toggle and collapse button */}
+        <div className="space-y-1 border-t p-2">
+          {/* Dark mode toggle */}
+          {sidebarOpen
+            ? (
+                <ThemeToggle showLabel />
+              )
+            : (
+                <ThemeToggle compact />
+              )}
+
+          {/* AC #7: Collapse toggle button */}
           <Button
             variant="ghost"
             size="sm"
@@ -174,7 +189,7 @@ export function MainAppShell({ children }: MainAppShellProps) {
           >
             <Menu className="size-5" />
           </Button>
-          <h1 className="text-lg font-semibold">Health Companion</h1>
+          <h1 className="text-lg font-semibold">VT SaaS Template</h1>
         </header>
 
         {/* Content area - renders route-specific content */}

@@ -1,10 +1,10 @@
 # Dify Integration Documentation
 
-This directory contains the Dify AI API integration for Health Companion.
+This directory contains the Dify AI API integration for VT SaaS Template.
 
 ## Overview
 
-Dify is the AI backend that powers the chat functionality in Health Companion. The integration uses streaming Server-Sent Events (SSE) to provide real-time responses to user messages.
+Dify is the AI backend that powers the chat functionality in VT SaaS Template. The integration uses streaming Server-Sent Events (SSE) to provide real-time responses to user messages.
 
 ## Architecture
 

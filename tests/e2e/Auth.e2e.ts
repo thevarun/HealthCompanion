@@ -84,11 +84,10 @@ test.describe('Authentication', () => {
       const testEmail = process.env.TEST_USER_EMAIL;
       const testPassword = process.env.TEST_USER_PASSWORD;
 
-      if (!testEmail || !testPassword) {
-        throw new Error('Test credentials not found. Ensure setup.ts ran successfully.');
-      }
+      // Skip test if credentials not available
+      test.skip(!testEmail || !testPassword, 'Test credentials not found. Ensure setup.ts ran successfully.');
 
-      await authPage.signIn(testEmail, testPassword);
+      await authPage.signIn(testEmail!, testPassword!);
 
       // Should redirect to dashboard after successful sign in
       await expect(page).toHaveURL(/\/dashboard/);
@@ -116,12 +115,11 @@ test.describe('Authentication', () => {
       const testEmail = process.env.TEST_USER_EMAIL;
       const testPassword = process.env.TEST_USER_PASSWORD;
 
-      if (!testEmail || !testPassword) {
-        throw new Error('Test credentials not found.');
-      }
+      // Skip test if credentials not available
+      test.skip(!testEmail || !testPassword, 'Test credentials not found.');
 
       // Sign in first
-      await authPage.signIn(testEmail, testPassword);
+      await authPage.signIn(testEmail!, testPassword!);
 
       await expect(page).toHaveURL(/\/dashboard/);
 
@@ -140,12 +138,11 @@ test.describe('Authentication', () => {
       const testEmail = process.env.TEST_USER_EMAIL;
       const testPassword = process.env.TEST_USER_PASSWORD;
 
-      if (!testEmail || !testPassword) {
-        throw new Error('Test credentials not found.');
-      }
+      // Skip test if credentials not available
+      test.skip(!testEmail || !testPassword, 'Test credentials not found.');
 
       // Sign in first to establish session
-      await authPage.signIn(testEmail, testPassword);
+      await authPage.signIn(testEmail!, testPassword!);
 
       await expect(page).toHaveURL(/\/dashboard/);
 
@@ -177,11 +174,12 @@ test.describe('Authentication', () => {
       // Look for "Sign up" or "Create account" link
       const signUpLink = page.locator('a').filter({ hasText: /sign up|create account/i }).first();
 
-      if (await signUpLink.isVisible()) {
-        await signUpLink.click();
+      // Wait for link to be visible and click it
+      await expect(signUpLink).toBeVisible();
 
-        await expect(page).toHaveURL(/\/sign-up/);
-      }
+      await signUpLink.click();
+
+      await expect(page).toHaveURL(/\/sign-up/);
     });
   });
 });

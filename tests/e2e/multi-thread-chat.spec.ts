@@ -27,8 +27,8 @@ test.describe('Multi-Thread Chat', () => {
     await composer.fill('Hello, this is my first message');
     await page.getByRole('button', { name: 'Send' }).click();
 
-    // Wait for response streaming
-    await page.waitForTimeout(2000);
+    // Wait for assistant response to appear
+    await expect(page.locator('[data-message-role="assistant"]').first()).toBeVisible({ timeout: 10000 });
 
     // Verify thread appears in sidebar
     // Note: This test assumes thread title will be auto-generated or show preview
@@ -41,7 +41,8 @@ test.describe('Multi-Thread Chat', () => {
     // Create first thread
     await page.getByTestId('composer-input').fill('First thread message');
     await page.getByRole('button', { name: 'Send' }).click();
-    await page.waitForTimeout(2000);
+
+    await expect(page.locator('[data-message-role="assistant"]').first()).toBeVisible({ timeout: 10000 });
 
     // Click "New Thread" button
     await page.getByRole('button', { name: /new.*thread/i }).click();
@@ -52,7 +53,8 @@ test.describe('Multi-Thread Chat', () => {
     // Send message in second thread
     await page.getByTestId('composer-input').fill('Second thread message');
     await page.getByRole('button', { name: 'Send' }).click();
-    await page.waitForTimeout(2000);
+
+    await expect(page.locator('[data-message-role="assistant"]')).toHaveCount(1, { timeout: 10000 });
 
     // Verify second thread appears in sidebar
     const sidebar = page.locator('[data-testid="thread-list"]').first();
@@ -64,13 +66,15 @@ test.describe('Multi-Thread Chat', () => {
     // Create first thread
     await page.getByTestId('composer-input').fill('Message A in thread 1');
     await page.getByRole('button', { name: 'Send' }).click();
-    await page.waitForTimeout(2000);
+
+    await expect(page.locator('[data-message-role="assistant"]').first()).toBeVisible({ timeout: 10000 });
 
     // Create second thread
     await page.getByRole('button', { name: /new.*thread/i }).click();
     await page.getByTestId('composer-input').fill('Message B in thread 2');
     await page.getByRole('button', { name: 'Send' }).click();
-    await page.waitForTimeout(2000);
+
+    await expect(page.locator('[data-message-role="assistant"]')).toHaveCount(1, { timeout: 10000 });
 
     // AC #8.5: Switch back to first thread via sidebar
     const firstThread = page.locator('[data-testid="thread-item"]').first();
@@ -94,7 +98,8 @@ test.describe('Multi-Thread Chat', () => {
     // Create thread
     await page.getByTestId('composer-input').fill('Test message for title');
     await page.getByRole('button', { name: 'Send' }).click();
-    await page.waitForTimeout(2000);
+
+    await expect(page.locator('[data-message-role="assistant"]').first()).toBeVisible({ timeout: 10000 });
 
     // Click on thread title to edit
     const threadTitle = page.locator('[data-testid="thread-title"]').first();
@@ -116,7 +121,8 @@ test.describe('Multi-Thread Chat', () => {
     // Create thread
     await page.getByTestId('composer-input').fill('Initial message');
     await page.getByRole('button', { name: 'Send' }).click();
-    await page.waitForTimeout(2000);
+
+    await expect(page.locator('[data-message-role="assistant"]').first()).toBeVisible({ timeout: 10000 });
 
     // Navigate to thread
     await page.locator('[data-testid="thread-item"]').first().click();
@@ -124,7 +130,8 @@ test.describe('Multi-Thread Chat', () => {
     // Send another message
     await page.getByTestId('composer-input').fill('Second message in thread');
     await page.getByRole('button', { name: 'Send' }).click();
-    await page.waitForTimeout(3000);
+
+    await expect(page.locator('[data-message-role="assistant"]')).toHaveCount(2, { timeout: 10000 });
 
     // Verify thread preview updated in sidebar (within 10s due to polling)
     const threadPreview = page.locator('[data-testid="thread-preview"]').first();
@@ -137,9 +144,8 @@ test.describe('Multi-Thread Chat', () => {
     await page.getByTestId('composer-input').fill('Tell me a short joke');
     await page.getByRole('button', { name: 'Send' }).click();
 
-    // Verify streaming indicator appears
-    // Note: This might need adjustment based on actual UI implementation
-    await page.waitForTimeout(1000);
+    // Wait for user message to appear first
+    await expect(page.locator('[data-message-role="user"]').first()).toBeVisible({ timeout: 5000 });
 
     // Verify assistant message appears
     await expect(page.locator('[data-message-role="assistant"]').first()).toBeVisible({

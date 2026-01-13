@@ -40,13 +40,13 @@ test.describe('Chat Layout and Scrolling', () => {
     });
 
     await chatPage.goto();
-    await authenticatedPage.waitForTimeout(1000);
+
+    await expect(authenticatedPage.locator('[data-testid="composer-input"]')).toBeVisible();
 
     // Send a few messages
     for (let i = 0; i < 3; i++) {
       await chatPage.sendMessage(`Test message ${i + 1}`);
       await chatPage.waitForAIResponse();
-      await authenticatedPage.waitForTimeout(300);
     }
 
     // The key regression test: page should NOT have excessive overflow
@@ -64,7 +64,8 @@ test.describe('Chat Layout and Scrolling', () => {
     const chatPage = new ChatPage(authenticatedPage);
 
     await chatPage.goto();
-    await authenticatedPage.waitForTimeout(1000);
+
+    await expect(authenticatedPage.locator('[data-testid="composer-input"]')).toBeVisible();
 
     // Get viewport dimensions - even empty chat should fit in viewport
     const viewportHeight = await authenticatedPage.evaluate(() => window.innerHeight);
@@ -81,7 +82,8 @@ test.describe('Chat Layout and Scrolling', () => {
     const chatPage = new ChatPage(authenticatedPage);
 
     await chatPage.goto();
-    await authenticatedPage.waitForTimeout(1000);
+
+    await expect(authenticatedPage.locator('[data-testid="composer-input"]')).toBeVisible();
 
     // Verify critical CSS classes are present for proper flex overflow behavior
     // These classes are essential to prevent the regression
@@ -130,7 +132,8 @@ test.describe('Chat Layout and Scrolling', () => {
     });
 
     await chatPage.goto();
-    await authenticatedPage.waitForTimeout(1000);
+
+    await expect(authenticatedPage.locator('[data-testid="composer-input"]')).toBeVisible();
 
     // Send a message to initialize the chat
     await chatPage.sendMessage('Hi');
@@ -194,24 +197,31 @@ test.describe('Chat Layout and Scrolling', () => {
     });
 
     await chatPage.goto();
-    await authenticatedPage.waitForTimeout(1000);
+
+    await expect(authenticatedPage.locator('[data-testid="composer-input"]')).toBeVisible();
 
     // Send multiple messages
     for (let i = 0; i < 5; i++) {
       await chatPage.sendMessage(`Test message ${i + 1}`);
       await chatPage.waitForAIResponse();
-      await authenticatedPage.waitForTimeout(500);
     }
 
     // Get scroll metrics
     const metrics = await chatPage.getViewportScrollMetrics();
 
-    // If viewport is scrollable, should be scrolled to bottom
-    if (metrics && metrics.scrollHeight > metrics.clientHeight) {
-      const expectedScrollTop = metrics.scrollHeight - metrics.clientHeight;
+    // Viewport scroll position should be valid (at or near bottom)
+    expect(metrics).toBeTruthy();
 
-      expect(metrics.scrollTop).toBeGreaterThanOrEqual(expectedScrollTop - 50);
-    }
+    // Verify scroll is at or near bottom (within 50px tolerance)
+    // Using non-null assertion since we just verified metrics is truthy
+    const scrollTop = metrics!.scrollTop;
+    const scrollHeight = metrics!.scrollHeight;
+    const clientHeight = metrics!.clientHeight;
+    const maxScroll = scrollHeight - clientHeight;
+    const distanceFromBottom = maxScroll - scrollTop;
+
+    // Either not scrollable (maxScroll <= 0) or near bottom (within 50px)
+    expect(distanceFromBottom).toBeLessThanOrEqual(50);
   });
 
   test('viewport maintains scroll position when scrolled up and new content loads', async ({ authenticatedPage }) => {
@@ -267,7 +277,8 @@ test.describe('Chat Layout and Scrolling', () => {
     });
 
     await chatPage.gotoThread('thread-position-test');
-    await authenticatedPage.waitForTimeout(2000);
+
+    await expect(authenticatedPage.locator('[data-message-role="user"]').first()).toBeVisible({ timeout: 10000 });
 
     // Scroll to middle
     await authenticatedPage.evaluate(() => {
@@ -279,15 +290,18 @@ test.describe('Chat Layout and Scrolling', () => {
 
     const initialMetrics = await chatPage.getViewportScrollMetrics();
 
-    // Wait a bit
-    await authenticatedPage.waitForTimeout(500);
+    // Wait for any scroll stabilization using page idle state
+    await authenticatedPage.waitForLoadState('domcontentloaded');
 
     const afterMetrics = await chatPage.getViewportScrollMetrics();
 
     // Scroll position should remain stable (not jump unexpectedly)
-    if (initialMetrics && afterMetrics) {
-      // Allow small tolerance for any minor adjustments
-      expect(Math.abs(afterMetrics.scrollTop - initialMetrics.scrollTop)).toBeLessThan(50);
-    }
+    // Both metrics should exist and be reasonably close
+    expect(initialMetrics).toBeTruthy();
+    expect(afterMetrics).toBeTruthy();
+
+    const scrollDiff = Math.abs((afterMetrics?.scrollTop || 0) - (initialMetrics?.scrollTop || 0));
+
+    expect(scrollDiff).toBeLessThan(50);
   });
 });

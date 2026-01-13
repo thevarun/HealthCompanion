@@ -4,6 +4,7 @@ import type { Metadata } from 'next';
 import { NextIntlClientProvider } from 'next-intl';
 import { getMessages, unstable_setRequestLocale } from 'next-intl/server';
 
+import { ThemeProvider } from '@/components/theme';
 import { Toaster } from '@/components/ui/toaster';
 import { AllLocales } from '@/utils/AppConfig';
 
@@ -54,14 +55,15 @@ export default async function RootLayout(props: {
   return (
     <html lang={locale} suppressHydrationWarning>
       <body className="bg-background text-foreground antialiased" suppressHydrationWarning>
-        {/* PRO: Dark mode support for Shadcn UI */}
-        <NextIntlClientProvider
-          locale={locale}
-          messages={messages}
-        >
-          {props.children}
-          <Toaster />
-        </NextIntlClientProvider>
+        <ThemeProvider>
+          <NextIntlClientProvider
+            locale={locale}
+            messages={messages}
+          >
+            {props.children}
+            <Toaster />
+          </NextIntlClientProvider>
+        </ThemeProvider>
       </body>
     </html>
   );
