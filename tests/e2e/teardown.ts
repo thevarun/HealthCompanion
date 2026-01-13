@@ -28,6 +28,12 @@ async function globalTeardown(_config: FullConfig) {
     return;
   }
 
+  if (!process.env.SUPABASE_SERVICE_ROLE_KEY) {
+    console.warn('⚠️ No SUPABASE_SERVICE_ROLE_KEY found, skipping cleanup');
+    console.warn('   Test account will remain in database. Add secret to GitHub or .env.local');
+    return;
+  }
+
   // Create Supabase admin client using service role key
   // NOTE: Service role key has admin privileges - only use in tests
   const supabaseAdmin = createClient(
