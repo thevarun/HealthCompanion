@@ -28,7 +28,6 @@ completion_report: "{output_folder}/epic-reports/epic-completion-{epic_name}-{da
 
 # Agent references
 story_prep_agent: ".claude/agents/story-prep-master.md"
-quality_gate_agent: ".claude/agents/quality-gate-verifier.md"
 code_review_agent: ".claude/agents/principal-code-reviewer.md"
 specialist_agents_folder: ".claude/agents/vt-bmad-dev-agents/"
 fallback_dev_agent: "_bmad/bmm/agents/dev.md"

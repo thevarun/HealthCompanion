@@ -23,7 +23,6 @@ sprintStatus: '{implementation_artifacts}/sprint-status.yaml'
 
 # Agent references
 storyPrepAgent: '.claude/agents/story-prep-master.md'
-qualityGateAgent: '.claude/agents/quality-gate-verifier.md'
 codeReviewAgent: '.claude/agents/principal-code-reviewer.md'
 specialistAgentsFolder: '.claude/agents/vt-bmad-dev-agents/'
 fallbackDevAgent: '_bmad/bmm/agents/dev.md'
@@ -195,7 +194,6 @@ Check all required components exist:
 
 **Agents:**
 - [ ] story-prep-master agent at `{storyPrepAgent}`
-- [ ] quality-gate-verifier agent at `{qualityGateAgent}`
 - [ ] principal-code-reviewer agent at `{codeReviewAgent}`
 - [ ] Fallback dev agent at `{fallbackDevAgent}`
 
@@ -214,7 +212,6 @@ Check all required components exist:
 ```
 Prerequisites Check:
   ✅ story-prep-master agent
-  ✅ quality-gate-verifier agent
   ✅ principal-code-reviewer agent
   ✅ Fallback dev agent (Amelia)
   ✅ Specialist agents folder (X specialists found)
@@ -261,6 +258,24 @@ Created X specialist agents for this epic:
   - frontend-forms (3 stories)
   - general-dev (2 stories - fallback)
 ```
+
+**5. Session Reload Prompt (if agents created):**
+
+If new specialist agents were created, prompt user to reload session:
+
+```
+New specialist agents created! To load them into Claude's context:
+1. Restart Claude session (recommended)
+2. Run this workflow again - it will resume from sidecar state
+
+[R] Restarted, ready to continue
+[L] Continue without restart (agents will use fallback loading)
+[S] Skip specialists, use fallback dev agent only
+```
+
+- IF R: Proceed to Section 6
+- IF L: Proceed to Section 6 (note limited specialist functionality)
+- IF S: Clear `specialist_agents_created` from sidecar, proceed to Section 6
 
 ### 6. Create Sidecar State File
 
@@ -309,15 +324,15 @@ Display the execution plan summary:
 
 **Epic:** [epic name]
 **Stories:** X total
-**Agents:** 4 orchestrated agents per story
+**Agents:** 3 orchestrated agents per story
 **Estimated Flow:**
 
 For each story:
 1. Create story file (story-prep-master)
-2. Implement (specialist or dev agent)
-3. Verify quality (quality-gate-verifier)
-4. Review code (principal-code-reviewer)
-5. Git commit
+2. Implement with TDD (specialist or dev agent)
+3. Visual inspection (UI stories only)
+4. Code review (principal-code-reviewer)
+5. Git commit (pre-commit hooks run tests)
 6. Update status
 
 **Ready to begin autonomous execution?**"
