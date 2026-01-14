@@ -19,7 +19,7 @@ spawnCodeReviewTemplate: '{workflow_path}/templates/spawn-code-review.md'
 # (orchestration uses sub-agents, not BMAD tasks)
 
 # State files
-sidecarFile: '{output_folder}/epic-execution-state.yaml'
+sidecarFolder: '{output_folder}/epic-executions'
 sprintStatus: '{implementation_artifacts}/sprint-status.yaml'
 
 # Agent references
