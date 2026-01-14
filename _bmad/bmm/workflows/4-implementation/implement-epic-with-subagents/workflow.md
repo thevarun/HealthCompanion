@@ -89,13 +89,12 @@ If a sidecar state file exists with pending work, step-01 will automatically rou
 
 ## AGENT COORDINATION
 
-This workflow orchestrates four specialized agents per story:
+This workflow orchestrates three specialized agents per story:
 
 | Agent | Purpose | Handoff |
 |-------|---------|---------|
 | **story-prep-master** | Create developer-ready story file from epic | Story file path |
-| **specialist/dev agent** | Implement story with tests | Files changed, coverage, test results |
-| **quality-gate-verifier** | Independent verification of implementation | Pass/fail with metrics |
-| **principal-code-reviewer** | Code review and quality assessment | Approval status, findings |
+| **specialist/dev agent** | Implement story with tests (TDD) | Files changed, coverage, test results |
+| **principal-code-reviewer** | Code review, quality assessment, auto-fixes | Approval status, findings |
 
 Each agent receives fresh context and returns structured handoff messages for orchestration.
