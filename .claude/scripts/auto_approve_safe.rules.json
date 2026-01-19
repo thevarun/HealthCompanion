@@ -32,6 +32,7 @@
     "^npm\\s+(test|run\\s+(test|lint|typecheck|type-check|check|build|dev|start)|install|i|ci)(\\s+.*)?$",
     "^yarn\\s+(test|lint|typecheck|type-check|check|build|dev|start|install|add|remove)(\\s+.*)?$",
     "^npx\\s+(tsc|eslint|prettier|vitest|jest)(\\s+.*)?$",
+    "^npx\\s+tsx\\s+[^|;&]+$",
 
     "^pytest(\\s+.*)?$",
     "^python(3)?\\s+-m\\s+pytest(\\s+.*)?$",
