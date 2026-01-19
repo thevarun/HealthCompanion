@@ -109,6 +109,24 @@ npm run db:studio        # Open Drizzle Studio
 npm run db:generate      # Generate migration from schema
 ```
 
+## Customizing This Template
+
+### Quick Rebrand Checklist
+
+| Task | Files | Est. Time |
+|------|-------|-----------|
+| Brand Colors | `tailwind.config.js` → `theme.extend.colors` | 30 min |
+| Typography | `src/app/layout.tsx`, `tailwind.config.js` | 20 min |
+| Logo & Assets | `/public/logo.svg`, `/public/favicon.ico` | 30 min |
+| App Name | Search/replace "VT SaaS Template" throughout `/src/` | 20 min |
+| Theme Variables | `src/app/globals.css` (shadcn/ui theming) | 20 min |
+
+### Advanced Customization
+
+- **Component Overrides**: shadcn/ui components live in `/src/components/ui/`. Modify base components or create variants using CVA.
+- **Layout Changes**: Update layouts in `/src/app/[locale]/(auth)/layout.tsx` and similar files. Adjust navigation structure and responsive breakpoints.
+- **Feature Removal**: Remove unwanted features by deleting routes from `/src/app/[locale]/`, cleaning up related components and API routes, and updating navigation.
+
 ### Project Structure
 
 ```
