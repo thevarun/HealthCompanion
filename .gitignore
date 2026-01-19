@@ -56,3 +56,19 @@ _bmad-output/epic-executions/
 # Claude auto-approve decisions
 .claude/auto_approve_safe.decisions.archived.jsonl
 .claude/auto_approve_safe.decisions.jsonl
+
+# NPM-managed Claude Code files (@torka/claude-qol)
+.claude/scripts/auto_approve_safe.py
+.claude/scripts/context-monitor.py
+.claude/scripts/__pycache__/
+.claude/commands/optimize-auto-approve-hook.md
+
+# NPM-managed Claude Code files (@torka/claude-workflows)
+.claude/commands/git-cleanup-and-merge.md
+.claude/commands/plan-parallelization.md
+.claude/commands/implement-epic-with-subagents.md
+.claude/agents/principal-code-reviewer.md
+.claude/agents/story-prep-master.md
+.claude/skills/agent-creator/
+.claude/skills/designer-founder/
+_bmad/bmm/workflows/4-implementation/implement-epic-with-subagents/
