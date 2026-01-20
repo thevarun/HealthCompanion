@@ -1,5 +1,5 @@
 import { AlertCircle, RefreshCw, X } from 'lucide-react';
-import React from 'react';
+import * as React from 'react';
 
 import { Button } from '@/components/ui/button';
 
