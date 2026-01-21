@@ -74,6 +74,8 @@ export async function middleware(
       const localePrefix = isLocale ? `/${locale}` : '';
 
       const signInUrl = new URL(`${localePrefix}/sign-in`, request.url);
+      // Store intended destination for redirect after sign-in
+      signInUrl.searchParams.set('redirect', request.nextUrl.pathname);
       return NextResponse.redirect(signInUrl);
     }
 

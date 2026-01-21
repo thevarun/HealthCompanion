@@ -55,9 +55,9 @@ development_status:
 
   # Epic 2: Complete Authentication Experience
   epic-2: in-progress
-  2-1-user-registration-with-email-password: in-progress
-  2-2-email-verification-flow: backlog
-  2-3-user-login-with-session-management: backlog
+  2-1-user-registration-with-email-password: done
+  2-2-email-verification-flow: done
+  2-3-user-login-with-session-management: done
   2-4-forgot-password-flow: backlog
   2-5-reset-password-page: backlog
   2-6-social-authentication-google-and-github: backlog

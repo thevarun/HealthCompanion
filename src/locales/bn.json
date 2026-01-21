@@ -78,7 +78,27 @@
   },
   "SignIn": {
     "meta_title": "Sign in",
-    "meta_description": "Seamlessly sign in to your account with our user-friendly login process."
+    "meta_description": "Seamlessly sign in to your account with our user-friendly login process.",
+    "title": "Sign In",
+    "subtitle": "Welcome back to VT SaaS Template",
+    "email_label": "Email",
+    "email_placeholder": "Enter your email",
+    "password_label": "Password",
+    "password_placeholder": "Enter your password",
+    "remember_me": "Keep me signed in",
+    "forgot_password": "Forgot password?",
+    "sign_in_button": "Sign In",
+    "signing_in": "Signing in...",
+    "no_account": "Don't have an account?",
+    "sign_up_link": "Sign up",
+    "or_continue_with": "Or continue with",
+    "back_to_home": "Back to Home",
+    "error_invalid_credentials": "Invalid email or password. Please check your credentials and try again.",
+    "error_network": "Network error. Please check your connection and try again.",
+    "error_too_many_requests": "Too many sign-in attempts. Please wait a few minutes and try again.",
+    "validation_email_invalid": "Invalid email address",
+    "validation_email_required": "Email is required",
+    "validation_password_required": "Password is required"
   },
   "SignUp": {
     "meta_title": "Sign up",
