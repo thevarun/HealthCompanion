@@ -22,8 +22,22 @@ const protectedPaths = [
   '/chat',
 ];
 
+// Routes that don't require email verification
+const verificationWhitelist = [
+  '/sign-in',
+  '/sign-up',
+  '/verify-email',
+  '/auth/',
+  '/forgot-password',
+  '/reset-password',
+];
+
 function isProtectedRoute(pathname: string): boolean {
   return protectedPaths.some(path => pathname.includes(path));
+}
+
+function requiresVerification(pathname: string): boolean {
+  return !verificationWhitelist.some(path => pathname.includes(path));
 }
 
 export async function middleware(
@@ -61,6 +75,18 @@ export async function middleware(
 
       const signInUrl = new URL(`${localePrefix}/sign-in`, request.url);
       return NextResponse.redirect(signInUrl);
+    }
+
+    // Check email verification for protected routes
+    if (user && !user.email_confirmed_at && requiresVerification(request.nextUrl.pathname)) {
+      const locale
+        = request.nextUrl.pathname.match(/^\/([^/]+)/)?.at(1) ?? '';
+      const isLocale = AllLocales.includes(locale as any);
+      const localePrefix = isLocale ? `/${locale}` : '';
+
+      const verifyUrl = new URL(`${localePrefix}/verify-email`, request.url);
+      verifyUrl.searchParams.set('email', user.email || '');
+      return NextResponse.redirect(verifyUrl);
     }
   }
 

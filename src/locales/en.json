@@ -147,6 +147,27 @@
   "DataTable": {
     "no_results": "No results."
   },
+  "VerifyEmail": {
+    "meta_title": "Verify Your Email",
+    "meta_description": "Verify your email address to complete your registration.",
+    "title": "Check your email",
+    "subtitle": "We sent a verification link to",
+    "message": "Click the link in the email to verify your account. If you don't see it, check your spam folder.",
+    "resend_button": "Click to resend email",
+    "resend_loading": "Sending...",
+    "resend_success": "Email sent!",
+    "resend_cooldown": "Resend in {seconds}s",
+    "resend_error": "Failed to send email. Please try again.",
+    "expired_title": "Link Expired",
+    "expired_message": "This verification link has expired. Click below to receive a new one.",
+    "error_title": "Verification Failed",
+    "error_message": "We couldn't verify your email. Please try again or contact support.",
+    "back_to_home": "Back to home",
+    "back_to_sign_in": "Back to sign in",
+    "wrong_email": "Wrong email?",
+    "try_different_email": "Sign up with a different address",
+    "success_message": "Email verified! Welcome to VT SaaS Template"
+  },
   "Errors": {
     "boundary": {
       "title": "Something Went Wrong",

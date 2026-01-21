@@ -12,9 +12,5 @@ export default async function CenteredLayout(props: { children: React.ReactNode 
     redirect('/dashboard');
   }
 
-  return (
-    <div className="flex min-h-screen items-center justify-center">
-      {props.children}
-    </div>
-  );
+  return <>{props.children}</>;
 }

@@ -120,9 +120,13 @@ describe('signUpPage', () => {
     });
   });
 
-  it('successfully creates account and shows success message', async () => {
+  it('successfully creates account and redirects to verify-email', async () => {
     const user = userEvent.setup();
     mockSignUp.mockResolvedValue({ data: { user: { email: 'test@example.com' } }, error: null });
+
+    // Mock window.location.href
+    delete (window as any).location;
+    (window as any).location = { href: '', origin: 'http://localhost:3000' };
 
     renderWithIntl(<SignUpPage />);
 
@@ -139,16 +143,14 @@ describe('signUpPage', () => {
     const submitButton = screen.getByRole('button', { name: /create account/i });
     await user.click(submitButton);
 
-    // Wait for success state
+    // Wait for redirect
     await waitFor(
       () => {
-        expect(screen.getByText(/check your email!/i)).toBeInTheDocument();
+        expect(window.location.href).toContain('/verify-email');
+        expect(window.location.href).toContain('email=test%40example.com');
       },
       { timeout: 1000 },
     );
-
-    expect(screen.getByText('test@example.com')).toBeInTheDocument();
-    expect(screen.getByText(/please click the link in the email/i)).toBeInTheDocument();
 
     expect(mockSignUp).toHaveBeenCalledWith({
       email: 'test@example.com',

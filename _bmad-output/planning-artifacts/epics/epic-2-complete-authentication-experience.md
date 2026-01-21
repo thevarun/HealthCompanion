@@ -312,3 +312,53 @@ So that **I know what's happening and can recover from errors**.
 **And** submit button remains accessible
 
 ---
+
+## UX Design Resources
+
+> **DEVELOPER NOTE: DO NOT BUILD FROM SCRATCH**
+>
+> All designs contain **production-ready React/TypeScript code**.
+> Use MagicPatterns MCP tools to extract code directly.
+> See **[Component Strategy](../ux-design/epic-2-auth-component-strategy.md)** for full extraction workflow.
+
+### Story-to-Design Mapping
+
+| Story | Screen | MagicPatterns URL | Files to Extract |
+|-------|--------|-------------------|------------------|
+| 2.1 | Sign Up | [View](https://www.magicpatterns.com/c/bxmfv74lgsrvfdrwaeqcrt) | `SignUpPage.tsx` |
+| 2.2 | Email Verification | [View](https://www.magicpatterns.com/c/3rhvxmnpjshhysr6p76xxd) | `EmailVerificationPage.tsx` |
+| 2.3 | Sign In | [View](https://www.magicpatterns.com/c/uudzfo47fhnhhhzfhftkua) | `SignInForm.tsx`, `SignInPage.tsx` |
+| 2.4 | Forgot Password | [View](https://www.magicpatterns.com/c/1xdwsbsectczdt1gpzyd5r) | `ForgotPasswordPage.tsx` |
+| 2.5 | Reset Password | [View](https://www.magicpatterns.com/c/mvjem6dcsdqzubf6kpavmg) | `ResetPasswordPage.tsx` |
+| 2.6 | Social Auth | [View](https://www.magicpatterns.com/c/uudzfo47fhnhhhzfhftkua) | `SocialAuthButtons` from `SignInForm.tsx` |
+| 2.7 | Profile Settings | [View](https://www.magicpatterns.com/c/4a3nbxktcjxj3w13dqwk9x) | `ProfileCard.tsx`, `DangerZone.tsx` |
+| 2.8 | Auth UI Polish | All above | Loading states, error handling patterns |
+
+### Extraction Command
+
+```
+mcp__magic-patterns__read_files(url: "<design-url>", fileNames: ["<ComponentFile>.tsx"])
+```
+
+### Adaptation Checklist (Apply to All Extracted Code)
+
+- [ ] Replace inline styles with project's Tailwind classes if different
+- [ ] Swap custom inputs for shadcn `Input` component
+- [ ] Add `"use client"` directive for Next.js
+- [ ] Wire up to Supabase auth methods
+- [ ] Add proper TypeScript types for form data
+- [ ] Integrate with project's toast notifications
+- [ ] Add i18n translations using `useTranslations`
+
+### Required shadcn Components
+
+```bash
+# Already installed: button, input, label, form, toast, separator
+# To install for this epic:
+npx shadcn@latest add checkbox card avatar alert
+```
+
+### Reference Documents
+
+- **Design Brief:** [epic-2-auth-design-brief.md](../ux-design/epic-2-auth-design-brief.md)
+- **Component Strategy:** [epic-2-auth-component-strategy.md](../ux-design/epic-2-auth-component-strategy.md)
