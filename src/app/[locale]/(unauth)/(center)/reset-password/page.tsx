@@ -285,7 +285,11 @@ export default function ResetPasswordPage() {
                 placeholder="••••••••"
                 aria-invalid={!!errors.password}
                 disabled={loading}
-                className="w-full rounded-lg border border-slate-300 bg-white px-4 py-2.5 text-slate-900 transition-all duration-200 placeholder:text-slate-400 focus:border-blue-500 focus:outline-none focus:ring-4 focus:ring-blue-500/10 disabled:cursor-not-allowed disabled:opacity-50"
+                className={`w-full rounded-lg border bg-white px-4 py-2.5 text-slate-900 transition-all duration-200 placeholder:text-slate-400 focus:outline-none focus:ring-4 disabled:cursor-not-allowed disabled:opacity-50 ${
+                  errors.password
+                    ? 'border-red-300 focus:border-red-500 focus:ring-red-500/10'
+                    : 'border-slate-300 focus:border-blue-500 focus:ring-blue-500/10'
+                }`}
                 {...register('password')}
               />
               {errors.password

@@ -227,7 +227,11 @@ export default function UserProfilePage() {
                   id="username"
                   type="text"
                   placeholder={t('username_placeholder')}
-                  className="flex h-11 w-full rounded-lg border border-slate-200 bg-white px-4 py-2.5 text-sm text-slate-900 shadow-sm transition-all placeholder:text-slate-400 focus:border-blue-500 focus:outline-none focus:ring-2 focus:ring-blue-500/20 disabled:cursor-not-allowed disabled:opacity-50"
+                  className={`flex h-11 w-full rounded-lg border bg-white px-4 py-2.5 text-sm text-slate-900 shadow-sm transition-all placeholder:text-slate-400 focus:outline-none focus:ring-2 disabled:cursor-not-allowed disabled:opacity-50 ${
+                    errors.username
+                      ? 'border-red-300 focus:border-red-500 focus:ring-red-500/20'
+                      : 'border-slate-200 focus:border-blue-500 focus:ring-blue-500/20'
+                  }`}
                   aria-invalid={!!errors.username}
                   disabled={saving}
                   {...register('username')}
@@ -258,7 +262,11 @@ export default function UserProfilePage() {
                 id="displayName"
                 type="text"
                 placeholder={t('display_name_placeholder')}
-                className="flex h-11 w-full rounded-lg border border-slate-200 bg-white px-4 py-2.5 text-sm text-slate-900 shadow-sm transition-all placeholder:text-slate-400 focus:border-blue-500 focus:outline-none focus:ring-2 focus:ring-blue-500/20 disabled:cursor-not-allowed disabled:opacity-50"
+                className={`flex h-11 w-full rounded-lg border bg-white px-4 py-2.5 text-sm text-slate-900 shadow-sm transition-all placeholder:text-slate-400 focus:outline-none focus:ring-2 disabled:cursor-not-allowed disabled:opacity-50 ${
+                  errors.displayName
+                    ? 'border-red-300 focus:border-red-500 focus:ring-red-500/20'
+                    : 'border-slate-200 focus:border-blue-500 focus:ring-blue-500/20'
+                }`}
                 aria-invalid={!!errors.displayName}
                 disabled={saving}
                 {...register('displayName')}

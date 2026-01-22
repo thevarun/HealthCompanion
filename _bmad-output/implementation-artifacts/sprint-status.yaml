@@ -54,7 +54,7 @@ development_status:
   epic-1-retrospective: done
 
   # Epic 2: Complete Authentication Experience
-  epic-2: in-progress
+  epic-2: done
   2-1-user-registration-with-email-password: done
   2-2-email-verification-flow: done
   2-3-user-login-with-session-management: done
@@ -62,7 +62,7 @@ development_status:
   2-5-reset-password-page: done
   2-6-social-authentication-google-and-github: done
   2-7-user-profile-page: done
-  2-8-auth-ui-polish-loading-and-error-states: backlog
+  2-8-auth-ui-polish-loading-and-error-states: done
   epic-2-retrospective: optional
 
   # Epic 3: User Onboarding & Welcome

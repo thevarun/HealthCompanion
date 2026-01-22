@@ -226,7 +226,11 @@ export default function ForgotPasswordPage() {
               id="email"
               type="email"
               placeholder={t('email_placeholder')}
-              className="w-full rounded-lg border border-slate-200 px-4 py-3 text-slate-900 outline-none transition-all placeholder:text-slate-400 focus:border-blue-500 focus:ring-2 focus:ring-blue-500/20 disabled:cursor-not-allowed disabled:opacity-50"
+              className={`w-full rounded-lg border px-4 py-3 text-slate-900 outline-none transition-all placeholder:text-slate-400 focus:ring-2 disabled:cursor-not-allowed disabled:opacity-50 ${
+                errors.email
+                  ? 'border-red-300 focus:border-red-500 focus:ring-red-500/20'
+                  : 'border-slate-200 focus:border-blue-500 focus:ring-blue-500/20'
+              }`}
               aria-invalid={!!errors.email}
               disabled={loading}
               {...register('email')}
