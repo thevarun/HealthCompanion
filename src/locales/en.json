@@ -188,6 +188,26 @@
     "try_different_email": "Sign up with a different address",
     "success_message": "Email verified! Welcome to VT SaaS Template"
   },
+  "ForgotPassword": {
+    "meta_title": "Forgot Password",
+    "meta_description": "Reset your password to regain access to your account.",
+    "title": "Forgot Password",
+    "subtitle": "Enter your email address and we'll send you a link to reset your password",
+    "email_label": "Email",
+    "email_placeholder": "Enter your email",
+    "submit_button": "Send Reset Link",
+    "sending": "Sending...",
+    "back_to_sign_in": "Back to sign in",
+    "remembered_password": "Remember your password?",
+    "success_title": "Check your email",
+    "success_message": "If an account exists with that email, you'll receive instructions to reset your password within a few minutes.",
+    "success_email_sent_to": "Email sent to:",
+    "success_note": "Didn't receive an email? Check your spam folder or try requesting a new reset link.",
+    "validation_email_invalid": "Please enter a valid email address",
+    "validation_email_required": "Email is required",
+    "error_rate_limit": "Too many password reset requests. Please try again in a few minutes.",
+    "error_network": "Network error. Please check your connection and try again."
+  },
   "Errors": {
     "boundary": {
       "title": "Something Went Wrong",
