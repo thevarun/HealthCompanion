@@ -1,7 +1,6 @@
 ---
 name: supabase-auth-specialist
 description: Supabase authentication story executor (registration, login, verification, reset, OAuth). Requires story number or name.
-tools: Read, Glob, Grep, Bash, Edit, Write
 model: sonnet
 ---
 

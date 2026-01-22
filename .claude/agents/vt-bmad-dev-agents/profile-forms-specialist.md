@@ -1,7 +1,6 @@
 ---
 name: profile-forms-specialist
 description: User profile and form validation story executor. Requires story number or name.
-tools: Read, Glob, Grep, Bash, Edit, Write
 model: sonnet
 ---
 

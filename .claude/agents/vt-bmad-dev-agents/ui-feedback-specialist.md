@@ -1,7 +1,6 @@
 ---
 name: ui-feedback-specialist
 description: UI feedback, loading states, and error handling story executor. Requires story number or name.
-tools: Read, Glob, Grep, Bash, Edit, Write
 model: sonnet
 ---
 
