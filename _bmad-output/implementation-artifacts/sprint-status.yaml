@@ -59,7 +59,7 @@ development_status:
   2-2-email-verification-flow: done
   2-3-user-login-with-session-management: done
   2-4-forgot-password-flow: done
-  2-5-reset-password-page: backlog
+  2-5-reset-password-page: done
   2-6-social-authentication-google-and-github: backlog
   2-7-user-profile-page: backlog
   2-8-auth-ui-polish-loading-and-error-states: backlog
