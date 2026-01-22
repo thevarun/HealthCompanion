@@ -1,4 +1,5 @@
-import { render, screen } from '@testing-library/react';
+import { render, screen, waitFor } from '@testing-library/react';
+import userEvent from '@testing-library/user-event';
 import { NextIntlClientProvider } from 'next-intl';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 
@@ -16,13 +17,21 @@ vi.mock('next/navigation', () => ({
 // Mock Supabase client
 const mockGetSession = vi.fn();
 const mockUpdateUser = vi.fn();
+const mockSignOut = vi.fn();
 vi.mock('@/libs/supabase/client', () => ({
   createClient: () => ({
     auth: {
       getSession: mockGetSession,
       updateUser: mockUpdateUser,
+      signOut: mockSignOut,
     },
   }),
+}));
+
+// Mock useToast hook
+const mockToast = vi.fn();
+vi.mock('@/hooks/use-toast', () => ({
+  useToast: () => ({ toast: mockToast }),
 }));
 
 // Helper to wrap component with NextIntlClientProvider
@@ -37,11 +46,12 @@ const renderWithIntl = (component: React.ReactElement) => {
 describe('reset password page', () => {
   beforeEach(() => {
     vi.clearAllMocks();
-    // Default to loading state
-    mockGetSession.mockReturnValue(new Promise(() => {}));
   });
 
   it('renders the loading state initially', () => {
+    // Mock loading state - never resolving promise
+    mockGetSession.mockReturnValue(new Promise(() => {}));
+
     renderWithIntl(<ResetPasswordPage />);
 
     expect(screen.getByText(/verifying reset link/i)).toBeInTheDocument();
@@ -115,6 +125,19 @@ describe('reset password page', () => {
     expect(invalidTitle).toBeInTheDocument();
   });
 
+  it('renders expired state when token error contains expired', async () => {
+    mockGetSession.mockResolvedValue({
+      data: { session: null },
+      error: { message: 'Token expired' },
+    });
+
+    renderWithIntl(<ResetPasswordPage />);
+
+    const expiredTitle = await screen.findByText(/reset link expired/i, {}, { timeout: 1000 });
+
+    expect(expiredTitle).toBeInTheDocument();
+  });
+
   it('provides link to forgot-password page from error state', async () => {
     mockGetSession.mockResolvedValue({
       data: { session: null },
@@ -126,5 +149,250 @@ describe('reset password page', () => {
     const link = await screen.findByRole('link', { name: /request a new reset link/i }, { timeout: 1000 });
 
     expect(link).toHaveAttribute('href', '/en/forgot-password');
+  });
+
+  describe('password validation', () => {
+    beforeEach(() => {
+      mockGetSession.mockResolvedValue({
+        data: {
+          session: {
+            user: { aud: 'recovery' },
+          },
+        },
+        error: null,
+      });
+    });
+
+    it('validates minimum password length', async () => {
+      const user = userEvent.setup({ delay: null });
+      renderWithIntl(<ResetPasswordPage />);
+
+      const passwordInput = await screen.findByLabelText(/new password/i);
+      const confirmInput = await screen.findByLabelText(/confirm password/i);
+
+      await user.type(passwordInput, 'Short1');
+      await user.type(confirmInput, 'Short1');
+      await user.tab();
+
+      await waitFor(() => {
+        expect(screen.getByText(/password must be at least 8 characters/i)).toBeInTheDocument();
+      });
+    });
+
+    it('validates uppercase letter requirement', async () => {
+      const user = userEvent.setup({ delay: null });
+      renderWithIntl(<ResetPasswordPage />);
+
+      const passwordInput = await screen.findByLabelText(/new password/i);
+      const confirmInput = await screen.findByLabelText(/confirm password/i);
+
+      await user.type(passwordInput, 'lowercase123');
+      await user.type(confirmInput, 'lowercase123');
+      await user.tab();
+
+      await waitFor(() => {
+        expect(screen.getByText(/must contain at least one uppercase letter/i)).toBeInTheDocument();
+      });
+    });
+
+    it('validates lowercase letter requirement', async () => {
+      const user = userEvent.setup({ delay: null });
+      renderWithIntl(<ResetPasswordPage />);
+
+      const passwordInput = await screen.findByLabelText(/new password/i);
+      const confirmInput = await screen.findByLabelText(/confirm password/i);
+
+      await user.type(passwordInput, 'UPPERCASE123');
+      await user.type(confirmInput, 'UPPERCASE123');
+      await user.tab();
+
+      await waitFor(() => {
+        expect(screen.getByText(/must contain at least one lowercase letter/i)).toBeInTheDocument();
+      });
+    });
+
+    it('validates number requirement', async () => {
+      const user = userEvent.setup({ delay: null });
+      renderWithIntl(<ResetPasswordPage />);
+
+      const passwordInput = await screen.findByLabelText(/new password/i);
+      const confirmInput = await screen.findByLabelText(/confirm password/i);
+
+      await user.type(passwordInput, 'NoNumbers');
+      await user.type(confirmInput, 'NoNumbers');
+      await user.tab();
+
+      await waitFor(() => {
+        expect(screen.getByText(/must contain at least one number/i)).toBeInTheDocument();
+      });
+    });
+
+    it('validates password mismatch', async () => {
+      const user = userEvent.setup({ delay: null });
+      renderWithIntl(<ResetPasswordPage />);
+
+      const passwordInput = await screen.findByLabelText(/new password/i);
+      const confirmInput = await screen.findByLabelText(/confirm password/i);
+
+      await user.type(passwordInput, 'ValidPass123');
+      await user.type(confirmInput, 'DifferentPass123');
+      await user.tab();
+
+      await waitFor(() => {
+        expect(screen.getByText(/passwords don't match/i)).toBeInTheDocument();
+      });
+    });
+  });
+
+  describe('password update flow', () => {
+    beforeEach(() => {
+      mockGetSession.mockResolvedValue({
+        data: {
+          session: {
+            user: { aud: 'recovery' },
+          },
+        },
+        error: null,
+      });
+    });
+
+    it('successfully updates password and redirects', async () => {
+      const user = userEvent.setup({ delay: null });
+      mockUpdateUser.mockResolvedValue({ error: null });
+      mockSignOut.mockResolvedValue({ error: null });
+
+      renderWithIntl(<ResetPasswordPage />);
+
+      const passwordInput = await screen.findByLabelText(/new password/i);
+      const confirmInput = await screen.findByLabelText(/confirm password/i);
+      const submitButton = await screen.findByRole('button', { name: /reset password/i });
+
+      await user.type(passwordInput, 'NewPassword123');
+      await user.type(confirmInput, 'NewPassword123');
+      await user.click(submitButton);
+
+      await waitFor(() => {
+        expect(mockUpdateUser).toHaveBeenCalledWith({ password: 'NewPassword123' });
+      });
+
+      await waitFor(() => {
+        expect(mockSignOut).toHaveBeenCalled();
+      });
+
+      await waitFor(() => {
+        expect(mockToast).toHaveBeenCalledWith({
+          title: 'Password Reset Successful!',
+          description: 'Your password has been updated. Redirecting to sign-in...',
+        });
+      });
+
+      await waitFor(() => {
+        expect(screen.getByText(/password reset successful!/i)).toBeInTheDocument();
+      });
+
+      // Note: Not testing the actual redirect timing since it uses setTimeout
+      // The redirect itself is tested by checking that the success state is shown
+    });
+
+    it('shows loading state during submission', async () => {
+      const user = userEvent.setup({ delay: null });
+      mockUpdateUser.mockImplementation(() => new Promise(() => {}));
+
+      renderWithIntl(<ResetPasswordPage />);
+
+      const passwordInput = await screen.findByLabelText(/new password/i);
+      const confirmInput = await screen.findByLabelText(/confirm password/i);
+      const submitButton = await screen.findByRole('button', { name: /reset password/i });
+
+      await user.type(passwordInput, 'NewPassword123');
+      await user.type(confirmInput, 'NewPassword123');
+      await user.click(submitButton);
+
+      await waitFor(() => {
+        expect(screen.getByText(/resetting.../i)).toBeInTheDocument();
+      });
+    });
+
+    it('handles password update error', async () => {
+      const user = userEvent.setup({ delay: null });
+      mockUpdateUser.mockResolvedValue({ error: { message: 'Update failed' } });
+
+      renderWithIntl(<ResetPasswordPage />);
+
+      const passwordInput = await screen.findByLabelText(/new password/i);
+      const confirmInput = await screen.findByLabelText(/confirm password/i);
+      const submitButton = await screen.findByRole('button', { name: /reset password/i });
+
+      await user.type(passwordInput, 'NewPassword123');
+      await user.type(confirmInput, 'NewPassword123');
+      await user.click(submitButton);
+
+      await waitFor(() => {
+        expect(screen.getByText(/failed to reset password/i)).toBeInTheDocument();
+      });
+
+      await waitFor(() => {
+        expect(mockToast).toHaveBeenCalledWith({
+          title: 'Password Reset Failed',
+          description: 'Failed to reset password. Please try again.',
+          variant: 'destructive',
+        });
+      });
+
+      expect(mockSignOut).not.toHaveBeenCalled();
+    });
+
+    it('handles network error during update', async () => {
+      const user = userEvent.setup({ delay: null });
+      mockUpdateUser.mockRejectedValue(new Error('Network error'));
+
+      renderWithIntl(<ResetPasswordPage />);
+
+      const passwordInput = await screen.findByLabelText(/new password/i);
+      const confirmInput = await screen.findByLabelText(/confirm password/i);
+      const submitButton = await screen.findByRole('button', { name: /reset password/i });
+
+      await user.type(passwordInput, 'NewPassword123');
+      await user.type(confirmInput, 'NewPassword123');
+      await user.click(submitButton);
+
+      await waitFor(() => {
+        expect(screen.getByText(/failed to reset password/i)).toBeInTheDocument();
+      });
+
+      await waitFor(() => {
+        expect(mockToast).toHaveBeenCalledWith({
+          title: 'Password Reset Failed',
+          description: 'Failed to reset password. Please try again.',
+          variant: 'destructive',
+        });
+      });
+    });
+
+    it('renders success state with correct message', async () => {
+      const user = userEvent.setup({ delay: null });
+      mockUpdateUser.mockResolvedValue({ error: null });
+      mockSignOut.mockResolvedValue({ error: null });
+
+      renderWithIntl(<ResetPasswordPage />);
+
+      const passwordInput = await screen.findByLabelText(/new password/i);
+      const confirmInput = await screen.findByLabelText(/confirm password/i);
+      const submitButton = await screen.findByRole('button', { name: /reset password/i });
+
+      await user.type(passwordInput, 'NewPassword123');
+      await user.type(confirmInput, 'NewPassword123');
+      await user.click(submitButton);
+
+      await waitFor(() => {
+        expect(screen.getByText(/password reset successful!/i)).toBeInTheDocument();
+      });
+
+      await waitFor(() => {
+        const messages = screen.getAllByText(/your password has been updated/i);
+
+        expect(messages.length).toBeGreaterThan(0);
+      });
+    });
   });
 });

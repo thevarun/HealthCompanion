@@ -10,9 +10,13 @@ import { useForm } from 'react-hook-form';
 import { z } from 'zod';
 
 import { PasswordInput } from '@/components/ui/password-input';
+import { useToast } from '@/hooks/use-toast';
 import { createClient } from '@/libs/supabase/client';
 
 type TokenState = 'loading' | 'valid' | 'expired' | 'invalid';
+
+// Redirect delay after successful password reset
+const REDIRECT_DELAY_MS = 2000;
 
 const createResetPasswordSchema = (t: ReturnType<typeof useTranslations<'ResetPassword'>>) =>
   z.object({
@@ -33,6 +37,7 @@ export default function ResetPasswordPage() {
   const params = useParams();
   const locale = params.locale as string;
   const router = useRouter();
+  const { toast } = useToast();
 
   const [tokenState, setTokenState] = useState<TokenState>('loading');
   const [loading, setLoading] = useState(false);
@@ -57,7 +62,17 @@ export default function ResetPasswordPage() {
       const supabase = createClient();
       const { data: { session }, error } = await supabase.auth.getSession();
 
-      if (error || !session || session.user.aud !== 'recovery') {
+      if (error) {
+        // Try to differentiate between expired and invalid tokens
+        if (error.message.includes('expired') || error.message.includes('Expired')) {
+          setTokenState('expired');
+        } else {
+          setTokenState('invalid');
+        }
+        return;
+      }
+
+      if (!session || session.user.aud !== 'recovery') {
         setTokenState('invalid');
         return;
       }
@@ -80,24 +95,53 @@ export default function ResetPasswordPage() {
       });
 
       if (error) {
-        setServerError(t('error_update_failed'));
+        const errorMessage = t('error_update_failed');
+        setServerError(errorMessage);
+        toast({
+          title: t('error_title'),
+          description: errorMessage,
+          variant: 'destructive',
+        });
         setLoading(false);
         return;
       }
+
+      // CRITICAL: Sign out to invalidate the recovery session
+      // This prevents token reuse attacks
+      await supabase.auth.signOut();
 
       // Success: show success state
       setIsSuccess(true);
       setLoading(false);
 
-      // Redirect to sign-in after 2 seconds
-      setTimeout(() => {
-        router.push(`/${locale}/sign-in`);
-      }, 2000);
+      // Show success toast
+      toast({
+        title: t('success_title'),
+        description: t('success_message'),
+      });
     } catch {
-      setServerError(t('error_update_failed'));
+      const errorMessage = t('error_update_failed');
+      setServerError(errorMessage);
+      toast({
+        title: t('error_title'),
+        description: errorMessage,
+        variant: 'destructive',
+      });
       setLoading(false);
     }
   };
+
+  // Handle redirect with cleanup on component unmount
+  useEffect(() => {
+    if (isSuccess) {
+      const timeoutId = setTimeout(() => {
+        router.push(`/${locale}/sign-in`);
+      }, REDIRECT_DELAY_MS);
+
+      return () => clearTimeout(timeoutId);
+    }
+    return undefined;
+  }, [isSuccess, router, locale]);
 
   // Loading state
   if (tokenState === 'loading') {

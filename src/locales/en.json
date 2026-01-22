@@ -232,6 +232,7 @@
     "invalid_title": "Invalid Reset Link",
     "invalid_message": "This password reset link is invalid or has already been used.",
     "invalid_action": "Request a New Reset Link",
+    "error_title": "Password Reset Failed",
     "error_passwords_match": "Passwords don't match",
     "error_weak_password": "Password doesn't meet requirements",
     "error_update_failed": "Failed to reset password. Please try again.",
