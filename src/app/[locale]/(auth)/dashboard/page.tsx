@@ -1,6 +1,7 @@
 import { cookies } from 'next/headers';
 import { getTranslations } from 'next-intl/server';
 
+import { VerificationToast } from '@/components/auth/VerificationToast';
 import { MessageState } from '@/features/dashboard/MessageState';
 import { TitleBar } from '@/features/dashboard/TitleBar';
 import { createClient } from '@/libs/supabase/server';
@@ -18,6 +19,7 @@ const DashboardIndexPage = async () => {
 
   return (
     <>
+      <VerificationToast />
       <TitleBar
         title={t('title_bar')}
         description={t('title_bar_description')}

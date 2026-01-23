@@ -5,4 +5,5 @@ import { AllLocales, AppConfig } from '@/utils/AppConfig';
 export const { usePathname, useRouter } = createNavigation({
   locales: AllLocales,
   localePrefix: AppConfig.localePrefix,
+  defaultLocale: AppConfig.defaultLocale,
 });
