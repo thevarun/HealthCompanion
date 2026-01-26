@@ -1,6 +1,6 @@
 'use client';
 
-import { Check, Loader2, X } from 'lucide-react';
+import { CheckCircle, Loader2, XCircle } from 'lucide-react';
 import { useTranslations } from 'next-intl';
 
 import { Input } from '@/components/ui/input';
@@ -34,8 +34,14 @@ export function UsernameInput({
   const showError = error && !isChecking;
 
   return (
-    <div className="space-y-2">
-      <Label htmlFor="username">{t('usernameLabel')}</Label>
+    <div className="w-full space-y-2">
+      <Label
+        htmlFor="username"
+        className="block text-sm font-medium text-slate-700 dark:text-slate-300"
+      >
+        {t('usernameLabel')}
+      </Label>
+
       <div className="relative">
         <Input
           id="username"
@@ -46,38 +52,47 @@ export function UsernameInput({
           onBlur={onBlur}
           placeholder={t('usernamePlaceholder')}
           className={cn(
-            'pr-10',
-            showSuccess && 'border-green-500 focus-visible:ring-green-500',
-            showError && 'border-red-500 focus-visible:ring-red-500',
+            'py-3 pr-10 transition-all duration-200',
+            isChecking && 'border-blue-500 focus-visible:ring-blue-500/20',
+            showSuccess && 'border-green-500 focus-visible:ring-green-500/20',
+            showError && 'border-red-500 focus-visible:ring-red-500/20',
           )}
+          aria-invalid={!!showError}
+          aria-describedby="username-helper"
         />
-        <div className="absolute right-3 top-1/2 -translate-y-1/2">
+        <div className="pointer-events-none absolute inset-y-0 right-0 flex items-center pr-3">
           {isChecking && (
-            <Loader2 className="size-5 animate-spin text-muted-foreground" />
+            <Loader2 className="size-5 animate-spin text-blue-500" />
           )}
           {showSuccess && (
-            <Check className="size-5 text-green-500" />
+            <CheckCircle className="size-5 text-green-500" />
           )}
           {showError && (
-            <X className="size-5 text-red-500" />
+            <XCircle className="size-5 text-red-500" />
           )}
         </div>
       </div>
-      {isChecking && (
-        <p className="text-sm text-muted-foreground">
-          {t('usernameChecking')}
+
+      <div className="flex min-h-[20px] items-start justify-between text-xs">
+        <p
+          id="username-helper"
+          className={cn(
+            showError ? 'text-red-500' : 'text-muted-foreground',
+          )}
+        >
+          {error
+            ? (error === 'Username taken' ? t('usernameTaken') : t('usernameInvalid'))
+            : isChecking
+              ? t('usernameChecking')
+              : t('usernameRequirements')}
         </p>
-      )}
-      {showSuccess && (
-        <p className="text-sm text-green-600">
-          {t('usernameAvailable')}
-        </p>
-      )}
-      {showError && (
-        <p className="text-sm text-red-600">
-          {error === 'Username taken' ? t('usernameTaken') : t('usernameInvalid')}
-        </p>
-      )}
+
+        {showSuccess && (
+          <span className="font-medium text-green-600">
+            {t('usernameAvailable')}
+          </span>
+        )}
+      </div>
     </div>
   );
 }

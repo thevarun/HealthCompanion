@@ -68,7 +68,7 @@ development_status:
   # Epic 3: User Onboarding & Welcome
   epic-3: in-progress
   3-1-onboarding-wizard-step-1-username: review
-  3-2-onboarding-wizard-step-2-feature-tour: backlog
+  3-2-onboarding-wizard-step-2-feature-tour: ready-for-dev
   3-3-onboarding-wizard-step-3-preferences: backlog
   3-4-onboarding-progress-and-skip: backlog
   3-5-dashboard-welcome-state: backlog

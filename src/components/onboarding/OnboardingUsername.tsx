@@ -1,6 +1,7 @@
 'use client';
 
 import { zodResolver } from '@hookform/resolvers/zod';
+import { ArrowRight } from 'lucide-react';
 import { useRouter } from 'next/navigation';
 import { useTranslations } from 'next-intl';
 import { useState } from 'react';
@@ -8,7 +9,6 @@ import { useForm } from 'react-hook-form';
 import { z } from 'zod';
 
 import { Button } from '@/components/ui/button';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { useToast } from '@/hooks/use-toast';
 import { useUsernameValidation } from '@/hooks/useUsernameValidation';
 
@@ -85,40 +85,62 @@ export function OnboardingUsername() {
 
   const isFormValid = validation.isValid && validation.isAvailable && !validation.isChecking;
 
+  const handleSkip = () => {
+    router.push('/onboarding?step=2');
+  };
+
   return (
-    <div className="flex min-h-screen items-center justify-center bg-background p-4">
-      <Card className="w-full max-w-md">
-        <CardHeader className="space-y-4">
-          <ProgressIndicator currentStep={1} totalSteps={3} />
-          <div>
-            <CardTitle className="text-2xl">{t('step1Title')}</CardTitle>
-            <CardDescription className="mt-2">{t('step1Description')}</CardDescription>
-          </div>
-        </CardHeader>
-        <CardContent>
-          <form onSubmit={handleSubmit(onSubmit)} className="space-y-6">
-            <UsernameInput
-              {...register('username')}
-              value={username}
-              onChange={(value) => {
-                const event = { target: { value, name: 'username' } };
-                register('username').onChange(event);
-              }}
-              isValid={validation.isValid}
-              isAvailable={validation.isAvailable}
-              error={validation.error}
-              isChecking={validation.isChecking}
-            />
+    <div className="flex min-h-screen w-full items-center justify-center bg-gradient-to-br from-slate-50 to-blue-50 p-4 dark:from-slate-950 dark:to-slate-900">
+      <div className="w-full max-w-md rounded-2xl border border-slate-100/50 bg-white p-8 shadow-xl dark:border-slate-800/50 dark:bg-slate-900 md:p-10">
+        {/* Progress */}
+        <ProgressIndicator currentStep={1} totalSteps={3} />
+
+        {/* Header */}
+        <div className="mb-8 text-center">
+          <h1 className="mb-2 text-2xl font-bold tracking-tight text-slate-900 dark:text-slate-50">
+            {t('step1Title')}
+          </h1>
+          <p className="text-slate-500 dark:text-slate-400">
+            {t('step1Description')}
+          </p>
+        </div>
+
+        {/* Form */}
+        <form onSubmit={handleSubmit(onSubmit)} className="space-y-6">
+          <UsernameInput
+            {...register('username')}
+            value={username}
+            onChange={(value) => {
+              const event = { target: { value, name: 'username' } };
+              register('username').onChange(event);
+            }}
+            isValid={validation.isValid}
+            isAvailable={validation.isAvailable}
+            error={validation.error}
+            isChecking={validation.isChecking}
+          />
+
+          <div className="space-y-4 pt-4">
             <Button
               type="submit"
-              className="w-full"
+              className="w-full gap-2 shadow-md transition-all duration-200 hover:-translate-y-0.5 hover:shadow-lg"
               disabled={!isFormValid || isSubmitting}
             >
-              {isSubmitting ? 'Saving...' : t('continue')}
+              <span>{isSubmitting ? t('saving') : t('continue')}</span>
+              <ArrowRight className="size-4" />
             </Button>
-          </form>
-        </CardContent>
-      </Card>
+
+            <Button
+              type="button"
+              variant="ghost"
+              className="w-full text-sm text-muted-foreground hover:text-foreground"
+              onClick={handleSkip}
+            >
+              {t('skipForNow')}
+            </Button>
+          </div>
+        </form>
+      </div>
     </div>
   );
 }

@@ -8,6 +8,7 @@ import {
   MessageSquare,
   Settings,
   User,
+  UserPlus,
 } from 'lucide-react';
 import { usePathname } from 'next/navigation';
 import type { ReactNode } from 'react';
@@ -55,6 +56,7 @@ export function MainAppShell({ children }: MainAppShellProps) {
     { icon: CreditCard, label: 'Pricing', href: '/pricing', disabled: true },
     { icon: Settings, label: 'Settings', href: '/settings', disabled: true },
     { icon: User, label: 'Profile', href: '/profile', disabled: true },
+    { icon: UserPlus, label: 'Onboarding', href: '/onboarding' },
   ];
 
   // AC #3: Active state detection (handles nested routes like /chat/[threadId])
