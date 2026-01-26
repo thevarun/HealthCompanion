@@ -5,7 +5,7 @@ import { z } from 'zod';
 
 import { db } from '@/libs/DB';
 import { createClient } from '@/libs/supabase/server';
-import { userProfiles } from '@/models/Schema';
+import { userPreferences } from '@/models/Schema';
 
 const usernameSchema = z.object({
   username: z
@@ -49,8 +49,8 @@ export async function POST(request: Request) {
     // Check if username exists in database
     const existingProfile = await db
       .select()
-      .from(userProfiles)
-      .where(eq(userProfiles.username, username))
+      .from(userPreferences)
+      .where(eq(userPreferences.username, username))
       .limit(1);
 
     // If username exists and belongs to current user, it's available

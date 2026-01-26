@@ -371,6 +371,17 @@
     "feature3Title": "Secure & Private",
     "feature3Description": "Your data is protected with enterprise-grade security and encryption",
     "feature4Title": "Fast & Responsive",
-    "feature4Description": "Lightning-fast performance optimized for all devices"
+    "feature4Description": "Lightning-fast performance optimized for all devices",
+    "step3Title": "Set Your Preferences",
+    "step3Description": "Customize your experience to suit your needs",
+    "notificationsLabel": "Email Notifications",
+    "notificationsDescription": "Receive updates and important alerts",
+    "languageLabel": "Language",
+    "languageDescription": "Choose your preferred language",
+    "languageEn": "English",
+    "languageHi": "Hindi",
+    "languageBn": "Bengali",
+    "completeSetup": "Complete Setup",
+    "successMessage": "You're all set! Redirecting to dashboard..."
   }
 }

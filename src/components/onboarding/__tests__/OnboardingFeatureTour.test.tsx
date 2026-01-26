@@ -1,15 +1,9 @@
 import { render, screen } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
-import { useRouter } from 'next/navigation';
 import { useTranslations } from 'next-intl';
-import { describe, expect, it, vi } from 'vitest';
+import { beforeEach, describe, expect, it, vi } from 'vitest';
 
 import { OnboardingFeatureTour } from '../OnboardingFeatureTour';
-
-// Mock next/navigation
-vi.mock('next/navigation', () => ({
-  useRouter: vi.fn(),
-}));
 
 // Mock next-intl
 vi.mock('next-intl', () => ({
@@ -17,7 +11,6 @@ vi.mock('next-intl', () => ({
 }));
 
 describe('OnboardingFeatureTour', () => {
-  const mockPush = vi.fn();
   const mockTranslations: Record<string, string> = {
     step2Title: 'Discover What You Can Do',
     step2Description: 'Here are some of the key features you\'ll have access to',
@@ -34,14 +27,26 @@ describe('OnboardingFeatureTour', () => {
     progressStep: 'Step 2 of 3',
   };
 
+  // Mock window.location
+  const originalLocation = window.location;
+
   beforeEach(() => {
     vi.clearAllMocks();
-    (useRouter as ReturnType<typeof vi.fn>).mockReturnValue({
-      push: mockPush,
-    });
     (useTranslations as ReturnType<typeof vi.fn>).mockReturnValue(
       (key: string) => mockTranslations[key] || key,
     );
+    // Mock window.location.href
+    Object.defineProperty(window, 'location', {
+      writable: true,
+      value: { ...originalLocation, href: '' },
+    });
+  });
+
+  afterEach(() => {
+    Object.defineProperty(window, 'location', {
+      writable: true,
+      value: originalLocation,
+    });
   });
 
   it('renders the component with header and description', () => {
@@ -87,8 +92,7 @@ describe('OnboardingFeatureTour', () => {
     const continueButton = screen.getByRole('button', { name: /Continue/i });
     await user.click(continueButton);
 
-    expect(mockPush).toHaveBeenCalledWith('/onboarding?step=3');
-    expect(mockPush).toHaveBeenCalledTimes(1);
+    expect(window.location.href).toBe('/onboarding?step=3');
   });
 
   it('navigates to step 3 when Skip button is clicked', async () => {
@@ -98,8 +102,7 @@ describe('OnboardingFeatureTour', () => {
     const skipButton = screen.getByRole('button', { name: /Skip for now/i });
     await user.click(skipButton);
 
-    expect(mockPush).toHaveBeenCalledWith('/onboarding?step=3');
-    expect(mockPush).toHaveBeenCalledTimes(1);
+    expect(window.location.href).toBe('/onboarding?step=3');
   });
 
   it('has correct grid layout classes for responsive design', () => {

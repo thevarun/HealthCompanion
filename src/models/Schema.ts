@@ -11,7 +11,6 @@
 import {
   boolean,
   index,
-  integer,
   pgSchema,
   pgTable,
   text,
@@ -19,7 +18,9 @@ import {
   uuid,
 } from 'drizzle-orm/pg-core';
 
-// User profiles table in the public schema
+// DEPRECATED: User profiles table in the public schema
+// This table is shared across multiple projects. Do not use for this project.
+// Use health_companion.user_preferences instead.
 export const userProfiles = pgTable(
   'user_profiles',
   {
@@ -27,8 +28,6 @@ export const userProfiles = pgTable(
     userId: uuid('user_id').notNull().unique(),
     username: text('username').unique(),
     displayName: text('display_name'),
-    onboardingCompletedAt: timestamp('onboarding_completed_at', { withTimezone: true }),
-    onboardingStep: integer('onboarding_step').default(0).notNull(),
     createdAt: timestamp('created_at', { withTimezone: true })
       .defaultNow()
       .notNull(),
@@ -71,5 +70,28 @@ export const threads = healthCompanionSchema.table(
       table.userId,
       table.archived,
     ),
+  }),
+);
+
+// User preferences table for this project (isolated from public.user_profiles)
+export const userPreferences = healthCompanionSchema.table(
+  'user_preferences',
+  {
+    id: uuid('id').defaultRandom().primaryKey(),
+    userId: uuid('user_id').notNull().unique(),
+    username: text('username').unique(),
+    displayName: text('display_name'),
+    emailNotifications: boolean('email_notifications').default(true).notNull(),
+    language: text('language').default('en').notNull(),
+    createdAt: timestamp('created_at', { withTimezone: true })
+      .defaultNow()
+      .notNull(),
+    updatedAt: timestamp('updated_at', { withTimezone: true })
+      .defaultNow()
+      .notNull(),
+  },
+  table => ({
+    userIdIdx: index('idx_user_preferences_user_id').on(table.userId),
+    usernameIdx: index('idx_user_preferences_username').on(table.username),
   }),
 );

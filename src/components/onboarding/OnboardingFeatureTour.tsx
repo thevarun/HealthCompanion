@@ -1,7 +1,6 @@
 'use client';
 
 import { ArrowRight, Globe, MessageSquare, Shield, Zap } from 'lucide-react';
-import { useRouter } from 'next/navigation';
 import { useTranslations } from 'next-intl';
 
 import { Button } from '@/components/ui/button';
@@ -32,14 +31,15 @@ function FeatureCard({ icon: Icon, title, description }: FeatureCardProps) {
 
 export function OnboardingFeatureTour() {
   const t = useTranslations('Onboarding');
-  const router = useRouter();
 
   const handleContinue = () => {
-    router.push('/onboarding?step=3');
+    // Use hard navigation for server component page with query params
+    window.location.href = '/onboarding?step=3';
   };
 
   const handleSkip = () => {
-    router.push('/onboarding?step=3');
+    // Use hard navigation for server component page with query params
+    window.location.href = '/onboarding?step=3';
   };
 
   const features = [

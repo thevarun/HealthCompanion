@@ -7,7 +7,7 @@ type ValidationState = {
   isChecking: boolean;
 };
 
-export function useUsernameValidation(username: string, debounceMs: number = 300) {
+export function useUsernameValidation(username: string, skip: boolean = false, debounceMs: number = 300) {
   const [state, setState] = useState<ValidationState>({
     isValid: false,
     isAvailable: null,
@@ -16,6 +16,17 @@ export function useUsernameValidation(username: string, debounceMs: number = 300
   });
 
   useEffect(() => {
+    // If skip is true, return valid state (used when username hasn't changed)
+    if (skip) {
+      setState({
+        isValid: true,
+        isAvailable: true,
+        error: null,
+        isChecking: false,
+      });
+      return;
+    }
+
     // Reset state if username is empty
     if (!username) {
       setState({
@@ -105,7 +116,7 @@ export function useUsernameValidation(username: string, debounceMs: number = 300
     }, debounceMs);
 
     return () => clearTimeout(timeoutId);
-  }, [username, debounceMs]);
+  }, [username, skip, debounceMs]);
 
   return state;
 }

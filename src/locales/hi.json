@@ -367,6 +367,17 @@
     "feature3Title": "सुरक्षित और निजी",
     "feature3Description": "आपका डेटा एंटरप्राइज-ग्रेड सुरक्षा और एन्क्रिप्शन से सुरक्षित है",
     "feature4Title": "तेज़ और उत्तरदायी",
-    "feature4Description": "सभी उपकरणों के लिए अनुकूलित बिजली-तेज़ प्रदर्शन"
+    "feature4Description": "सभी उपकरणों के लिए अनुकूलित बिजली-तेज़ प्रदर्शन",
+    "step3Title": "अपनी प्राथमिकताएं सेट करें",
+    "step3Description": "अपनी आवश्यकताओं के अनुरूप अपने अनुभव को अनुकूलित करें",
+    "notificationsLabel": "ईमेल सूचनाएं",
+    "notificationsDescription": "अपडेट और महत्वपूर्ण अलर्ट प्राप्त करें",
+    "languageLabel": "भाषा",
+    "languageDescription": "अपनी पसंदीदा भाषा चुनें",
+    "languageEn": "English",
+    "languageHi": "हिंदी",
+    "languageBn": "বাংলা",
+    "completeSetup": "सेटअप पूरा करें",
+    "successMessage": "आप तैयार हैं! डैशबोर्ड पर पुनर्निर्देशित किया जा रहा है..."
   }
 }

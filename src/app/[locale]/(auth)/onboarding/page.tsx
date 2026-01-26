@@ -5,10 +5,11 @@ import { redirect } from 'next/navigation';
 import { getTranslations } from 'next-intl/server';
 
 import { OnboardingFeatureTour } from '@/components/onboarding/OnboardingFeatureTour';
+import { OnboardingPreferences } from '@/components/onboarding/OnboardingPreferences';
 import { OnboardingUsername } from '@/components/onboarding/OnboardingUsername';
 import { db } from '@/libs/DB';
 import { createClient } from '@/libs/supabase/server';
-import { userProfiles } from '@/models/Schema';
+import { userPreferences } from '@/models/Schema';
 
 type Props = {
   searchParams: Promise<{ step?: string }>;
@@ -21,6 +22,15 @@ export async function generateMetadata(): Promise<Metadata> {
     title: t('meta_title'),
     description: t('meta_description'),
   };
+}
+
+/**
+ * Generate a default placeholder username from user ID
+ * Format: user_XXXXXX (first 6 chars of UUID without hyphens)
+ */
+function generateDefaultUsername(userId: string): string {
+  const cleanId = userId.replace(/-/g, '').substring(0, 6).toLowerCase();
+  return `user_${cleanId}`;
 }
 
 export default async function OnboardingPage({ searchParams }: Props) {
@@ -37,32 +47,36 @@ export default async function OnboardingPage({ searchParams }: Props) {
     redirect('/sign-in');
   }
 
-  // Check if onboarding is already completed
-  const profile = await db
+  // Fetch existing user preferences (if any)
+  const existingPreferences = await db
     .select()
-    .from(userProfiles)
-    .where(eq(userProfiles.userId, user.id))
+    .from(userPreferences)
+    .where(eq(userPreferences.userId, user.id))
     .limit(1);
 
-  if (profile[0]?.onboardingCompletedAt) {
-    redirect('/dashboard');
-  }
+  const preferences = existingPreferences[0];
 
-  // Determine which step to show
-  const onboardingStep = profile[0]?.onboardingStep ?? 0;
+  // Prepare data to pass to components
+  const defaultUsername = generateDefaultUsername(user.id);
+  const initialData = {
+    username: preferences?.username ?? defaultUsername,
+    displayName: preferences?.displayName ?? '',
+    emailNotifications: preferences?.emailNotifications ?? true,
+    language: preferences?.language ?? 'en',
+    isNewUser: !preferences,
+  };
 
-  // Validate step access (can't skip ahead)
-  if (step > onboardingStep + 1) {
-    // User trying to skip - redirect to their current step
-    redirect(`/onboarding?step=${onboardingStep + 1}`);
-  }
+  // Validate step (1-3 only)
+  const validStep = Math.min(Math.max(step, 1), 3);
 
-  // Render appropriate component
-  switch (step) {
+  // Render appropriate component with initial data
+  switch (validStep) {
+    case 3:
+      return <OnboardingPreferences initialData={initialData} />;
     case 2:
       return <OnboardingFeatureTour />;
     case 1:
     default:
-      return <OnboardingUsername />;
+      return <OnboardingUsername initialData={initialData} />;
   }
 }

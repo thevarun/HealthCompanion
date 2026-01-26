@@ -367,6 +367,17 @@
     "feature3Title": "সুরক্ষিত এবং ব্যক্তিগত",
     "feature3Description": "আপনার ডেটা এন্টারপ্রাইজ-গ্রেড নিরাপত্তা এবং এনক্রিপশন দ্বারা সুরক্ষিত",
     "feature4Title": "দ্রুত এবং প্রতিক্রিয়াশীল",
-    "feature4Description": "সমস্ত ডিভাইসের জন্য অপ্টিমাইজ করা বিদ্যুৎ-দ্রুত কর্মক্ষমতা"
+    "feature4Description": "সমস্ত ডিভাইসের জন্য অপ্টিমাইজ করা বিদ্যুৎ-দ্রুত কর্মক্ষমতা",
+    "step3Title": "আপনার পছন্দসমূহ সেট করুন",
+    "step3Description": "আপনার প্রয়োজন অনুসারে আপনার অভিজ্ঞতা কাস্টমাইজ করুন",
+    "notificationsLabel": "ইমেল বিজ্ঞপ্তি",
+    "notificationsDescription": "আপডেট এবং গুরুত্বপূর্ণ সতর্কতা পান",
+    "languageLabel": "ভাষা",
+    "languageDescription": "আপনার পছন্দের ভাষা চয়ন করুন",
+    "languageEn": "English",
+    "languageHi": "हिंदी",
+    "languageBn": "বাংলা",
+    "completeSetup": "সেটআপ সম্পূর্ণ করুন",
+    "successMessage": "আপনি সব সেট! ড্যাশবোর্ডে পুনঃনির্দেশিত হচ্ছে..."
   }
 }

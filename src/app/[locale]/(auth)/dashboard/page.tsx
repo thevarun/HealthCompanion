@@ -1,10 +1,14 @@
+import { eq } from 'drizzle-orm';
 import { cookies } from 'next/headers';
+import { redirect } from 'next/navigation';
 import { getTranslations } from 'next-intl/server';
 
 import { VerificationToast } from '@/components/auth/VerificationToast';
 import { MessageState } from '@/features/dashboard/MessageState';
 import { TitleBar } from '@/features/dashboard/TitleBar';
+import { db } from '@/libs/DB';
 import { createClient } from '@/libs/supabase/server';
+import { userPreferences } from '@/models/Schema';
 
 const DashboardIndexPage = async () => {
   const t = await getTranslations('DashboardIndex');
@@ -13,6 +17,19 @@ const DashboardIndexPage = async () => {
   const cookieStore = await cookies();
   const supabase = createClient(cookieStore);
   const { data: { user } } = await supabase.auth.getUser();
+
+  // Redirect new users to onboarding
+  if (user) {
+    const existingPreferences = await db
+      .select()
+      .from(userPreferences)
+      .where(eq(userPreferences.userId, user.id))
+      .limit(1);
+
+    if (existingPreferences.length === 0) {
+      redirect('/onboarding');
+    }
+  }
 
   // Extract name or email for personalized greeting
   const displayName = user?.user_metadata?.full_name || user?.email?.split('@')[0] || 'User';

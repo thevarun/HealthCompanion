@@ -24,7 +24,14 @@ const usernameFormSchema = z.object({
 
 type UsernameFormData = z.infer<typeof usernameFormSchema>;
 
-export function OnboardingUsername() {
+type OnboardingUsernameProps = {
+  initialData: {
+    username: string;
+    isNewUser: boolean;
+  };
+};
+
+export function OnboardingUsername({ initialData }: OnboardingUsernameProps) {
   const t = useTranslations('Onboarding');
   const { toast } = useToast();
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -38,18 +45,26 @@ export function OnboardingUsername() {
     resolver: zodResolver(usernameFormSchema),
     mode: 'onChange',
     defaultValues: {
-      username: '',
+      username: initialData.username,
     },
   });
 
   const username = watch('username');
-  const validation = useUsernameValidation(username);
+  // Skip availability check if username hasn't changed from initial value
+  const skipAvailabilityCheck = username === initialData.username && !initialData.isNewUser;
+  const validation = useUsernameValidation(username, skipAvailabilityCheck);
 
   const handleUsernameChange = (value: string) => {
     setValue('username', value, { shouldValidate: true });
   };
 
   const onSubmit = async (data: UsernameFormData) => {
+    // If username unchanged and user already exists, just proceed
+    if (skipAvailabilityCheck) {
+      window.location.href = '/onboarding?step=2';
+      return;
+    }
+
     if (!validation.isValid || !validation.isAvailable) {
       return;
     }
@@ -90,7 +105,10 @@ export function OnboardingUsername() {
     }
   };
 
-  const isFormValid = isZodValid && validation.isValid && validation.isAvailable && !validation.isChecking;
+  // Form is valid if:
+  // - Username passes Zod validation AND
+  // - Either username is unchanged (skipAvailabilityCheck) OR it's available
+  const isFormValid = isZodValid && (skipAvailabilityCheck || (validation.isValid && validation.isAvailable && !validation.isChecking));
 
   const handleSkip = () => {
     // Use hard navigation for server component page with query params
@@ -118,10 +136,10 @@ export function OnboardingUsername() {
           <UsernameInput
             value={username}
             onChange={handleUsernameChange}
-            isValid={validation.isValid}
-            isAvailable={validation.isAvailable}
-            error={validation.error}
-            isChecking={validation.isChecking}
+            isValid={skipAvailabilityCheck || validation.isValid}
+            isAvailable={skipAvailabilityCheck || validation.isAvailable}
+            error={skipAvailabilityCheck ? null : validation.error}
+            isChecking={skipAvailabilityCheck ? false : validation.isChecking}
           />
 
           <div className="space-y-4 pt-4">

@@ -15,6 +15,20 @@
       "when": 1769153606586,
       "tag": "0001_normal_scorpion",
       "breakpoints": true
+    },
+    {
+      "idx": 2,
+      "version": "7",
+      "when": 1769419027829,
+      "tag": "0002_elite_iron_monger",
+      "breakpoints": true
+    },
+    {
+      "idx": 3,
+      "version": "7",
+      "when": 1769421237398,
+      "tag": "0003_tidy_skaar",
+      "breakpoints": true
     }
   ]
 }

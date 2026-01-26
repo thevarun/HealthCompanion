@@ -5,7 +5,7 @@ import { z } from 'zod';
 
 import { db } from '@/libs/DB';
 import { createClient } from '@/libs/supabase/server';
-import { userProfiles } from '@/models/Schema';
+import { userPreferences } from '@/models/Schema';
 
 const updateUsernameSchema = z.object({
   username: z
@@ -49,8 +49,8 @@ export async function PATCH(request: Request) {
     // Check if username is already taken by another user
     const existingProfile = await db
       .select()
-      .from(userProfiles)
-      .where(eq(userProfiles.username, username))
+      .from(userPreferences)
+      .where(eq(userPreferences.username, username))
       .limit(1);
 
     const existingUser = existingProfile[0];
@@ -61,30 +61,30 @@ export async function PATCH(request: Request) {
       );
     }
 
-    // Get current user profile
+    // Get current user preferences
     const currentProfile = await db
       .select()
-      .from(userProfiles)
-      .where(eq(userProfiles.userId, user.id))
+      .from(userPreferences)
+      .where(eq(userPreferences.userId, user.id))
       .limit(1);
 
     const profile = currentProfile[0];
     if (profile) {
       // Update existing profile
       await db
-        .update(userProfiles)
+        .update(userPreferences)
         .set({
           username,
-          onboardingStep: 1,
           updatedAt: new Date(),
         })
-        .where(eq(userProfiles.userId, user.id));
+        .where(eq(userPreferences.userId, user.id));
     } else {
-      // Create new profile
-      await db.insert(userProfiles).values({
+      // Create new profile with default preferences
+      await db.insert(userPreferences).values({
         userId: user.id,
         username,
-        onboardingStep: 1,
+        emailNotifications: true,
+        language: 'en',
       });
     }
 
