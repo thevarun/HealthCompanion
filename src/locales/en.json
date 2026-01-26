@@ -361,6 +361,16 @@
     "progressStep": "Step {current} of {total}",
     "stepAriaLabel": "Step {step}{isCurrent, select, true { (Current)} other {}}",
     "errorSaving": "Failed to save. Please try again.",
-    "errorNetwork": "Network error. Please check your connection."
+    "errorNetwork": "Network error. Please check your connection.",
+    "step2Title": "Discover What You Can Do",
+    "step2Description": "Here are some of the key features you'll have access to",
+    "feature1Title": "AI-Powered Chat",
+    "feature1Description": "Intelligent conversations powered by advanced AI to help you get things done",
+    "feature2Title": "Multi-Language Support",
+    "feature2Description": "Available in English, Hindi, and Bengali for a localized experience",
+    "feature3Title": "Secure & Private",
+    "feature3Description": "Your data is protected with enterprise-grade security and encryption",
+    "feature4Title": "Fast & Responsive",
+    "feature4Description": "Lightning-fast performance optimized for all devices"
   }
 }

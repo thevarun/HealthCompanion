@@ -4,10 +4,15 @@ import { cookies } from 'next/headers';
 import { redirect } from 'next/navigation';
 import { getTranslations } from 'next-intl/server';
 
+import { OnboardingFeatureTour } from '@/components/onboarding/OnboardingFeatureTour';
 import { OnboardingUsername } from '@/components/onboarding/OnboardingUsername';
 import { db } from '@/libs/DB';
 import { createClient } from '@/libs/supabase/server';
 import { userProfiles } from '@/models/Schema';
+
+type Props = {
+  searchParams: Promise<{ step?: string }>;
+};
 
 export async function generateMetadata(): Promise<Metadata> {
   const t = await getTranslations('Onboarding');
@@ -18,7 +23,10 @@ export async function generateMetadata(): Promise<Metadata> {
   };
 }
 
-export default async function OnboardingPage() {
+export default async function OnboardingPage({ searchParams }: Props) {
+  const params = await searchParams;
+  const step = params.step ? Number.parseInt(params.step, 10) : 1;
+
   const cookieStore = await cookies();
   const supabase = createClient(cookieStore);
 
@@ -40,8 +48,21 @@ export default async function OnboardingPage() {
     redirect('/dashboard');
   }
 
-  // For now, we only have Step 1, so always show it
-  // In future stories, we'll check onboardingStep and redirect accordingly
+  // Determine which step to show
+  const onboardingStep = profile[0]?.onboardingStep ?? 0;
 
-  return <OnboardingUsername />;
+  // Validate step access (can't skip ahead)
+  if (step > onboardingStep + 1) {
+    // User trying to skip - redirect to their current step
+    redirect(`/onboarding?step=${onboardingStep + 1}`);
+  }
+
+  // Render appropriate component
+  switch (step) {
+    case 2:
+      return <OnboardingFeatureTour />;
+    case 1:
+    default:
+      return <OnboardingUsername />;
+  }
 }

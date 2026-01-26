@@ -2,7 +2,6 @@
 
 import { zodResolver } from '@hookform/resolvers/zod';
 import { ArrowRight } from 'lucide-react';
-import { useRouter } from 'next/navigation';
 import { useTranslations } from 'next-intl';
 import { useState } from 'react';
 import { useForm } from 'react-hook-form';
@@ -27,21 +26,28 @@ type UsernameFormData = z.infer<typeof usernameFormSchema>;
 
 export function OnboardingUsername() {
   const t = useTranslations('Onboarding');
-  const router = useRouter();
   const { toast } = useToast();
   const [isSubmitting, setIsSubmitting] = useState(false);
 
   const {
-    register,
     handleSubmit,
     watch,
+    setValue,
+    formState: { isValid: isZodValid },
   } = useForm<UsernameFormData>({
     resolver: zodResolver(usernameFormSchema),
     mode: 'onChange',
+    defaultValues: {
+      username: '',
+    },
   });
 
-  const username = watch('username', '');
+  const username = watch('username');
   const validation = useUsernameValidation(username);
+
+  const handleUsernameChange = (value: string) => {
+    setValue('username', value, { shouldValidate: true });
+  };
 
   const onSubmit = async (data: UsernameFormData) => {
     if (!validation.isValid || !validation.isAvailable) {
@@ -64,7 +70,8 @@ export function OnboardingUsername() {
           title: 'Success',
           description: 'Your username has been saved',
         });
-        router.push('/onboarding?step=2');
+        // Use hard navigation for server component page with query params
+        window.location.href = '/onboarding?step=2';
       } else {
         toast({
           title: 'Error',
@@ -83,10 +90,11 @@ export function OnboardingUsername() {
     }
   };
 
-  const isFormValid = validation.isValid && validation.isAvailable && !validation.isChecking;
+  const isFormValid = isZodValid && validation.isValid && validation.isAvailable && !validation.isChecking;
 
   const handleSkip = () => {
-    router.push('/onboarding?step=2');
+    // Use hard navigation for server component page with query params
+    window.location.href = '/onboarding?step=2';
   };
 
   return (
@@ -108,12 +116,8 @@ export function OnboardingUsername() {
         {/* Form */}
         <form onSubmit={handleSubmit(onSubmit)} className="space-y-6">
           <UsernameInput
-            {...register('username')}
             value={username}
-            onChange={(value) => {
-              const event = { target: { value, name: 'username' } };
-              register('username').onChange(event);
-            }}
+            onChange={handleUsernameChange}
             isValid={validation.isValid}
             isAvailable={validation.isAvailable}
             error={validation.error}
