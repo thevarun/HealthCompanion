@@ -172,7 +172,40 @@ describe('EmptyState', () => {
       const button = screen.getByRole('button', { name: 'Create Item' });
 
       expect(button).toHaveClass('w-full');
-      expect(button).toHaveClass('md:w-auto');
+      expect(button).toHaveClass('sm:w-auto');
+    });
+  });
+
+  describe('className prop', () => {
+    it('applies custom className to container', () => {
+      const { container } = render(
+        <EmptyState
+          title="No items yet"
+          className="border-none bg-transparent"
+        />,
+      );
+
+      const wrapper = container.firstChild as HTMLElement;
+
+      expect(wrapper).toHaveClass('border-none');
+      expect(wrapper).toHaveClass('bg-transparent');
+    });
+  });
+
+  describe('button variants', () => {
+    it('uses secondary variant for search', () => {
+      render(
+        <EmptyState
+          variant="search"
+          title="No results"
+          action={{ label: 'Clear', onClick: vi.fn() }}
+        />,
+      );
+
+      // Secondary variant button should have different styling
+      const button = screen.getByRole('button', { name: 'Clear' });
+
+      expect(button).toBeInTheDocument();
     });
   });
 

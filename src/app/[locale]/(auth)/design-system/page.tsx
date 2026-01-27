@@ -101,7 +101,7 @@ export default function DesignSystemPage() {
               {t('emptyStates.customIcon')}
             </h3>
             <EmptyState
-              icon={<Users className="size-16 text-muted-foreground" />}
+              icon={<Users />}
               title={t('emptyStates.examples.noTeam.title')}
               description={t('emptyStates.examples.noTeam.description')}
               action={{
@@ -117,7 +117,7 @@ export default function DesignSystemPage() {
               {t('emptyStates.noAction')}
             </h3>
             <EmptyState
-              icon={<FileText className="size-16 text-muted-foreground" />}
+              icon={<FileText />}
               title={t('emptyStates.examples.noDocs.title')}
               description={t('emptyStates.examples.noDocs.description')}
             />

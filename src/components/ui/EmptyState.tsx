@@ -3,9 +3,11 @@
 import { AlertTriangle, Inbox, Search } from 'lucide-react';
 
 import { Button } from '@/components/ui/button';
+import { cn } from '@/utils/Helpers';
 
 /**
  * EmptyState Component - Reusable empty state for lists and data views
+ * Adapted from MagicPatterns design with dashed border container and circular icon.
  *
  * @example Default empty state
  * <EmptyState
@@ -31,9 +33,16 @@ import { Button } from '@/components/ui/button';
  *
  * @example Custom icon
  * <EmptyState
- *   icon={<User className="size-16 text-muted-foreground" />}
+ *   icon={<User className="size-10" />}
  *   title="No users yet"
  *   description="Invite your first user to get started"
+ * />
+ *
+ * @example No border variant (for embedding in cards)
+ * <EmptyState
+ *   title="No projects"
+ *   description="Create your first project"
+ *   className="border-none bg-transparent"
  * />
  *
  * Translation Pattern:
@@ -52,8 +61,8 @@ import { Button } from '@/components/ui/button';
  * />
  */
 
-type EmptyStateProps = {
-  /** Custom icon to display. Overrides the default variant icon. */
+export type EmptyStateProps = {
+  /** Custom icon to display. Overrides the default variant icon. Should be an SVG icon. */
   icon?: React.ReactNode;
   /** Title text for the empty state. Should be concise and clear. */
   title: string;
@@ -66,6 +75,8 @@ type EmptyStateProps = {
   };
   /** Visual variant that determines the default icon and styling. */
   variant?: 'default' | 'search' | 'error';
+  /** Additional CSS classes for the container. */
+  className?: string;
 };
 
 export function EmptyState({
@@ -74,30 +85,56 @@ export function EmptyState({
   description,
   action,
   variant = 'default',
+  className,
 }: EmptyStateProps) {
-  // Determine default icon based on variant
-  const defaultIcon = {
-    default: <Inbox className="size-16 text-muted-foreground" />,
-    search: <Search className="size-16 text-muted-foreground" />,
-    error: <AlertTriangle className="size-16 text-destructive" />,
-  }[variant];
+  // Default icons for each variant
+  const defaultIcons = {
+    default: <Inbox />,
+    search: <Search />,
+    error: <AlertTriangle />,
+  };
+
+  // Variant-specific styling for the icon container
+  const iconContainerStyles = {
+    default: 'bg-muted text-muted-foreground',
+    search: 'bg-secondary text-secondary-foreground',
+    error: 'bg-amber-100 text-amber-600 dark:bg-amber-900/30 dark:text-amber-500',
+  };
 
   // Use custom icon if provided, otherwise use default variant icon
-  const displayIcon = icon || defaultIcon;
+  const displayIcon = icon || defaultIcons[variant];
 
   return (
-    <div className="flex flex-col items-center justify-center p-6 text-center md:p-8">
-      <div className="mb-4">{displayIcon}</div>
-      <h3 className="mb-2 text-xl font-semibold md:text-2xl">{title}</h3>
+    <div
+      className={cn(
+        'flex flex-col items-center justify-center rounded-xl border border-dashed border-border bg-card p-8 text-center md:p-12',
+        className,
+      )}
+    >
+      {/* Circular icon container */}
+      <div
+        className={cn(
+          'mb-6 flex size-20 items-center justify-center rounded-full',
+          iconContainerStyles[variant],
+        )}
+      >
+        {/* Icon wrapper to enforce consistent sizing */}
+        <div className="size-10 [&>svg]:size-full">{displayIcon}</div>
+      </div>
+
+      <h3 className="mb-2 text-xl font-semibold tracking-tight">{title}</h3>
+
       {description && (
-        <p className="mb-6 max-w-md text-sm text-muted-foreground md:text-base">
+        <p className="mb-8 max-w-sm text-sm leading-relaxed text-muted-foreground md:text-base">
           {description}
         </p>
       )}
+
       {action && (
         <Button
           onClick={action.onClick}
-          className="w-full md:w-auto"
+          variant={variant === 'search' ? 'secondary' : 'default'}
+          className="w-full min-w-[140px] sm:w-auto"
         >
           {action.label}
         </Button>
