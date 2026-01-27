@@ -2,6 +2,11 @@
 
 **Goal:** Admins can manage users and monitor system health
 
+**UX Design Artifacts:**
+- [Design Brief](../ux-design/epic-6-admin-design-brief.md)
+- [Component Strategy](../ux-design/epic-6-admin-component-strategy.md)
+- [Layouts](../ux-design/epic-6-admin-layouts.md)
+
 ## Story 6.1: Admin Role & Access Control
 
 As a **product owner**,
@@ -91,6 +96,10 @@ So that **I can easily navigate admin features**.
 **And** layout is defined at route group level
 **And** layout is self-contained (modular)
 
+**UX Design:**
+- **Prototype:** `.superdesign/design_iterations/admin_layout_1.html`
+- **Components:** shadcn `Sheet`, custom `AdminLayout`, `AdminSidebar`, `AdminHeader`
+
 ---
 
 ## Story 6.3: User Management List
@@ -137,6 +146,10 @@ So that **I can find and manage user accounts**.
 **Given** the user list is empty
 **When** no users exist (unlikely)
 **Then** I see an appropriate empty state
+
+**UX Design:**
+- **Prototype:** `.superdesign/design_iterations/admin_users_1.html`
+- **Components:** shadcn `Table`, `Checkbox`, `Input`, `DropdownMenu`, `Badge`
 
 ---
 
@@ -193,6 +206,10 @@ So that **I can manage individual accounts**.
 **Then** I cannot suspend or delete my own account
 **And** self-destructive actions are disabled
 
+**UX Design:**
+- **Prototype:** `.superdesign/design_iterations/admin_user_detail_1.html`
+- **Components:** shadcn `Dialog`, `AlertDialog`, `Button`, `Avatar`
+
 ---
 
 ## Story 6.5: System Metrics Dashboard
@@ -246,6 +263,10 @@ So that **I can monitor the health of the application**.
 **Then** metric cards reflow appropriately
 **And** 4 columns on desktop, 2 on tablet, 1 on mobile
 
+**UX Design:**
+- **Prototype:** `.superdesign/design_iterations/admin_layout_1.html`
+- **Components:** shadcn `Card`, custom `MetricCard`
+
 ---
 
 ## Story 6.6: Admin Audit Logging
@@ -292,6 +313,10 @@ So that **I have accountability and can troubleshoot issues**.
 **And** logging function is reusable: `logAdminAction(action, target, metadata)`
 **And** logging failures don't break admin actions (graceful)
 
+**UX Design:**
+- **Prototype:** `.superdesign/design_iterations/admin_audit_1.html`
+- **Components:** shadcn `Table`, `Badge`, `Select`
+
 ---
 
 ## Story 6.7: Email Testing UI
@@ -330,6 +355,10 @@ So that **I can verify email delivery and rendering in production**.
 **Then** API route is at `/api/admin/email/test`
 **And** route validates admin session before processing
 **And** route accepts `{ template: string, email: string, data?: object }`
+
+**UX Design:**
+- **Prototype:** `.superdesign/design_iterations/admin_email_1.html`
+- **Components:** shadcn `Select`, `Input`, `Textarea`, `Button`, custom `EmailPreview`
 
 ---
 
@@ -375,6 +404,10 @@ So that **I can understand user needs and issues**.
 **When** no feedback exists
 **Then** I see an empty state
 **And** message indicates no feedback yet
+
+**UX Design:**
+- **Prototype:** `.superdesign/design_iterations/admin_feedback_1.html`
+- **Components:** shadcn `Tabs`, `Card`, `Badge`, custom `FeedbackCard`
 
 ---
 
@@ -422,5 +455,9 @@ So that **I can track what's been reviewed and export data**.
 **Then** I can mark all as reviewed
 **And** I can delete all selected
 **And** confirmation is required for bulk actions
+
+**UX Design:**
+- **Prototype:** `.superdesign/design_iterations/admin_feedback_1.html`
+- **Components:** shadcn `Button`, `AlertDialog`, `Checkbox`
 
 ---

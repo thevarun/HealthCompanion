@@ -1,0 +1,834 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Admin Panel - User Management</title>
+
+  <!-- Google Fonts -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+
+  <!-- Lucide Icons -->
+  <script src="https://unpkg.com/lucide@latest/dist/umd/lucide.min.js"></script>
+
+  <!-- Theme CSS -->
+  <link rel="stylesheet" href="admin_theme.css">
+
+  <style>
+    body {
+      font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+    }
+
+    /* Table Toolbar */
+    .table-toolbar {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: var(--spacing-lg);
+      margin-bottom: var(--spacing-lg);
+      flex-wrap: wrap;
+    }
+
+    .table-toolbar-left {
+      display: flex;
+      align-items: center;
+      gap: var(--spacing-md);
+      flex: 1;
+      min-width: 280px;
+    }
+
+    .table-toolbar-right {
+      display: flex;
+      align-items: center;
+      gap: var(--spacing-md);
+    }
+
+    /* Search Input */
+    .search-input {
+      position: relative;
+      flex: 1;
+      max-width: 320px;
+    }
+
+    .search-input input {
+      width: 100%;
+      padding: var(--spacing-sm) var(--spacing-lg);
+      padding-left: 40px;
+      border: 1px solid var(--border-color);
+      border-radius: var(--radius-sm);
+      background-color: var(--card-bg);
+      color: var(--text-body);
+      font-size: var(--font-size-sm);
+      transition: var(--transition-fast);
+    }
+
+    .search-input input:focus {
+      outline: none;
+      border-color: var(--accent-primary);
+      box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.1);
+    }
+
+    .search-input input::placeholder {
+      color: var(--text-muted);
+    }
+
+    .search-input-icon {
+      position: absolute;
+      left: 12px;
+      top: 50%;
+      transform: translateY(-50%);
+      color: var(--text-muted);
+      pointer-events: none;
+    }
+
+    /* Filter Dropdown */
+    .filter-dropdown {
+      position: relative;
+    }
+
+    .filter-btn {
+      display: flex;
+      align-items: center;
+      gap: var(--spacing-sm);
+      padding: var(--spacing-sm) var(--spacing-md);
+      border: 1px solid var(--border-color);
+      border-radius: var(--radius-sm);
+      background-color: var(--card-bg);
+      color: var(--text-body);
+      font-size: var(--font-size-sm);
+      cursor: pointer;
+      transition: var(--transition-fast);
+    }
+
+    .filter-btn:hover {
+      background-color: var(--hover-bg);
+    }
+
+    /* Data Table */
+    .data-table-wrapper {
+      background-color: var(--card-bg);
+      border: 1px solid var(--border-color);
+      border-radius: var(--radius);
+      overflow: hidden;
+    }
+
+    .data-table {
+      width: 100%;
+      border-collapse: collapse;
+    }
+
+    .data-table th,
+    .data-table td {
+      padding: var(--spacing-md) var(--spacing-lg);
+      text-align: left;
+      border-bottom: 1px solid var(--border-light);
+    }
+
+    .data-table th {
+      background-color: var(--hover-bg);
+      font-weight: 600;
+      font-size: var(--font-size-xs);
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+      color: var(--text-muted);
+    }
+
+    .data-table th.sortable {
+      cursor: pointer;
+      user-select: none;
+      transition: var(--transition-fast);
+    }
+
+    .data-table th.sortable:hover {
+      color: var(--text-body);
+    }
+
+    .sort-icon {
+      display: inline-flex;
+      margin-left: var(--spacing-xs);
+      opacity: 0.5;
+    }
+
+    .data-table th.sorted .sort-icon {
+      opacity: 1;
+      color: var(--accent-primary);
+    }
+
+    .data-table tbody tr {
+      transition: var(--transition-fast);
+    }
+
+    .data-table tbody tr:hover {
+      background-color: var(--hover-bg);
+    }
+
+    .data-table tbody tr:last-child td {
+      border-bottom: none;
+    }
+
+    /* User Cell */
+    .user-cell {
+      display: flex;
+      align-items: center;
+      gap: var(--spacing-md);
+    }
+
+    .user-avatar-sm {
+      width: 36px;
+      height: 36px;
+      border-radius: 50%;
+      background: linear-gradient(135deg, var(--accent-primary), #8b5cf6);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: white;
+      font-weight: 600;
+      font-size: var(--font-size-sm);
+      flex-shrink: 0;
+    }
+
+    .user-info {
+      min-width: 0;
+    }
+
+    .user-email {
+      font-weight: 500;
+      color: var(--text-heading);
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+
+    .user-username {
+      font-size: var(--font-size-xs);
+      color: var(--text-muted);
+    }
+
+    /* Date Cell */
+    .date-cell {
+      color: var(--text-muted);
+      font-size: var(--font-size-sm);
+    }
+
+    /* Actions Cell */
+    .actions-cell {
+      display: flex;
+      align-items: center;
+      gap: var(--spacing-xs);
+    }
+
+    .action-icon-btn {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      width: 32px;
+      height: 32px;
+      border: none;
+      border-radius: var(--radius-xs);
+      background-color: transparent;
+      color: var(--text-muted);
+      cursor: pointer;
+      transition: var(--transition-fast);
+    }
+
+    .action-icon-btn:hover {
+      background-color: var(--hover-bg);
+      color: var(--text-body);
+    }
+
+    .action-icon-btn.danger:hover {
+      background-color: var(--status-suspended-bg);
+      color: var(--accent-danger);
+    }
+
+    /* Checkbox */
+    .checkbox-wrapper {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .checkbox {
+      width: 18px;
+      height: 18px;
+      border: 2px solid var(--border-color);
+      border-radius: 4px;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      transition: var(--transition-fast);
+      background-color: var(--card-bg);
+    }
+
+    .checkbox:hover {
+      border-color: var(--accent-primary);
+    }
+
+    .checkbox.checked {
+      background-color: var(--accent-primary);
+      border-color: var(--accent-primary);
+    }
+
+    .checkbox.checked svg {
+      display: block;
+    }
+
+    .checkbox svg {
+      display: none;
+      width: 12px;
+      height: 12px;
+      color: white;
+    }
+
+    /* Pagination */
+    .table-footer {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: var(--spacing-md) var(--spacing-lg);
+      border-top: 1px solid var(--border-light);
+      background-color: var(--hover-bg);
+    }
+
+    .table-info {
+      font-size: var(--font-size-sm);
+      color: var(--text-muted);
+    }
+
+    .pagination {
+      display: flex;
+      align-items: center;
+      gap: var(--spacing-xs);
+    }
+
+    .pagination-btn {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      min-width: 32px;
+      height: 32px;
+      padding: 0 var(--spacing-sm);
+      border: 1px solid var(--border-color);
+      border-radius: var(--radius-xs);
+      background-color: var(--card-bg);
+      color: var(--text-body);
+      font-size: var(--font-size-sm);
+      cursor: pointer;
+      transition: var(--transition-fast);
+    }
+
+    .pagination-btn:hover:not(:disabled) {
+      background-color: var(--hover-bg);
+      border-color: var(--accent-primary);
+    }
+
+    .pagination-btn:disabled {
+      opacity: 0.5;
+      cursor: not-allowed;
+    }
+
+    .pagination-btn.active {
+      background-color: var(--accent-primary);
+      border-color: var(--accent-primary);
+      color: white;
+    }
+
+    /* Bulk Actions Bar */
+    .bulk-actions {
+      display: none;
+      align-items: center;
+      gap: var(--spacing-md);
+      padding: var(--spacing-md) var(--spacing-lg);
+      background-color: var(--selected-bg);
+      border-radius: var(--radius-sm);
+      margin-bottom: var(--spacing-lg);
+    }
+
+    .bulk-actions.visible {
+      display: flex;
+    }
+
+    .bulk-actions-count {
+      font-weight: 500;
+      color: var(--text-heading);
+    }
+
+    .bulk-actions-divider {
+      width: 1px;
+      height: 20px;
+      background-color: var(--border-color);
+    }
+
+    /* Responsive */
+    @media (max-width: 768px) {
+      .table-toolbar {
+        flex-direction: column;
+        align-items: stretch;
+      }
+
+      .table-toolbar-left {
+        width: 100%;
+      }
+
+      .search-input {
+        max-width: none;
+      }
+
+      .data-table-wrapper {
+        overflow-x: auto;
+      }
+
+      .data-table {
+        min-width: 700px;
+      }
+
+      .table-footer {
+        flex-direction: column;
+        gap: var(--spacing-md);
+      }
+    }
+  </style>
+</head>
+<body>
+  <div class="admin-layout">
+    <!-- Sidebar -->
+    <aside class="sidebar" id="sidebar">
+      <div class="sidebar-header">
+        <div class="sidebar-logo">
+          <div class="sidebar-logo-icon">
+            <i data-lucide="shield" style="width: 18px; height: 18px; color: white;"></i>
+          </div>
+          <span class="sidebar-logo-text">Admin</span>
+        </div>
+        <button class="sidebar-toggle" onclick="toggleSidebar()" aria-label="Toggle sidebar">
+          <i data-lucide="panel-left-close" style="width: 20px; height: 20px;"></i>
+        </button>
+      </div>
+
+      <nav class="sidebar-nav">
+        <div class="nav-group">
+          <div class="nav-group-label">Overview</div>
+          <a href="admin_layout_1.html" class="nav-item">
+            <i data-lucide="layout-dashboard" class="nav-icon"></i>
+            <span class="nav-label">Dashboard</span>
+          </a>
+        </div>
+
+        <div class="nav-group">
+          <div class="nav-group-label">Management</div>
+          <a href="#" class="nav-item active">
+            <i data-lucide="users" class="nav-icon"></i>
+            <span class="nav-label">Users</span>
+          </a>
+          <a href="admin_feedback_1.html" class="nav-item">
+            <i data-lucide="message-square-text" class="nav-icon"></i>
+            <span class="nav-label">Feedback</span>
+          </a>
+        </div>
+
+        <div class="nav-group">
+          <div class="nav-group-label">System</div>
+          <a href="admin_audit_1.html" class="nav-item">
+            <i data-lucide="scroll-text" class="nav-icon"></i>
+            <span class="nav-label">Audit Log</span>
+          </a>
+          <a href="admin_email_1.html" class="nav-item">
+            <i data-lucide="mail" class="nav-icon"></i>
+            <span class="nav-label">Email Testing</span>
+          </a>
+          <a href="#" class="nav-item">
+            <i data-lucide="settings" class="nav-icon"></i>
+            <span class="nav-label">Settings</span>
+          </a>
+        </div>
+      </nav>
+    </aside>
+
+    <!-- Mobile Overlay -->
+    <div class="mobile-overlay" onclick="toggleSidebar()"></div>
+
+    <!-- Main Content -->
+    <main class="main-content">
+      <!-- Header -->
+      <header class="header">
+        <div class="header-left">
+          <button class="header-sidebar-toggle" onclick="toggleSidebar()" aria-label="Toggle sidebar">
+            <i data-lucide="panel-left" style="width: 18px; height: 18px;"></i>
+          </button>
+          <span class="admin-badge">Admin Panel</span>
+        </div>
+        <div class="header-right">
+          <button class="theme-toggle" onclick="toggleTheme()" aria-label="Toggle theme">
+            <i data-lucide="sun" class="theme-icon-light" style="width: 18px; height: 18px;"></i>
+            <i data-lucide="moon" class="theme-icon-dark" style="width: 18px; height: 18px; display: none;"></i>
+          </button>
+          <div class="user-menu">
+            <div class="user-avatar">VT</div>
+            <span class="user-name">Varun</span>
+            <i data-lucide="chevron-down" style="width: 16px; height: 16px; color: var(--text-muted);"></i>
+          </div>
+        </div>
+      </header>
+
+      <!-- Page Content -->
+      <div class="page-content">
+        <div class="page-header">
+          <h1 class="page-title">User Management</h1>
+          <p class="page-description">View and manage all registered users in your application.</p>
+        </div>
+
+        <!-- Bulk Actions Bar -->
+        <div class="bulk-actions" id="bulkActions">
+          <span class="bulk-actions-count"><span id="selectedCount">3</span> selected</span>
+          <div class="bulk-actions-divider"></div>
+          <button class="btn btn-secondary" style="padding: var(--spacing-xs) var(--spacing-md);">
+            <i data-lucide="mail" style="width: 16px; height: 16px;"></i>
+            Email
+          </button>
+          <button class="btn btn-secondary" style="padding: var(--spacing-xs) var(--spacing-md);">
+            <i data-lucide="ban" style="width: 16px; height: 16px;"></i>
+            Suspend
+          </button>
+          <button class="btn btn-danger" style="padding: var(--spacing-xs) var(--spacing-md);">
+            <i data-lucide="trash-2" style="width: 16px; height: 16px;"></i>
+            Delete
+          </button>
+        </div>
+
+        <!-- Table Toolbar -->
+        <div class="table-toolbar">
+          <div class="table-toolbar-left">
+            <div class="search-input">
+              <i data-lucide="search" class="search-input-icon" style="width: 18px; height: 18px;"></i>
+              <input type="text" placeholder="Search by email or username...">
+            </div>
+            <div class="filter-dropdown">
+              <button class="filter-btn">
+                <i data-lucide="filter" style="width: 16px; height: 16px;"></i>
+                Status: All
+                <i data-lucide="chevron-down" style="width: 14px; height: 14px;"></i>
+              </button>
+            </div>
+          </div>
+          <div class="table-toolbar-right">
+            <button class="btn btn-secondary">
+              <i data-lucide="download" style="width: 16px; height: 16px;"></i>
+              Export
+            </button>
+            <button class="btn btn-primary">
+              <i data-lucide="user-plus" style="width: 16px; height: 16px;"></i>
+              Add User
+            </button>
+          </div>
+        </div>
+
+        <!-- Data Table -->
+        <div class="data-table-wrapper">
+          <table class="data-table">
+            <thead>
+              <tr>
+                <th style="width: 48px;">
+                  <div class="checkbox-wrapper">
+                    <div class="checkbox" onclick="toggleAllCheckboxes(this)">
+                      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3">
+                        <polyline points="20 6 9 17 4 12"></polyline>
+                      </svg>
+                    </div>
+                  </div>
+                </th>
+                <th class="sortable sorted">
+                  User
+                  <span class="sort-icon"><i data-lucide="arrow-up" style="width: 14px; height: 14px;"></i></span>
+                </th>
+                <th class="sortable">
+                  Status
+                  <span class="sort-icon"><i data-lucide="arrow-up-down" style="width: 14px; height: 14px;"></i></span>
+                </th>
+                <th class="sortable">
+                  Signed Up
+                  <span class="sort-icon"><i data-lucide="arrow-up-down" style="width: 14px; height: 14px;"></i></span>
+                </th>
+                <th class="sortable">
+                  Last Login
+                  <span class="sort-icon"><i data-lucide="arrow-up-down" style="width: 14px; height: 14px;"></i></span>
+                </th>
+                <th style="width: 120px;">Actions</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td>
+                  <div class="checkbox-wrapper">
+                    <div class="checkbox" onclick="toggleCheckbox(this)">
+                      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3">
+                        <polyline points="20 6 9 17 4 12"></polyline>
+                      </svg>
+                    </div>
+                  </div>
+                </td>
+                <td>
+                  <div class="user-cell">
+                    <div class="user-avatar-sm">JD</div>
+                    <div class="user-info">
+                      <div class="user-email">john.doe@example.com</div>
+                      <div class="user-username">@johndoe</div>
+                    </div>
+                  </div>
+                </td>
+                <td><span class="badge badge-active">Active</span></td>
+                <td class="date-cell">Jan 15, 2024</td>
+                <td class="date-cell">2 hours ago</td>
+                <td>
+                  <div class="actions-cell">
+                    <button class="action-icon-btn" title="View details">
+                      <i data-lucide="eye" style="width: 16px; height: 16px;"></i>
+                    </button>
+                    <button class="action-icon-btn" title="Edit user">
+                      <i data-lucide="pencil" style="width: 16px; height: 16px;"></i>
+                    </button>
+                    <button class="action-icon-btn danger" title="Delete user">
+                      <i data-lucide="trash-2" style="width: 16px; height: 16px;"></i>
+                    </button>
+                  </div>
+                </td>
+              </tr>
+              <tr>
+                <td>
+                  <div class="checkbox-wrapper">
+                    <div class="checkbox" onclick="toggleCheckbox(this)">
+                      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3">
+                        <polyline points="20 6 9 17 4 12"></polyline>
+                      </svg>
+                    </div>
+                  </div>
+                </td>
+                <td>
+                  <div class="user-cell">
+                    <div class="user-avatar-sm" style="background: linear-gradient(135deg, #ec4899, #f97316);">SS</div>
+                    <div class="user-info">
+                      <div class="user-email">sarah.smith@example.com</div>
+                      <div class="user-username">@sarahsmith</div>
+                    </div>
+                  </div>
+                </td>
+                <td><span class="badge badge-active">Active</span></td>
+                <td class="date-cell">Jan 12, 2024</td>
+                <td class="date-cell">5 hours ago</td>
+                <td>
+                  <div class="actions-cell">
+                    <button class="action-icon-btn" title="View details">
+                      <i data-lucide="eye" style="width: 16px; height: 16px;"></i>
+                    </button>
+                    <button class="action-icon-btn" title="Edit user">
+                      <i data-lucide="pencil" style="width: 16px; height: 16px;"></i>
+                    </button>
+                    <button class="action-icon-btn danger" title="Delete user">
+                      <i data-lucide="trash-2" style="width: 16px; height: 16px;"></i>
+                    </button>
+                  </div>
+                </td>
+              </tr>
+              <tr>
+                <td>
+                  <div class="checkbox-wrapper">
+                    <div class="checkbox" onclick="toggleCheckbox(this)">
+                      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3">
+                        <polyline points="20 6 9 17 4 12"></polyline>
+                      </svg>
+                    </div>
+                  </div>
+                </td>
+                <td>
+                  <div class="user-cell">
+                    <div class="user-avatar-sm" style="background: linear-gradient(135deg, #10b981, #3b82f6);">MJ</div>
+                    <div class="user-info">
+                      <div class="user-email">mike.johnson@example.com</div>
+                      <div class="user-username">@mikej</div>
+                    </div>
+                  </div>
+                </td>
+                <td><span class="badge badge-suspended">Suspended</span></td>
+                <td class="date-cell">Dec 28, 2023</td>
+                <td class="date-cell">3 days ago</td>
+                <td>
+                  <div class="actions-cell">
+                    <button class="action-icon-btn" title="View details">
+                      <i data-lucide="eye" style="width: 16px; height: 16px;"></i>
+                    </button>
+                    <button class="action-icon-btn" title="Edit user">
+                      <i data-lucide="pencil" style="width: 16px; height: 16px;"></i>
+                    </button>
+                    <button class="action-icon-btn danger" title="Delete user">
+                      <i data-lucide="trash-2" style="width: 16px; height: 16px;"></i>
+                    </button>
+                  </div>
+                </td>
+              </tr>
+              <tr>
+                <td>
+                  <div class="checkbox-wrapper">
+                    <div class="checkbox" onclick="toggleCheckbox(this)">
+                      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3">
+                        <polyline points="20 6 9 17 4 12"></polyline>
+                      </svg>
+                    </div>
+                  </div>
+                </td>
+                <td>
+                  <div class="user-cell">
+                    <div class="user-avatar-sm" style="background: linear-gradient(135deg, #f59e0b, #ef4444);">EW</div>
+                    <div class="user-info">
+                      <div class="user-email">emily.wilson@example.com</div>
+                      <div class="user-username">@emilyw</div>
+                    </div>
+                  </div>
+                </td>
+                <td><span class="badge badge-pending">Pending</span></td>
+                <td class="date-cell">Jan 18, 2024</td>
+                <td class="date-cell">Never</td>
+                <td>
+                  <div class="actions-cell">
+                    <button class="action-icon-btn" title="View details">
+                      <i data-lucide="eye" style="width: 16px; height: 16px;"></i>
+                    </button>
+                    <button class="action-icon-btn" title="Edit user">
+                      <i data-lucide="pencil" style="width: 16px; height: 16px;"></i>
+                    </button>
+                    <button class="action-icon-btn danger" title="Delete user">
+                      <i data-lucide="trash-2" style="width: 16px; height: 16px;"></i>
+                    </button>
+                  </div>
+                </td>
+              </tr>
+              <tr>
+                <td>
+                  <div class="checkbox-wrapper">
+                    <div class="checkbox" onclick="toggleCheckbox(this)">
+                      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3">
+                        <polyline points="20 6 9 17 4 12"></polyline>
+                      </svg>
+                    </div>
+                  </div>
+                </td>
+                <td>
+                  <div class="user-cell">
+                    <div class="user-avatar-sm" style="background: linear-gradient(135deg, #8b5cf6, #ec4899);">AB</div>
+                    <div class="user-info">
+                      <div class="user-email">alex.brown@example.com</div>
+                      <div class="user-username">@alexb</div>
+                    </div>
+                  </div>
+                </td>
+                <td><span class="badge badge-active">Active</span></td>
+                <td class="date-cell">Jan 5, 2024</td>
+                <td class="date-cell">1 day ago</td>
+                <td>
+                  <div class="actions-cell">
+                    <button class="action-icon-btn" title="View details">
+                      <i data-lucide="eye" style="width: 16px; height: 16px;"></i>
+                    </button>
+                    <button class="action-icon-btn" title="Edit user">
+                      <i data-lucide="pencil" style="width: 16px; height: 16px;"></i>
+                    </button>
+                    <button class="action-icon-btn danger" title="Delete user">
+                      <i data-lucide="trash-2" style="width: 16px; height: 16px;"></i>
+                    </button>
+                  </div>
+                </td>
+              </tr>
+            </tbody>
+          </table>
+          <div class="table-footer">
+            <div class="table-info">
+              Showing <strong>1-5</strong> of <strong>1,284</strong> users
+            </div>
+            <div class="pagination">
+              <button class="pagination-btn" disabled>
+                <i data-lucide="chevron-left" style="width: 16px; height: 16px;"></i>
+              </button>
+              <button class="pagination-btn active">1</button>
+              <button class="pagination-btn">2</button>
+              <button class="pagination-btn">3</button>
+              <span style="color: var(--text-muted);">...</span>
+              <button class="pagination-btn">257</button>
+              <button class="pagination-btn">
+                <i data-lucide="chevron-right" style="width: 16px; height: 16px;"></i>
+              </button>
+            </div>
+          </div>
+        </div>
+      </div>
+    </main>
+  </div>
+
+  <script>
+    // Initialize Lucide icons
+    lucide.createIcons();
+
+    // Sidebar toggle
+    function toggleSidebar() {
+      const sidebar = document.getElementById('sidebar');
+      if (window.innerWidth <= 768) {
+        sidebar.classList.toggle('open');
+      } else {
+        sidebar.classList.toggle('collapsed');
+      }
+    }
+
+    // Theme toggle
+    function toggleTheme() {
+      const html = document.documentElement;
+      const lightIcon = document.querySelector('.theme-icon-light');
+      const darkIcon = document.querySelector('.theme-icon-dark');
+
+      if (html.classList.contains('dark')) {
+        html.classList.remove('dark');
+        lightIcon.style.display = 'block';
+        darkIcon.style.display = 'none';
+      } else {
+        html.classList.add('dark');
+        lightIcon.style.display = 'none';
+        darkIcon.style.display = 'block';
+      }
+    }
+
+    // Checkbox functionality
+    let selectedCount = 0;
+
+    function toggleCheckbox(checkbox) {
+      checkbox.classList.toggle('checked');
+      updateBulkActions();
+    }
+
+    function toggleAllCheckboxes(headerCheckbox) {
+      const isChecked = !headerCheckbox.classList.contains('checked');
+      headerCheckbox.classList.toggle('checked');
+
+      document.querySelectorAll('tbody .checkbox').forEach(cb => {
+        if (isChecked) {
+          cb.classList.add('checked');
+        } else {
+          cb.classList.remove('checked');
+        }
+      });
+      updateBulkActions();
+    }
+
+    function updateBulkActions() {
+      const checkedCount = document.querySelectorAll('tbody .checkbox.checked').length;
+      const bulkActions = document.getElementById('bulkActions');
+      const countEl = document.getElementById('selectedCount');
+
+      if (checkedCount > 0) {
+        bulkActions.classList.add('visible');
+        countEl.textContent = checkedCount;
+      } else {
+        bulkActions.classList.remove('visible');
+      }
+    }
+  </script>
+</body>
+</html>

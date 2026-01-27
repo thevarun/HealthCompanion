@@ -1,0 +1,591 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Admin Panel - User Detail</title>
+
+  <!-- Google Fonts -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+
+  <!-- Lucide Icons -->
+  <script src="https://unpkg.com/lucide@latest/dist/umd/lucide.min.js"></script>
+
+  <!-- Theme CSS -->
+  <link rel="stylesheet" href="admin_theme.css">
+
+  <style>
+    body {
+      font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+    }
+
+    /* Modal Overlay */
+    .modal-overlay {
+      position: fixed;
+      inset: 0;
+      background-color: rgba(0, 0, 0, 0.5);
+      backdrop-filter: blur(4px);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      z-index: 100;
+      padding: var(--spacing-lg);
+      animation: overlayFadeIn 200ms ease;
+    }
+
+    @keyframes overlayFadeIn {
+      from { opacity: 0; }
+      to { opacity: 1; }
+    }
+
+    /* Modal */
+    .modal {
+      background-color: var(--card-bg);
+      border-radius: var(--radius-lg);
+      box-shadow: var(--shadow-lg);
+      width: 100%;
+      max-width: 560px;
+      max-height: 90vh;
+      overflow: hidden;
+      display: flex;
+      flex-direction: column;
+      animation: modalSlideIn 250ms ease-out;
+    }
+
+    @keyframes modalSlideIn {
+      from {
+        opacity: 0;
+        transform: scale(0.95) translateY(-10px);
+      }
+      to {
+        opacity: 1;
+        transform: scale(1) translateY(0);
+      }
+    }
+
+    .modal-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: var(--spacing-lg) var(--spacing-xl);
+      border-bottom: 1px solid var(--border-light);
+    }
+
+    .modal-title {
+      font-size: var(--font-size-lg);
+      font-weight: 600;
+      color: var(--text-heading);
+    }
+
+    .modal-close {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      width: 32px;
+      height: 32px;
+      border: none;
+      border-radius: var(--radius-xs);
+      background-color: transparent;
+      color: var(--text-muted);
+      cursor: pointer;
+      transition: var(--transition-fast);
+    }
+
+    .modal-close:hover {
+      background-color: var(--hover-bg);
+      color: var(--text-body);
+    }
+
+    .modal-body {
+      padding: var(--spacing-xl);
+      overflow-y: auto;
+      flex: 1;
+    }
+
+    .modal-footer {
+      display: flex;
+      align-items: center;
+      justify-content: flex-end;
+      gap: var(--spacing-md);
+      padding: var(--spacing-lg) var(--spacing-xl);
+      border-top: 1px solid var(--border-light);
+      background-color: var(--hover-bg);
+    }
+
+    /* User Profile Header */
+    .user-profile-header {
+      display: flex;
+      align-items: center;
+      gap: var(--spacing-lg);
+      margin-bottom: var(--spacing-xl);
+      padding-bottom: var(--spacing-xl);
+      border-bottom: 1px solid var(--border-light);
+    }
+
+    .user-avatar-lg {
+      width: 72px;
+      height: 72px;
+      border-radius: 50%;
+      background: linear-gradient(135deg, var(--accent-primary), #8b5cf6);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: white;
+      font-weight: 700;
+      font-size: var(--font-size-2xl);
+      flex-shrink: 0;
+    }
+
+    .user-profile-info {
+      flex: 1;
+      min-width: 0;
+    }
+
+    .user-profile-name {
+      font-size: var(--font-size-xl);
+      font-weight: 600;
+      color: var(--text-heading);
+      margin-bottom: var(--spacing-xs);
+    }
+
+    .user-profile-email {
+      color: var(--text-muted);
+      margin-bottom: var(--spacing-sm);
+    }
+
+    .user-profile-badges {
+      display: flex;
+      gap: var(--spacing-sm);
+    }
+
+    /* Info Grid */
+    .info-grid {
+      display: grid;
+      grid-template-columns: repeat(2, 1fr);
+      gap: var(--spacing-lg);
+      margin-bottom: var(--spacing-xl);
+    }
+
+    @media (max-width: 480px) {
+      .info-grid {
+        grid-template-columns: 1fr;
+      }
+    }
+
+    .info-item {
+      display: flex;
+      flex-direction: column;
+      gap: var(--spacing-xs);
+    }
+
+    .info-label {
+      font-size: var(--font-size-xs);
+      font-weight: 500;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+      color: var(--text-muted);
+    }
+
+    .info-value {
+      font-size: var(--font-size-sm);
+      color: var(--text-heading);
+      font-weight: 500;
+    }
+
+    .info-value.muted {
+      color: var(--text-muted);
+      font-style: italic;
+    }
+
+    /* Section */
+    .section {
+      margin-bottom: var(--spacing-xl);
+    }
+
+    .section:last-child {
+      margin-bottom: 0;
+    }
+
+    .section-title {
+      font-size: var(--font-size-sm);
+      font-weight: 600;
+      color: var(--text-heading);
+      margin-bottom: var(--spacing-md);
+      display: flex;
+      align-items: center;
+      gap: var(--spacing-sm);
+    }
+
+    /* Action Buttons */
+    .action-buttons {
+      display: flex;
+      flex-direction: column;
+      gap: var(--spacing-sm);
+    }
+
+    .action-button {
+      display: flex;
+      align-items: center;
+      gap: var(--spacing-md);
+      padding: var(--spacing-md) var(--spacing-lg);
+      border: 1px solid var(--border-color);
+      border-radius: var(--radius-sm);
+      background-color: var(--card-bg);
+      cursor: pointer;
+      transition: var(--transition-fast);
+      text-align: left;
+    }
+
+    .action-button:hover {
+      background-color: var(--hover-bg);
+      border-color: var(--text-muted);
+    }
+
+    .action-button-icon {
+      width: 36px;
+      height: 36px;
+      border-radius: var(--radius-sm);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      flex-shrink: 0;
+    }
+
+    .action-button-icon.warning {
+      background-color: var(--status-pending-bg);
+      color: var(--accent-warning);
+    }
+
+    .action-button-icon.info {
+      background-color: var(--type-feature-bg);
+      color: var(--accent-primary);
+    }
+
+    .action-button-content {
+      flex: 1;
+    }
+
+    .action-button-title {
+      font-weight: 500;
+      color: var(--text-heading);
+      margin-bottom: 2px;
+    }
+
+    .action-button-desc {
+      font-size: var(--font-size-xs);
+      color: var(--text-muted);
+    }
+
+    .action-button-arrow {
+      color: var(--text-muted);
+    }
+
+    /* Danger Zone */
+    .danger-zone {
+      border: 1px solid var(--accent-danger);
+      border-radius: var(--radius);
+      padding: var(--spacing-lg);
+      background-color: var(--status-suspended-bg);
+    }
+
+    .danger-zone .section-title {
+      color: var(--accent-danger);
+    }
+
+    .danger-zone .action-button {
+      border-color: var(--accent-danger);
+    }
+
+    .danger-zone .action-button:hover {
+      background-color: rgba(220, 38, 38, 0.1);
+    }
+
+    .danger-zone .action-button-icon {
+      background-color: rgba(220, 38, 38, 0.2);
+      color: var(--accent-danger);
+    }
+
+    /* Confirmation Modal */
+    .confirm-modal {
+      max-width: 420px;
+    }
+
+    .confirm-icon {
+      width: 48px;
+      height: 48px;
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      margin: 0 auto var(--spacing-lg);
+    }
+
+    .confirm-icon.danger {
+      background-color: var(--status-suspended-bg);
+      color: var(--accent-danger);
+    }
+
+    .confirm-icon.warning {
+      background-color: var(--status-pending-bg);
+      color: var(--accent-warning);
+    }
+
+    .confirm-title {
+      font-size: var(--font-size-lg);
+      font-weight: 600;
+      color: var(--text-heading);
+      text-align: center;
+      margin-bottom: var(--spacing-sm);
+    }
+
+    .confirm-message {
+      color: var(--text-muted);
+      text-align: center;
+      margin-bottom: var(--spacing-xl);
+      line-height: 1.6;
+    }
+
+    .confirm-input {
+      width: 100%;
+      padding: var(--spacing-sm) var(--spacing-md);
+      border: 1px solid var(--border-color);
+      border-radius: var(--radius-sm);
+      background-color: var(--card-bg);
+      color: var(--text-body);
+      font-size: var(--font-size-sm);
+      margin-bottom: var(--spacing-lg);
+    }
+
+    .confirm-input:focus {
+      outline: none;
+      border-color: var(--accent-danger);
+    }
+
+    .confirm-input::placeholder {
+      color: var(--text-muted);
+    }
+
+    .confirm-label {
+      font-size: var(--font-size-sm);
+      color: var(--text-body);
+      margin-bottom: var(--spacing-sm);
+      display: block;
+    }
+
+    /* Layout adjustments for demo */
+    .demo-container {
+      display: flex;
+      gap: var(--spacing-xl);
+      flex-wrap: wrap;
+      padding: var(--spacing-xl);
+      background-color: var(--page-bg);
+      min-height: 100vh;
+    }
+
+    .demo-section {
+      flex: 1;
+      min-width: 300px;
+    }
+
+    .demo-label {
+      font-size: var(--font-size-sm);
+      font-weight: 600;
+      color: var(--text-muted);
+      margin-bottom: var(--spacing-md);
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+    }
+  </style>
+</head>
+<body>
+  <div class="demo-container">
+    <!-- User Detail Modal -->
+    <div class="demo-section">
+      <div class="demo-label">User Detail Panel</div>
+      <div class="modal" style="position: relative; max-height: none;">
+        <div class="modal-header">
+          <h2 class="modal-title">User Details</h2>
+          <button class="modal-close">
+            <i data-lucide="x" style="width: 20px; height: 20px;"></i>
+          </button>
+        </div>
+        <div class="modal-body">
+          <!-- User Profile Header -->
+          <div class="user-profile-header">
+            <div class="user-avatar-lg">JD</div>
+            <div class="user-profile-info">
+              <div class="user-profile-name">John Doe</div>
+              <div class="user-profile-email">john.doe@example.com</div>
+              <div class="user-profile-badges">
+                <span class="badge badge-active">Active</span>
+                <span class="badge" style="background-color: var(--type-feature-bg); color: var(--type-feature-text);">Email Verified</span>
+              </div>
+            </div>
+          </div>
+
+          <!-- User Info Grid -->
+          <div class="section">
+            <div class="section-title">
+              <i data-lucide="user" style="width: 16px; height: 16px;"></i>
+              Account Information
+            </div>
+            <div class="info-grid">
+              <div class="info-item">
+                <span class="info-label">Username</span>
+                <span class="info-value">@johndoe</span>
+              </div>
+              <div class="info-item">
+                <span class="info-label">Display Name</span>
+                <span class="info-value">John Doe</span>
+              </div>
+              <div class="info-item">
+                <span class="info-label">Signed Up</span>
+                <span class="info-value">January 15, 2024</span>
+              </div>
+              <div class="info-item">
+                <span class="info-label">Last Login</span>
+                <span class="info-value">2 hours ago</span>
+              </div>
+              <div class="info-item">
+                <span class="info-label">Email Verified</span>
+                <span class="info-value">Yes, on Jan 15, 2024</span>
+              </div>
+              <div class="info-item">
+                <span class="info-label">User ID</span>
+                <span class="info-value" style="font-family: monospace; font-size: var(--font-size-xs);">usr_1a2b3c4d5e6f</span>
+              </div>
+            </div>
+          </div>
+
+          <!-- Actions -->
+          <div class="section">
+            <div class="section-title">
+              <i data-lucide="settings" style="width: 16px; height: 16px;"></i>
+              Actions
+            </div>
+            <div class="action-buttons">
+              <button class="action-button">
+                <div class="action-button-icon warning">
+                  <i data-lucide="ban" style="width: 18px; height: 18px;"></i>
+                </div>
+                <div class="action-button-content">
+                  <div class="action-button-title">Suspend User</div>
+                  <div class="action-button-desc">Temporarily disable account access</div>
+                </div>
+                <i data-lucide="chevron-right" class="action-button-arrow" style="width: 18px; height: 18px;"></i>
+              </button>
+              <button class="action-button">
+                <div class="action-button-icon info">
+                  <i data-lucide="key-round" style="width: 18px; height: 18px;"></i>
+                </div>
+                <div class="action-button-content">
+                  <div class="action-button-title">Reset Password</div>
+                  <div class="action-button-desc">Send password reset email to user</div>
+                </div>
+                <i data-lucide="chevron-right" class="action-button-arrow" style="width: 18px; height: 18px;"></i>
+              </button>
+            </div>
+          </div>
+
+          <!-- Danger Zone -->
+          <div class="danger-zone">
+            <div class="section-title">
+              <i data-lucide="alert-triangle" style="width: 16px; height: 16px;"></i>
+              Danger Zone
+            </div>
+            <div class="action-buttons">
+              <button class="action-button">
+                <div class="action-button-icon">
+                  <i data-lucide="trash-2" style="width: 18px; height: 18px;"></i>
+                </div>
+                <div class="action-button-content">
+                  <div class="action-button-title">Delete User</div>
+                  <div class="action-button-desc">Permanently remove user and all their data</div>
+                </div>
+                <i data-lucide="chevron-right" class="action-button-arrow" style="width: 18px; height: 18px;"></i>
+              </button>
+            </div>
+          </div>
+        </div>
+        <div class="modal-footer">
+          <button class="btn btn-secondary">Close</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Confirmation Modals -->
+    <div class="demo-section">
+      <div class="demo-label">Suspend Confirmation</div>
+      <div class="modal confirm-modal" style="position: relative; max-height: none; margin-bottom: var(--spacing-xl);">
+        <div class="modal-header">
+          <h2 class="modal-title">Suspend User</h2>
+          <button class="modal-close">
+            <i data-lucide="x" style="width: 20px; height: 20px;"></i>
+          </button>
+        </div>
+        <div class="modal-body" style="text-align: center;">
+          <div class="confirm-icon warning">
+            <i data-lucide="ban" style="width: 24px; height: 24px;"></i>
+          </div>
+          <div class="confirm-title">Suspend john.doe@example.com?</div>
+          <div class="confirm-message">
+            This user will be unable to log in until you unsuspend them. They will receive an email notification.
+          </div>
+        </div>
+        <div class="modal-footer">
+          <button class="btn btn-secondary">Cancel</button>
+          <button class="btn" style="background-color: var(--accent-warning); color: white;">
+            <i data-lucide="ban" style="width: 16px; height: 16px;"></i>
+            Suspend User
+          </button>
+        </div>
+      </div>
+
+      <div class="demo-label">Delete Confirmation (Type to Confirm)</div>
+      <div class="modal confirm-modal" style="position: relative; max-height: none;">
+        <div class="modal-header">
+          <h2 class="modal-title">Delete User</h2>
+          <button class="modal-close">
+            <i data-lucide="x" style="width: 20px; height: 20px;"></i>
+          </button>
+        </div>
+        <div class="modal-body">
+          <div class="confirm-icon danger">
+            <i data-lucide="alert-triangle" style="width: 24px; height: 24px;"></i>
+          </div>
+          <div class="confirm-title">Delete john.doe@example.com?</div>
+          <div class="confirm-message">
+            This action <strong>cannot be undone</strong>. This will permanently delete the user account and remove all associated data including:<br><br>
+            • Profile information<br>
+            • Activity history<br>
+            • All user-generated content
+          </div>
+          <label class="confirm-label">Type <strong>john.doe@example.com</strong> to confirm:</label>
+          <input type="text" class="confirm-input" placeholder="Enter email address">
+        </div>
+        <div class="modal-footer">
+          <button class="btn btn-secondary">Cancel</button>
+          <button class="btn btn-danger" disabled style="opacity: 0.5;">
+            <i data-lucide="trash-2" style="width: 16px; height: 16px;"></i>
+            Delete User
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    // Initialize Lucide icons
+    lucide.createIcons();
+
+    // Theme toggle (for demo)
+    document.addEventListener('keydown', (e) => {
+      if (e.key === 'd') {
+        document.documentElement.classList.toggle('dark');
+      }
+    });
+  </script>
+</body>
+</html>

@@ -1,0 +1,802 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Admin Panel - Email Testing</title>
+
+  <!-- Google Fonts -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+
+  <!-- Lucide Icons -->
+  <script src="https://unpkg.com/lucide@latest/dist/umd/lucide.min.js"></script>
+
+  <!-- Theme CSS -->
+  <link rel="stylesheet" href="admin_theme.css">
+
+  <style>
+    body {
+      font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+    }
+
+    /* Two Column Layout */
+    .email-layout {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: var(--spacing-xl);
+    }
+
+    @media (max-width: 1024px) {
+      .email-layout {
+        grid-template-columns: 1fr;
+      }
+    }
+
+    /* Form Card */
+    .form-card {
+      background-color: var(--card-bg);
+      border: 1px solid var(--border-color);
+      border-radius: var(--radius);
+      overflow: hidden;
+    }
+
+    .form-card-header {
+      padding: var(--spacing-lg) var(--spacing-xl);
+      border-bottom: 1px solid var(--border-light);
+      background-color: var(--hover-bg);
+    }
+
+    .form-card-title {
+      font-size: var(--font-size-base);
+      font-weight: 600;
+      color: var(--text-heading);
+      display: flex;
+      align-items: center;
+      gap: var(--spacing-sm);
+    }
+
+    .form-card-body {
+      padding: var(--spacing-xl);
+    }
+
+    /* Form Elements */
+    .form-group {
+      margin-bottom: var(--spacing-lg);
+    }
+
+    .form-group:last-child {
+      margin-bottom: 0;
+    }
+
+    .form-label {
+      display: block;
+      font-size: var(--font-size-sm);
+      font-weight: 500;
+      color: var(--text-body);
+      margin-bottom: var(--spacing-sm);
+    }
+
+    .form-label .required {
+      color: var(--accent-danger);
+    }
+
+    .form-input {
+      width: 100%;
+      padding: var(--spacing-sm) var(--spacing-md);
+      border: 1px solid var(--border-color);
+      border-radius: var(--radius-sm);
+      background-color: var(--card-bg);
+      color: var(--text-body);
+      font-size: var(--font-size-sm);
+      transition: var(--transition-fast);
+    }
+
+    .form-input:focus {
+      outline: none;
+      border-color: var(--accent-primary);
+      box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.1);
+    }
+
+    .form-input::placeholder {
+      color: var(--text-muted);
+    }
+
+    .form-select {
+      width: 100%;
+      padding: var(--spacing-sm) var(--spacing-md);
+      padding-right: var(--spacing-2xl);
+      border: 1px solid var(--border-color);
+      border-radius: var(--radius-sm);
+      background-color: var(--card-bg);
+      color: var(--text-body);
+      font-size: var(--font-size-sm);
+      cursor: pointer;
+      appearance: none;
+      background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='16' height='16' viewBox='0 0 24 24' fill='none' stroke='%2364748b' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='m6 9 6 6 6-6'/%3E%3C/svg%3E");
+      background-repeat: no-repeat;
+      background-position: right 12px center;
+      transition: var(--transition-fast);
+    }
+
+    .form-select:focus {
+      outline: none;
+      border-color: var(--accent-primary);
+      box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.1);
+    }
+
+    .dark .form-select {
+      background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='16' height='16' viewBox='0 0 24 24' fill='none' stroke='%23a1a1aa' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='m6 9 6 6 6-6'/%3E%3C/svg%3E");
+    }
+
+    .form-hint {
+      font-size: var(--font-size-xs);
+      color: var(--text-muted);
+      margin-top: var(--spacing-xs);
+    }
+
+    /* Template Info Box */
+    .template-info {
+      background-color: var(--hover-bg);
+      border: 1px solid var(--border-light);
+      border-radius: var(--radius-sm);
+      padding: var(--spacing-md);
+      margin-top: var(--spacing-md);
+    }
+
+    .template-info-title {
+      font-size: var(--font-size-xs);
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+      color: var(--text-muted);
+      margin-bottom: var(--spacing-sm);
+    }
+
+    .template-info-content {
+      font-size: var(--font-size-sm);
+      color: var(--text-body);
+      line-height: 1.5;
+    }
+
+    .template-vars {
+      display: flex;
+      flex-wrap: wrap;
+      gap: var(--spacing-xs);
+      margin-top: var(--spacing-sm);
+    }
+
+    .template-var {
+      font-family: monospace;
+      font-size: var(--font-size-xs);
+      background-color: var(--card-bg);
+      border: 1px solid var(--border-color);
+      padding: 2px var(--spacing-sm);
+      border-radius: var(--radius-xs);
+      color: var(--accent-primary);
+    }
+
+    /* Dynamic Fields */
+    .dynamic-fields {
+      border: 1px solid var(--border-light);
+      border-radius: var(--radius-sm);
+      padding: var(--spacing-md);
+      background-color: var(--hover-bg);
+    }
+
+    .dynamic-fields-title {
+      font-size: var(--font-size-xs);
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+      color: var(--text-muted);
+      margin-bottom: var(--spacing-md);
+      display: flex;
+      align-items: center;
+      gap: var(--spacing-sm);
+    }
+
+    .dynamic-field-row {
+      display: grid;
+      grid-template-columns: 120px 1fr;
+      gap: var(--spacing-md);
+      margin-bottom: var(--spacing-sm);
+      align-items: center;
+    }
+
+    .dynamic-field-row:last-child {
+      margin-bottom: 0;
+    }
+
+    .dynamic-field-label {
+      font-size: var(--font-size-sm);
+      color: var(--text-body);
+      font-family: monospace;
+    }
+
+    .dynamic-field-input {
+      padding: var(--spacing-xs) var(--spacing-sm);
+      border: 1px solid var(--border-color);
+      border-radius: var(--radius-xs);
+      background-color: var(--card-bg);
+      color: var(--text-body);
+      font-size: var(--font-size-sm);
+    }
+
+    .dynamic-field-input:focus {
+      outline: none;
+      border-color: var(--accent-primary);
+    }
+
+    /* Form Actions */
+    .form-actions {
+      display: flex;
+      gap: var(--spacing-md);
+      padding-top: var(--spacing-lg);
+      border-top: 1px solid var(--border-light);
+      margin-top: var(--spacing-lg);
+    }
+
+    /* Preview Card */
+    .preview-card {
+      background-color: var(--card-bg);
+      border: 1px solid var(--border-color);
+      border-radius: var(--radius);
+      overflow: hidden;
+      display: flex;
+      flex-direction: column;
+    }
+
+    .preview-header {
+      padding: var(--spacing-lg) var(--spacing-xl);
+      border-bottom: 1px solid var(--border-light);
+      background-color: var(--hover-bg);
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+
+    .preview-title {
+      font-size: var(--font-size-base);
+      font-weight: 600;
+      color: var(--text-heading);
+      display: flex;
+      align-items: center;
+      gap: var(--spacing-sm);
+    }
+
+    .preview-body {
+      flex: 1;
+      padding: var(--spacing-xl);
+      background-color: #f8fafc;
+      min-height: 400px;
+    }
+
+    .dark .preview-body {
+      background-color: #1e1e1e;
+    }
+
+    /* Email Preview */
+    .email-preview {
+      background-color: white;
+      border-radius: var(--radius-sm);
+      box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+      max-width: 500px;
+      margin: 0 auto;
+    }
+
+    .dark .email-preview {
+      background-color: #2d2d2d;
+    }
+
+    .email-preview-header {
+      padding: var(--spacing-lg);
+      border-bottom: 1px solid #e5e7eb;
+    }
+
+    .dark .email-preview-header {
+      border-bottom-color: #404040;
+    }
+
+    .email-preview-from {
+      font-size: var(--font-size-xs);
+      color: #6b7280;
+      margin-bottom: var(--spacing-xs);
+    }
+
+    .email-preview-subject {
+      font-size: var(--font-size-base);
+      font-weight: 600;
+      color: #111827;
+    }
+
+    .dark .email-preview-subject {
+      color: #f3f4f6;
+    }
+
+    .email-preview-content {
+      padding: var(--spacing-xl);
+    }
+
+    .email-preview-logo {
+      width: 120px;
+      height: 32px;
+      background: linear-gradient(135deg, var(--accent-primary), #8b5cf6);
+      border-radius: var(--radius-xs);
+      margin-bottom: var(--spacing-lg);
+    }
+
+    .email-preview-text {
+      font-size: var(--font-size-sm);
+      color: #374151;
+      line-height: 1.6;
+      margin-bottom: var(--spacing-lg);
+    }
+
+    .dark .email-preview-text {
+      color: #d1d5db;
+    }
+
+    .email-preview-btn {
+      display: inline-block;
+      padding: var(--spacing-sm) var(--spacing-xl);
+      background-color: var(--accent-primary);
+      color: white;
+      font-size: var(--font-size-sm);
+      font-weight: 500;
+      border-radius: var(--radius-sm);
+      text-decoration: none;
+    }
+
+    .email-preview-footer {
+      padding: var(--spacing-lg);
+      border-top: 1px solid #e5e7eb;
+      text-align: center;
+    }
+
+    .dark .email-preview-footer {
+      border-top-color: #404040;
+    }
+
+    .email-preview-footer-text {
+      font-size: var(--font-size-xs);
+      color: #9ca3af;
+    }
+
+    /* Recent Sends */
+    .recent-sends {
+      margin-top: var(--spacing-xl);
+    }
+
+    .recent-sends-title {
+      font-size: var(--font-size-sm);
+      font-weight: 600;
+      color: var(--text-heading);
+      margin-bottom: var(--spacing-md);
+    }
+
+    .recent-send-item {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: var(--spacing-md);
+      border: 1px solid var(--border-light);
+      border-radius: var(--radius-sm);
+      margin-bottom: var(--spacing-sm);
+      background-color: var(--card-bg);
+    }
+
+    .recent-send-info {
+      display: flex;
+      align-items: center;
+      gap: var(--spacing-md);
+    }
+
+    .recent-send-icon {
+      width: 32px;
+      height: 32px;
+      border-radius: var(--radius-xs);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .recent-send-icon.success {
+      background-color: var(--status-active-bg);
+      color: var(--accent-success);
+    }
+
+    .recent-send-icon.failed {
+      background-color: var(--status-suspended-bg);
+      color: var(--accent-danger);
+    }
+
+    .recent-send-details {
+      display: flex;
+      flex-direction: column;
+      gap: 2px;
+    }
+
+    .recent-send-template {
+      font-weight: 500;
+      color: var(--text-body);
+    }
+
+    .recent-send-meta {
+      font-size: var(--font-size-xs);
+      color: var(--text-muted);
+    }
+
+    .recent-send-status {
+      font-size: var(--font-size-xs);
+      font-weight: 500;
+    }
+
+    .recent-send-status.success {
+      color: var(--accent-success);
+    }
+
+    .recent-send-status.failed {
+      color: var(--accent-danger);
+    }
+
+    /* Success/Error Toast Preview */
+    .toast-preview {
+      position: fixed;
+      bottom: var(--spacing-xl);
+      right: var(--spacing-xl);
+      display: flex;
+      align-items: center;
+      gap: var(--spacing-md);
+      padding: var(--spacing-md) var(--spacing-lg);
+      background-color: var(--card-bg);
+      border: 1px solid var(--border-color);
+      border-radius: var(--radius-sm);
+      box-shadow: var(--shadow-lg);
+      animation: toastSlide 300ms ease-out;
+    }
+
+    @keyframes toastSlide {
+      from {
+        opacity: 0;
+        transform: translateX(100%);
+      }
+      to {
+        opacity: 1;
+        transform: translateX(0);
+      }
+    }
+
+    .toast-icon {
+      width: 24px;
+      height: 24px;
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .toast-icon.success {
+      background-color: var(--status-active-bg);
+      color: var(--accent-success);
+    }
+
+    .toast-content {
+      display: flex;
+      flex-direction: column;
+      gap: 2px;
+    }
+
+    .toast-title {
+      font-weight: 500;
+      color: var(--text-heading);
+    }
+
+    .toast-message {
+      font-size: var(--font-size-xs);
+      color: var(--text-muted);
+    }
+  </style>
+</head>
+<body>
+  <div class="admin-layout">
+    <!-- Sidebar -->
+    <aside class="sidebar" id="sidebar">
+      <div class="sidebar-header">
+        <div class="sidebar-logo">
+          <div class="sidebar-logo-icon">
+            <i data-lucide="shield" style="width: 18px; height: 18px; color: white;"></i>
+          </div>
+          <span class="sidebar-logo-text">Admin</span>
+        </div>
+        <button class="sidebar-toggle" onclick="toggleSidebar()" aria-label="Toggle sidebar">
+          <i data-lucide="panel-left-close" style="width: 20px; height: 20px;"></i>
+        </button>
+      </div>
+
+      <nav class="sidebar-nav">
+        <div class="nav-group">
+          <div class="nav-group-label">Overview</div>
+          <a href="admin_layout_1.html" class="nav-item">
+            <i data-lucide="layout-dashboard" class="nav-icon"></i>
+            <span class="nav-label">Dashboard</span>
+          </a>
+        </div>
+
+        <div class="nav-group">
+          <div class="nav-group-label">Management</div>
+          <a href="admin_users_1.html" class="nav-item">
+            <i data-lucide="users" class="nav-icon"></i>
+            <span class="nav-label">Users</span>
+          </a>
+          <a href="admin_feedback_1.html" class="nav-item">
+            <i data-lucide="message-square-text" class="nav-icon"></i>
+            <span class="nav-label">Feedback</span>
+          </a>
+        </div>
+
+        <div class="nav-group">
+          <div class="nav-group-label">System</div>
+          <a href="admin_audit_1.html" class="nav-item">
+            <i data-lucide="scroll-text" class="nav-icon"></i>
+            <span class="nav-label">Audit Log</span>
+          </a>
+          <a href="#" class="nav-item active">
+            <i data-lucide="mail" class="nav-icon"></i>
+            <span class="nav-label">Email Testing</span>
+          </a>
+          <a href="#" class="nav-item">
+            <i data-lucide="settings" class="nav-icon"></i>
+            <span class="nav-label">Settings</span>
+          </a>
+        </div>
+      </nav>
+    </aside>
+
+    <!-- Mobile Overlay -->
+    <div class="mobile-overlay" onclick="toggleSidebar()"></div>
+
+    <!-- Main Content -->
+    <main class="main-content">
+      <!-- Header -->
+      <header class="header">
+        <div class="header-left">
+          <button class="header-sidebar-toggle" onclick="toggleSidebar()" aria-label="Toggle sidebar">
+            <i data-lucide="panel-left" style="width: 18px; height: 18px;"></i>
+          </button>
+          <span class="admin-badge">Admin Panel</span>
+        </div>
+        <div class="header-right">
+          <button class="theme-toggle" onclick="toggleTheme()" aria-label="Toggle theme">
+            <i data-lucide="sun" class="theme-icon-light" style="width: 18px; height: 18px;"></i>
+            <i data-lucide="moon" class="theme-icon-dark" style="width: 18px; height: 18px; display: none;"></i>
+          </button>
+          <div class="user-menu">
+            <div class="user-avatar">VT</div>
+            <span class="user-name">Varun</span>
+            <i data-lucide="chevron-down" style="width: 16px; height: 16px; color: var(--text-muted);"></i>
+          </div>
+        </div>
+      </header>
+
+      <!-- Page Content -->
+      <div class="page-content">
+        <div class="page-header">
+          <h1 class="page-title">Email Testing</h1>
+          <p class="page-description">Test email templates and verify delivery in production.</p>
+        </div>
+
+        <!-- Email Layout -->
+        <div class="email-layout">
+          <!-- Send Test Email Form -->
+          <div>
+            <div class="form-card">
+              <div class="form-card-header">
+                <h2 class="form-card-title">
+                  <i data-lucide="send" style="width: 18px; height: 18px;"></i>
+                  Send Test Email
+                </h2>
+              </div>
+              <div class="form-card-body">
+                <div class="form-group">
+                  <label class="form-label">
+                    Email Template <span class="required">*</span>
+                  </label>
+                  <select class="form-select" id="templateSelect">
+                    <option value="">Select a template...</option>
+                    <option value="welcome">Welcome Email</option>
+                    <option value="password-reset" selected>Password Reset</option>
+                    <option value="email-verification">Email Verification</option>
+                    <option value="account-suspended">Account Suspended</option>
+                    <option value="feedback-received">Feedback Received</option>
+                  </select>
+                  <div class="template-info" id="templateInfo">
+                    <div class="template-info-title">Template Details</div>
+                    <div class="template-info-content">
+                      Sent when a user requests a password reset. Contains a secure link to set a new password.
+                    </div>
+                    <div class="template-vars">
+                      <span class="template-var">{{user_name}}</span>
+                      <span class="template-var">{{reset_link}}</span>
+                      <span class="template-var">{{expiry_time}}</span>
+                    </div>
+                  </div>
+                </div>
+
+                <div class="form-group">
+                  <label class="form-label">
+                    Recipient Email <span class="required">*</span>
+                  </label>
+                  <input type="email" class="form-input" placeholder="test@example.com" value="varun@example.com">
+                  <p class="form-hint">The email address that will receive the test email.</p>
+                </div>
+
+                <div class="form-group">
+                  <div class="dynamic-fields">
+                    <div class="dynamic-fields-title">
+                      <i data-lucide="variable" style="width: 14px; height: 14px;"></i>
+                      Template Variables
+                    </div>
+                    <div class="dynamic-field-row">
+                      <label class="dynamic-field-label">{{user_name}}</label>
+                      <input type="text" class="dynamic-field-input" placeholder="John Doe" value="Varun">
+                    </div>
+                    <div class="dynamic-field-row">
+                      <label class="dynamic-field-label">{{reset_link}}</label>
+                      <input type="text" class="dynamic-field-input" placeholder="Auto-generated" value="https://app.example.com/reset/abc123" disabled style="opacity: 0.6;">
+                    </div>
+                    <div class="dynamic-field-row">
+                      <label class="dynamic-field-label">{{expiry_time}}</label>
+                      <input type="text" class="dynamic-field-input" placeholder="24 hours" value="24 hours">
+                    </div>
+                  </div>
+                </div>
+
+                <div class="form-actions">
+                  <button class="btn btn-primary" style="flex: 1;">
+                    <i data-lucide="send" style="width: 16px; height: 16px;"></i>
+                    Send Test Email
+                  </button>
+                </div>
+              </div>
+            </div>
+
+            <!-- Recent Sends -->
+            <div class="recent-sends">
+              <h3 class="recent-sends-title">Recent Test Emails</h3>
+              <div class="recent-send-item">
+                <div class="recent-send-info">
+                  <div class="recent-send-icon success">
+                    <i data-lucide="check" style="width: 16px; height: 16px;"></i>
+                  </div>
+                  <div class="recent-send-details">
+                    <span class="recent-send-template">Password Reset</span>
+                    <span class="recent-send-meta">varun@example.com • 5 min ago</span>
+                  </div>
+                </div>
+                <span class="recent-send-status success">Delivered</span>
+              </div>
+              <div class="recent-send-item">
+                <div class="recent-send-info">
+                  <div class="recent-send-icon success">
+                    <i data-lucide="check" style="width: 16px; height: 16px;"></i>
+                  </div>
+                  <div class="recent-send-details">
+                    <span class="recent-send-template">Welcome Email</span>
+                    <span class="recent-send-meta">test@example.com • 2 hours ago</span>
+                  </div>
+                </div>
+                <span class="recent-send-status success">Delivered</span>
+              </div>
+              <div class="recent-send-item">
+                <div class="recent-send-info">
+                  <div class="recent-send-icon failed">
+                    <i data-lucide="x" style="width: 16px; height: 16px;"></i>
+                  </div>
+                  <div class="recent-send-details">
+                    <span class="recent-send-template">Email Verification</span>
+                    <span class="recent-send-meta">invalid@fake.com • 1 day ago</span>
+                  </div>
+                </div>
+                <span class="recent-send-status failed">Bounced</span>
+              </div>
+            </div>
+          </div>
+
+          <!-- Preview Panel -->
+          <div class="preview-card">
+            <div class="preview-header">
+              <h2 class="preview-title">
+                <i data-lucide="eye" style="width: 18px; height: 18px;"></i>
+                Preview
+              </h2>
+              <span class="badge" style="background-color: var(--type-feature-bg); color: var(--type-feature-text);">Password Reset</span>
+            </div>
+            <div class="preview-body">
+              <div class="email-preview">
+                <div class="email-preview-header">
+                  <div class="email-preview-from">From: noreply@yourapp.com</div>
+                  <div class="email-preview-subject">Reset Your Password</div>
+                </div>
+                <div class="email-preview-content">
+                  <div class="email-preview-logo"></div>
+                  <p class="email-preview-text">
+                    Hi <strong>Varun</strong>,
+                  </p>
+                  <p class="email-preview-text">
+                    We received a request to reset your password. Click the button below to create a new password. This link will expire in <strong>24 hours</strong>.
+                  </p>
+                  <a href="#" class="email-preview-btn">Reset Password</a>
+                  <p class="email-preview-text" style="margin-top: var(--spacing-lg); font-size: var(--font-size-xs); color: #6b7280;">
+                    If you didn't request this, you can safely ignore this email. Your password will remain unchanged.
+                  </p>
+                </div>
+                <div class="email-preview-footer">
+                  <p class="email-preview-footer-text">
+                    © 2024 Your App. All rights reserved.<br>
+                    123 Street, City, Country
+                  </p>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </main>
+  </div>
+
+  <!-- Success Toast -->
+  <div class="toast-preview" id="toast" style="display: none;">
+    <div class="toast-icon success">
+      <i data-lucide="check" style="width: 14px; height: 14px;"></i>
+    </div>
+    <div class="toast-content">
+      <span class="toast-title">Email Sent</span>
+      <span class="toast-message">Test email delivered to varun@example.com</span>
+    </div>
+  </div>
+
+  <script>
+    // Initialize Lucide icons
+    lucide.createIcons();
+
+    // Sidebar toggle
+    function toggleSidebar() {
+      const sidebar = document.getElementById('sidebar');
+      if (window.innerWidth <= 768) {
+        sidebar.classList.toggle('open');
+      } else {
+        sidebar.classList.toggle('collapsed');
+      }
+    }
+
+    // Theme toggle
+    function toggleTheme() {
+      const html = document.documentElement;
+      const lightIcon = document.querySelector('.theme-icon-light');
+      const darkIcon = document.querySelector('.theme-icon-dark');
+
+      if (html.classList.contains('dark')) {
+        html.classList.remove('dark');
+        lightIcon.style.display = 'block';
+        darkIcon.style.display = 'none';
+      } else {
+        html.classList.add('dark');
+        lightIcon.style.display = 'none';
+        darkIcon.style.display = 'block';
+      }
+    }
+
+    // Show toast on form submit (demo)
+    document.querySelector('.btn-primary').addEventListener('click', (e) => {
+      e.preventDefault();
+      const toast = document.getElementById('toast');
+      toast.style.display = 'flex';
+      setTimeout(() => {
+        toast.style.display = 'none';
+      }, 4000);
+    });
+  </script>
+</body>
+</html>
