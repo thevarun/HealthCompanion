@@ -2,6 +2,11 @@
 
 **Goal:** Users can easily share feedback; admins can review and manage submissions
 
+**UX Design Artifacts:**
+- [Design Brief](../ux-design/epic-5-feedback-design-brief.md)
+- [Component Strategy](../ux-design/epic-5-feedback-component-strategy.md)
+- [User Journeys](../ux-design/epic-5-feedback-user-journeys.md)
+
 ## Story 5.1: Feedback Database Schema
 
 As a **developer implementing feedback collection**,
@@ -84,6 +89,11 @@ So that **I can quickly share my thoughts from any page**.
 **Then** button is still visible but appropriately sized
 **And** modal is full-screen or properly sized for mobile
 **And** form is usable with touch keyboard
+
+**UX Design:**
+- **Prototype:** [Feedback Modal](https://www.magicpatterns.com/c/ixx6mdxgjkjwkvsjuzybkg)
+- **Components:** `FeedbackModal.tsx`, `FeedbackTrigger.tsx`
+- **Note:** Design uses sidebar trigger placement instead of floating button
 
 ---
 
