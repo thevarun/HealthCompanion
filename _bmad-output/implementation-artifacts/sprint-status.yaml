@@ -80,9 +80,7 @@ development_status:
   epic-4: backlog
   4-1-email-infrastructure-setup-resend: backlog
   4-2-welcome-email-template: backlog
-  4-3-email-verification-template: backlog
-  4-4-password-reset-email-template: backlog
-  4-5-email-error-handling-and-logging: backlog
+  4-3-email-error-handling-and-logging: backlog
   epic-4-retrospective: optional
 
   # Epic 5: User Feedback Collection
@@ -90,8 +88,6 @@ development_status:
   5-1-feedback-database-schema: backlog
   5-2-feedback-widget-component: backlog
   5-3-feedback-submission-api: backlog
-  5-4-feedback-admin-list-view: backlog
-  5-5-feedback-admin-actions: backlog
   epic-5-retrospective: optional
 
   # Epic 6: Admin Panel & System Management
@@ -102,6 +98,9 @@ development_status:
   6-4-user-detail-and-actions: backlog
   6-5-system-metrics-dashboard: backlog
   6-6-admin-audit-logging: backlog
+  6-7-email-testing-ui: backlog
+  6-8-feedback-admin-list-view: backlog
+  6-9-feedback-admin-actions: backlog
   epic-6-retrospective: optional
 
   # Epic 7: SEO & Social Sharing Foundations

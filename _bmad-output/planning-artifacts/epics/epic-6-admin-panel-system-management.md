@@ -293,3 +293,134 @@ So that **I have accountability and can troubleshoot issues**.
 **And** logging failures don't break admin actions (graceful)
 
 ---
+
+## Story 6.7: Email Testing UI
+
+As an **admin**,
+I want **a visual interface to test email templates**,
+So that **I can verify email delivery and rendering in production**.
+
+**Acceptance Criteria:**
+
+**Given** I am on the admin email testing page
+**When** the page loads
+**Then** I see a dropdown of available email templates
+**And** I see an input for recipient email address
+**And** I see template-specific data fields (if applicable)
+
+**Given** I select a template and enter an email
+**When** I click "Send Test Email"
+**Then** the email is sent via Resend
+**And** I see success confirmation with send status
+**And** actual email arrives at the specified address
+
+**Given** the email send fails
+**When** Resend returns an error
+**Then** I see the error message clearly displayed
+**And** I can retry the send
+
+**Given** the email testing page
+**When** I review security
+**Then** page is only accessible to admins
+**And** protected by the same middleware as other admin routes
+**And** rate limited to prevent abuse (optional)
+
+**Given** the email testing implementation
+**When** I review the code
+**Then** API route is at `/api/admin/email/test`
+**And** route validates admin session before processing
+**And** route accepts `{ template: string, email: string, data?: object }`
+
+---
+
+## Story 6.8: Feedback Admin List View
+
+As an **admin reviewing feedback**,
+I want **to see all feedback submissions in one place**,
+So that **I can understand user needs and issues**.
+
+**Acceptance Criteria:**
+
+**Given** I am an admin user
+**When** I navigate to the admin feedback page
+**Then** I see a list of all feedback submissions
+**And** list is sorted by newest first (default)
+**And** list shows: type, message preview, user/email, date, status
+
+**Given** the feedback list
+**When** I view it
+**Then** I can filter by type (Bug, Feature, Praise, All)
+**And** I can filter by status (Pending, Reviewed, Archived, All)
+**And** filters update the list without page reload
+
+**Given** a feedback item in the list
+**When** I view the preview
+**Then** I see the first ~100 characters of the message
+**And** I see the feedback type with color coding
+**And** I see relative timestamp ("2 hours ago")
+**And** I see user email or "Anonymous"
+
+**Given** I click on a feedback item
+**When** the detail view opens
+**Then** I see the full message
+**And** I see all metadata (type, user, date, status)
+**And** I can take actions (mark reviewed, delete)
+
+**Given** the admin feedback page
+**When** I access it as non-admin
+**Then** I am redirected to dashboard
+**And** I see "Access denied" or similar message
+
+**Given** the feedback list is empty
+**When** no feedback exists
+**Then** I see an empty state
+**And** message indicates no feedback yet
+
+---
+
+## Story 6.9: Feedback Admin Actions
+
+As an **admin managing feedback**,
+I want **to take actions on feedback items**,
+So that **I can track what's been reviewed and export data**.
+
+**Acceptance Criteria:**
+
+**Given** a pending feedback item
+**When** I click "Mark as Reviewed"
+**Then** status changes to "reviewed"
+**And** reviewed_at timestamp is set
+**And** UI updates to reflect new status
+**And** I see confirmation toast
+
+**Given** a feedback item
+**When** I click "Delete"
+**Then** I see a confirmation dialog
+**And** dialog warns about permanent deletion
+**And** on confirm, item is deleted from database
+**And** list updates to remove the item
+
+**Given** I click "Archive"
+**When** I archive a feedback item
+**Then** status changes to "archived"
+**And** item remains in database but hidden by default
+**And** I can filter to see archived items
+
+**Given** the feedback admin page
+**When** I click "Export CSV"
+**Then** a CSV file is downloaded
+**And** file contains: id, type, message, email, status, created_at, reviewed_at
+**And** filename includes date (e.g., feedback-2024-01-15.csv)
+
+**Given** filters are active
+**When** I export CSV
+**Then** only filtered results are exported
+**And** export reflects current filter state
+
+**Given** bulk actions
+**When** I select multiple feedback items
+**Then** I can mark all as reviewed
+**And** I can delete all selected
+**And** confirmation is required for bulk actions
+
+---
