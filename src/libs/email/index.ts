@@ -27,6 +27,7 @@ export { EMAIL_CONFIG, getFromAddress, isEmailEnabled } from './config';
 
 // Helpers
 export { sendEmail, sendPlainEmail } from './sendEmail';
+export { sendWelcomeEmail } from './sendWelcomeEmail';
 
 // Types
 export type {

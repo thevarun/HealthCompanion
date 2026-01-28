@@ -79,7 +79,7 @@ development_status:
   # Epic 4: Email Communication System
   epic-4: in-progress
   4-1-email-infrastructure-setup-resend: done
-  4-2-welcome-email-template: backlog
+  4-2-welcome-email-template: done
   4-3-email-error-handling-and-logging: backlog
   epic-4-retrospective: optional
 
