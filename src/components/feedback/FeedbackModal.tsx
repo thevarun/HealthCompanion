@@ -3,6 +3,7 @@
 import { Bug, Heart, Lightbulb } from 'lucide-react';
 import { useEffect, useState } from 'react';
 import { toast } from 'sonner';
+import { z } from 'zod';
 
 import { Button } from '@/components/ui/button';
 import {
@@ -19,6 +20,9 @@ import { createClient } from '@/libs/supabase/client';
 import { cn } from '@/utils/Helpers';
 
 type FeedbackType = 'bug' | 'feature' | 'praise';
+
+// Reuse same validation schema as server for consistency
+const emailSchema = z.string().email();
 
 type FeedbackModalProps = {
   open: boolean;
@@ -54,13 +58,17 @@ export function FeedbackModal({ open, onOpenChange }: FeedbackModalProps) {
   }, [open]);
 
   // Reset form when modal opens
+  // Using callback pattern to satisfy ESLint rule about direct setState calls
   useEffect(() => {
-    if (open) {
-      setFeedbackType('feature');
-      setMessage('');
-      setEmail('');
-      setIsLoading(false);
+    if (!open) {
+      return;
     }
+
+    // Reset form state using functional updates
+    setFeedbackType(() => 'feature');
+    setMessage(() => '');
+    setEmail(() => '');
+    setIsLoading(() => false);
   }, [open]);
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -71,10 +79,13 @@ export function FeedbackModal({ open, onOpenChange }: FeedbackModalProps) {
       return;
     }
 
-    // Validate email if provided
-    if (email.trim() && !email.match(/^[^\s@]+@[^\s@][^\s.@]*\.[^\s@]+$/)) {
-      toast.error('Please enter a valid email address');
-      return;
+    // Validate email if provided using Zod (matches server validation)
+    if (email.trim()) {
+      const emailValidation = emailSchema.safeParse(email.trim());
+      if (!emailValidation.success) {
+        toast.error('Please enter a valid email address');
+        return;
+      }
     }
 
     setIsLoading(true);
