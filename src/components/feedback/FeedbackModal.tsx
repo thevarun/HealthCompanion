@@ -80,21 +80,35 @@ export function FeedbackModal({ open, onOpenChange }: FeedbackModalProps) {
     setIsLoading(true);
 
     try {
-      // TODO: Replace with actual API call when Story 5.3 is complete
-      // const response = await fetch('/api/feedback', {
-      //   method: 'POST',
-      //   headers: { 'Content-Type': 'application/json' },
-      //   body: JSON.stringify({
-      //     type: feedbackType,
-      //     message: message.trim(),
-      //     email: email.trim() || undefined,
-      //   }),
-      // })
+      const response = await fetch('/api/feedback', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          type: feedbackType,
+          message: message.trim(),
+          email: email.trim() || undefined,
+        }),
+      });
 
-      // Mock API call for now
-      // TODO: Remove mock and use actual API in Story 5.3
-      await new Promise(resolve => setTimeout(resolve, 1500));
+      if (!response.ok) {
+        const errorData = await response.json().catch(() => ({}));
+        console.error('[FeedbackModal] API error:', errorData);
 
+        // Handle validation errors
+        if (response.status === 400 && errorData.code === 'VALIDATION_ERROR') {
+          const details = errorData.details || {};
+          const firstError = Object.values(details)[0];
+          const errorMessage = Array.isArray(firstError) ? firstError[0] : 'Please check your input';
+          toast.error(errorMessage);
+        } else {
+          toast.error('Failed to submit feedback. Please try again.');
+        }
+
+        setIsLoading(false);
+        return;
+      }
+
+      // Success
       setIsLoading(false);
       onOpenChange(false);
 
@@ -103,7 +117,7 @@ export function FeedbackModal({ open, onOpenChange }: FeedbackModalProps) {
       });
     } catch (error) {
       setIsLoading(false);
-      console.error('Failed to submit feedback:', error);
+      console.error('[FeedbackModal] Failed to submit feedback:', error);
       toast.error('Failed to submit feedback. Please try again.');
     }
   };
