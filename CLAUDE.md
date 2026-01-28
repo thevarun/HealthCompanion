@@ -61,6 +61,16 @@ The project includes:
 - **Middleware**: Handles locale detection and prefix routing
 - **Config**: `src/utils/AppConfig.ts`
 
+### Email Integration
+- **Provider**: Resend (https://resend.com)
+- **Email Service**: `src/libs/email/`
+  - Client for sending emails (provider-agnostic interface)
+  - React Email templates in `templates/` subdirectory
+  - TypeScript types for email payloads
+- **Development**: `npm run email:dev` starts template preview server (port 3001)
+- **Configuration**: Environment variables for sender settings
+- **Dev Mode**: Without API key, emails are logged to console (no actual sending)
+
 ### Routing Structure
 **Routes**: `src/app/[locale]/` - `(unauth)/` public, `(auth)/` protected + dashboard, `(chat)/` chat interface, `api/chat/` Dify proxy
 
@@ -90,11 +100,18 @@ DIFY_API_KEY=           # Keep in .env.local
 
 # Database
 DATABASE_URL=           # PostgreSQL connection string
+
+# Email (Resend - Server-side only)
+RESEND_API_KEY=           # Resend API key (optional in dev - logs to console)
+EMAIL_FROM_ADDRESS=       # Sender email (default: noreply@example.com)
+EMAIL_FROM_NAME=          # Sender name (default: VT SaaS Template)
+EMAIL_REPLY_TO=           # Reply-to address (optional)
 ```
 
 ### Sensitive (.env.local only)
 ```bash
 SUPABASE_SERVICE_ROLE_KEY=
+RESEND_API_KEY=           # (also listed above - keep in .env.local only)
 ```
 
 ## Commands
@@ -107,6 +124,7 @@ Standard: `npm run dev`, `npm run build`, `npm test`, `npm run lint`, `npm run c
 - `npm run commit` - Interactive commit with Commitizen
 - `npm run test:e2e` - Playwright E2E tests
 - `npm run dev:next` - Start Next.js only (no Sentry Spotlight)
+- `npm run email:dev` - Start React Email preview server (port 3001)
 
 ## Key Development Patterns
 
@@ -137,6 +155,22 @@ Standard: `npm run dev`, `npm run build`, `npm test`, `npm run lint`, `npm run c
    const t = useTranslations('Namespace');
    ```
 3. Crowdin syncs translations automatically via GitHub Actions on push to `main`
+
+### Adding New Email Templates
+1. Create template in `src/libs/email/templates/YourTemplate.tsx`
+2. Use React Email components from `@react-email/components`
+3. Preview with `npm run email:dev` (hot-reload on port 3001)
+4. Send with:
+   ```typescript
+   import { sendEmail } from '@/libs/email';
+   import { YourTemplate } from '@/libs/email/templates/YourTemplate';
+
+   await sendEmail(
+     'recipient@example.com',
+     'Subject Line',
+     <YourTemplate data={yourData} />
+   );
+   ```
 
 ### Error Handling
 
