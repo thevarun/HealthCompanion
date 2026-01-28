@@ -123,8 +123,9 @@
     "^npm\\s+run\\s+dev\\s+--\\s+-p\\s+\\d+\\s*(&|2>&1\\s*&)$",
     "^npm\\s+run\\s+dev\\s*>\\s*/dev/null\\s+2>&1\\s*&$",
 
-    "^echo\\s+[\"'][^\"']*[\"']\\s*&&\\s*(npm|git|curl|sleep|echo)\\s+",
-    "^for\\s+i\\s+in\\s+\\{1\\.\\.[0-9]+\\};\\s+do\\s+(sleep|curl)[^;]*;\\s*done"
+    "^echo\\s+[\"'][^\"']*[\"']\\s*&&\\s*sleep\\s+[0-9.]+$",
+    "^for\\s+i\\s+in\\s+\\{1\\.\\.[0-9]+\\};\\s+do\\s+sleep\\s+[0-9.]+;\\s*done$",
+    "^for\\s+i\\s+in\\s+\\{1\\.\\.[0-9]+\\};\\s+do\\s+curl\\s+(-[sfo]+\\s+)*https?://localhost[:/][^;|&]*;\\s*done$"
   ],
 
   "deny_patterns": [
