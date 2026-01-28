@@ -1,0 +1,493 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Admin Panel - Dashboard</title>
+
+  <!-- Google Fonts -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+
+  <!-- Lucide Icons -->
+  <script src="https://unpkg.com/lucide@latest/dist/umd/lucide.min.js"></script>
+
+  <!-- Theme CSS -->
+  <link rel="stylesheet" href="admin_theme.css">
+
+  <style>
+    body {
+      font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+    }
+
+    /* Metrics Grid */
+    .metrics-grid {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: var(--spacing-lg);
+      margin-bottom: var(--spacing-xl);
+    }
+
+    @media (max-width: 1200px) {
+      .metrics-grid {
+        grid-template-columns: repeat(2, 1fr);
+      }
+    }
+
+    @media (max-width: 640px) {
+      .metrics-grid {
+        grid-template-columns: 1fr;
+      }
+    }
+
+    /* Recent Activity Section */
+    .activity-list {
+      display: flex;
+      flex-direction: column;
+    }
+
+    .activity-item {
+      display: flex;
+      align-items: flex-start;
+      gap: var(--spacing-md);
+      padding: var(--spacing-lg);
+      border-bottom: 1px solid var(--border-light);
+      transition: var(--transition-fast);
+    }
+
+    .activity-item:last-child {
+      border-bottom: none;
+    }
+
+    .activity-item:hover {
+      background-color: var(--hover-bg);
+    }
+
+    .activity-icon {
+      width: 36px;
+      height: 36px;
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      flex-shrink: 0;
+    }
+
+    .activity-icon.user {
+      background-color: var(--type-feature-bg);
+      color: var(--type-feature-text);
+    }
+
+    .activity-icon.feedback {
+      background-color: var(--type-praise-bg);
+      color: var(--type-praise-text);
+    }
+
+    .activity-icon.alert {
+      background-color: var(--type-bug-bg);
+      color: var(--type-bug-text);
+    }
+
+    .activity-content {
+      flex: 1;
+      min-width: 0;
+    }
+
+    .activity-text {
+      color: var(--text-body);
+      margin-bottom: var(--spacing-xs);
+    }
+
+    .activity-text strong {
+      color: var(--text-heading);
+      font-weight: 600;
+    }
+
+    .activity-time {
+      font-size: var(--font-size-xs);
+      color: var(--text-muted);
+    }
+
+    /* Quick Actions Grid */
+    .actions-grid {
+      display: grid;
+      grid-template-columns: repeat(2, 1fr);
+      gap: var(--spacing-md);
+    }
+
+    @media (max-width: 640px) {
+      .actions-grid {
+        grid-template-columns: 1fr;
+      }
+    }
+
+    .action-btn {
+      display: flex;
+      align-items: center;
+      gap: var(--spacing-md);
+      padding: var(--spacing-lg);
+      background-color: var(--card-bg);
+      border: 1px solid var(--border-color);
+      border-radius: var(--radius-sm);
+      cursor: pointer;
+      transition: var(--transition-fast);
+      text-align: left;
+    }
+
+    .action-btn:hover {
+      background-color: var(--hover-bg);
+      border-color: var(--accent-primary);
+      transform: translateY(-2px);
+      box-shadow: var(--shadow-md);
+    }
+
+    .action-btn-icon {
+      width: 40px;
+      height: 40px;
+      border-radius: var(--radius-sm);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      background-color: var(--hover-bg);
+      color: var(--text-body);
+    }
+
+    .action-btn:hover .action-btn-icon {
+      background-color: var(--accent-primary);
+      color: white;
+    }
+
+    .action-btn-content {
+      flex: 1;
+    }
+
+    .action-btn-title {
+      font-weight: 600;
+      color: var(--text-heading);
+      margin-bottom: 2px;
+    }
+
+    .action-btn-desc {
+      font-size: var(--font-size-xs);
+      color: var(--text-muted);
+    }
+
+    /* Dashboard Grid Layout */
+    .dashboard-grid {
+      display: grid;
+      grid-template-columns: 2fr 1fr;
+      gap: var(--spacing-xl);
+    }
+
+    @media (max-width: 1024px) {
+      .dashboard-grid {
+        grid-template-columns: 1fr;
+      }
+    }
+
+    /* Card variations */
+    .card-flush {
+      padding: 0;
+    }
+
+    .card-flush .card-header {
+      padding: var(--spacing-lg) var(--spacing-xl);
+      border-bottom: 1px solid var(--border-light);
+      margin-bottom: 0;
+    }
+  </style>
+</head>
+<body>
+  <div class="admin-layout">
+    <!-- Sidebar -->
+    <aside class="sidebar" id="sidebar">
+      <div class="sidebar-header">
+        <div class="sidebar-logo">
+          <div class="sidebar-logo-icon">
+            <i data-lucide="shield" style="width: 18px; height: 18px; color: white;"></i>
+          </div>
+          <span class="sidebar-logo-text">Admin</span>
+        </div>
+        <button class="sidebar-toggle" onclick="toggleSidebar()" aria-label="Toggle sidebar">
+          <i data-lucide="panel-left-close" style="width: 20px; height: 20px;"></i>
+        </button>
+      </div>
+
+      <nav class="sidebar-nav">
+        <div class="nav-group">
+          <div class="nav-group-label">Overview</div>
+          <a href="#" class="nav-item active">
+            <i data-lucide="layout-dashboard" class="nav-icon"></i>
+            <span class="nav-label">Dashboard</span>
+          </a>
+        </div>
+
+        <div class="nav-group">
+          <div class="nav-group-label">Management</div>
+          <a href="#" class="nav-item">
+            <i data-lucide="users" class="nav-icon"></i>
+            <span class="nav-label">Users</span>
+          </a>
+          <a href="#" class="nav-item">
+            <i data-lucide="message-square-text" class="nav-icon"></i>
+            <span class="nav-label">Feedback</span>
+          </a>
+        </div>
+
+        <div class="nav-group">
+          <div class="nav-group-label">System</div>
+          <a href="#" class="nav-item">
+            <i data-lucide="scroll-text" class="nav-icon"></i>
+            <span class="nav-label">Audit Log</span>
+          </a>
+          <a href="#" class="nav-item">
+            <i data-lucide="mail" class="nav-icon"></i>
+            <span class="nav-label">Email Testing</span>
+          </a>
+          <a href="#" class="nav-item">
+            <i data-lucide="settings" class="nav-icon"></i>
+            <span class="nav-label">Settings</span>
+          </a>
+        </div>
+      </nav>
+    </aside>
+
+    <!-- Mobile Overlay -->
+    <div class="mobile-overlay" onclick="toggleSidebar()"></div>
+
+    <!-- Main Content -->
+    <main class="main-content">
+      <!-- Header -->
+      <header class="header">
+        <div class="header-left">
+          <button class="header-sidebar-toggle" onclick="toggleSidebar()" aria-label="Toggle sidebar">
+            <i data-lucide="panel-left" style="width: 18px; height: 18px;"></i>
+          </button>
+          <span class="admin-badge">Admin Panel</span>
+        </div>
+        <div class="header-right">
+          <button class="theme-toggle" onclick="toggleTheme()" aria-label="Toggle theme">
+            <i data-lucide="sun" class="theme-icon-light" style="width: 18px; height: 18px;"></i>
+            <i data-lucide="moon" class="theme-icon-dark" style="width: 18px; height: 18px; display: none;"></i>
+          </button>
+          <div class="user-menu">
+            <div class="user-avatar">VT</div>
+            <span class="user-name">Varun</span>
+            <i data-lucide="chevron-down" style="width: 16px; height: 16px; color: var(--text-muted);"></i>
+          </div>
+        </div>
+      </header>
+
+      <!-- Page Content -->
+      <div class="page-content">
+        <div class="page-header">
+          <h1 class="page-title">Dashboard</h1>
+          <p class="page-description">Overview of your application's key metrics and recent activity.</p>
+        </div>
+
+        <!-- Metrics Cards -->
+        <div class="metrics-grid">
+          <div class="metric-card animate-card-enter">
+            <div class="metric-label">Total Users</div>
+            <div class="metric-value">1,284</div>
+            <div class="metric-trend up">
+              <i data-lucide="trending-up" style="width: 16px; height: 16px;"></i>
+              <span>+12% from last month</span>
+            </div>
+          </div>
+
+          <div class="metric-card animate-card-enter animate-delay-1">
+            <div class="metric-label">New Signups (7d)</div>
+            <div class="metric-value">64</div>
+            <div class="metric-trend up">
+              <i data-lucide="trending-up" style="width: 16px; height: 16px;"></i>
+              <span>+8% from last week</span>
+            </div>
+          </div>
+
+          <div class="metric-card animate-card-enter animate-delay-2">
+            <div class="metric-label">Active Users (7d)</div>
+            <div class="metric-value">892</div>
+            <div class="metric-trend neutral">
+              <i data-lucide="minus" style="width: 16px; height: 16px;"></i>
+              <span>No change</span>
+            </div>
+          </div>
+
+          <div class="metric-card animate-card-enter animate-delay-3">
+            <div class="metric-label">Pending Feedback</div>
+            <div class="metric-value">12</div>
+            <div class="metric-trend down">
+              <i data-lucide="trending-down" style="width: 16px; height: 16px;"></i>
+              <span>-3 from yesterday</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- Dashboard Grid -->
+        <div class="dashboard-grid">
+          <!-- Recent Activity -->
+          <div class="card card-flush animate-card-enter animate-delay-4">
+            <div class="card-header">
+              <h2 class="card-title">Recent Activity</h2>
+              <a href="#" class="btn btn-ghost" style="font-size: var(--font-size-sm);">
+                View all
+                <i data-lucide="arrow-right" style="width: 16px; height: 16px;"></i>
+              </a>
+            </div>
+            <div class="activity-list">
+              <div class="activity-item">
+                <div class="activity-icon user">
+                  <i data-lucide="user-plus" style="width: 18px; height: 18px;"></i>
+                </div>
+                <div class="activity-content">
+                  <div class="activity-text"><strong>john.doe@email.com</strong> signed up</div>
+                  <div class="activity-time">2 minutes ago</div>
+                </div>
+              </div>
+              <div class="activity-item">
+                <div class="activity-icon feedback">
+                  <i data-lucide="message-square" style="width: 18px; height: 18px;"></i>
+                </div>
+                <div class="activity-content">
+                  <div class="activity-text">New <strong>feature request</strong> submitted</div>
+                  <div class="activity-time">15 minutes ago</div>
+                </div>
+              </div>
+              <div class="activity-item">
+                <div class="activity-icon alert">
+                  <i data-lucide="alert-circle" style="width: 18px; height: 18px;"></i>
+                </div>
+                <div class="activity-content">
+                  <div class="activity-text"><strong>Bug report</strong> from user@example.com</div>
+                  <div class="activity-time">1 hour ago</div>
+                </div>
+              </div>
+              <div class="activity-item">
+                <div class="activity-icon user">
+                  <i data-lucide="user-check" style="width: 18px; height: 18px;"></i>
+                </div>
+                <div class="activity-content">
+                  <div class="activity-text"><strong>sarah.smith@email.com</strong> verified email</div>
+                  <div class="activity-time">2 hours ago</div>
+                </div>
+              </div>
+              <div class="activity-item">
+                <div class="activity-icon feedback">
+                  <i data-lucide="star" style="width: 18px; height: 18px;"></i>
+                </div>
+                <div class="activity-content">
+                  <div class="activity-text">New <strong>praise feedback</strong> received</div>
+                  <div class="activity-time">3 hours ago</div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Quick Actions -->
+          <div class="card animate-card-enter animate-delay-4">
+            <div class="card-header">
+              <h2 class="card-title">Quick Actions</h2>
+            </div>
+            <div class="actions-grid">
+              <button class="action-btn">
+                <div class="action-btn-icon">
+                  <i data-lucide="user-plus" style="width: 20px; height: 20px;"></i>
+                </div>
+                <div class="action-btn-content">
+                  <div class="action-btn-title">Add User</div>
+                  <div class="action-btn-desc">Create new account</div>
+                </div>
+              </button>
+              <button class="action-btn">
+                <div class="action-btn-icon">
+                  <i data-lucide="mail" style="width: 20px; height: 20px;"></i>
+                </div>
+                <div class="action-btn-content">
+                  <div class="action-btn-title">Send Email</div>
+                  <div class="action-btn-desc">Test email template</div>
+                </div>
+              </button>
+              <button class="action-btn">
+                <div class="action-btn-icon">
+                  <i data-lucide="download" style="width: 20px; height: 20px;"></i>
+                </div>
+                <div class="action-btn-content">
+                  <div class="action-btn-title">Export Data</div>
+                  <div class="action-btn-desc">Download CSV</div>
+                </div>
+              </button>
+              <button class="action-btn">
+                <div class="action-btn-icon">
+                  <i data-lucide="scroll-text" style="width: 20px; height: 20px;"></i>
+                </div>
+                <div class="action-btn-content">
+                  <div class="action-btn-title">View Logs</div>
+                  <div class="action-btn-desc">Check audit trail</div>
+                </div>
+              </button>
+            </div>
+          </div>
+        </div>
+      </div>
+    </main>
+  </div>
+
+  <script>
+    // Initialize Lucide icons
+    lucide.createIcons();
+
+    // Sidebar toggle
+    function toggleSidebar() {
+      const sidebar = document.getElementById('sidebar');
+
+      // On mobile, toggle 'open' class
+      if (window.innerWidth <= 768) {
+        sidebar.classList.toggle('open');
+      } else {
+        // On desktop, toggle 'collapsed' class
+        sidebar.classList.toggle('collapsed');
+      }
+    }
+
+    // Theme toggle
+    function toggleTheme() {
+      const html = document.documentElement;
+      const lightIcon = document.querySelector('.theme-icon-light');
+      const darkIcon = document.querySelector('.theme-icon-dark');
+
+      if (html.classList.contains('dark')) {
+        html.classList.remove('dark');
+        lightIcon.style.display = 'block';
+        darkIcon.style.display = 'none';
+      } else {
+        html.classList.add('dark');
+        lightIcon.style.display = 'none';
+        darkIcon.style.display = 'block';
+      }
+    }
+
+    // Close sidebar on mobile when clicking outside
+    document.addEventListener('click', (e) => {
+      const sidebar = document.getElementById('sidebar');
+      const menuBtn = document.querySelector('.mobile-menu-btn');
+
+      if (window.innerWidth <= 768 &&
+          sidebar.classList.contains('open') &&
+          !sidebar.contains(e.target) &&
+          !menuBtn.contains(e.target)) {
+        sidebar.classList.remove('open');
+      }
+    });
+
+    // Handle resize
+    window.addEventListener('resize', () => {
+      const sidebar = document.getElementById('sidebar');
+      if (window.innerWidth > 768) {
+        sidebar.classList.remove('open');
+      }
+    });
+  </script>
+</body>
+</html>

@@ -88,6 +88,8 @@
 
     "^gh\\s+(pr|issue|repo|release|workflow|run|api|auth)(\\s+.*)?$",
 
+    "^git\\s+add\\s+[^|;&]+\\s*&&\\s*git\\s+commit\\s+-m\\s+",
+
     "^git\\s+rev-parse(\\s+.*)?$",
     "^git\\s+stash(\\s+--include-untracked|\\s+--all|\\s+-u|\\s+-a)?(\\s+-m\\s+.*)?$",
     "^git\\s+rev-list\\s+[^|;&]+$",

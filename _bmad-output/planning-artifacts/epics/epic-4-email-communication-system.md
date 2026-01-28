@@ -2,6 +2,13 @@
 
 **Goal:** Users receive professional transactional emails
 
+> **Note:** Email verification and password reset emails are handled natively by Supabase Auth.
+> These templates can be customized via Supabase Dashboard → Authentication → Email Templates.
+> This epic focuses on **app-specific transactional emails** only (welcome, receipts, notifications).
+
+> **One-off broadcasts:** Use Resend's Audiences feature in their dashboard for marketing emails.
+> No code needed for occasional broadcasts - this keeps the codebase focused on transactional emails.
+
 ## Story 4.1: Email Infrastructure Setup (Resend)
 
 As a **template user (developer)**,
@@ -39,6 +46,12 @@ So that **I can send transactional emails from my application**.
 **Then** there is a `sendEmail` function accepting template + data
 **And** function returns success/failure status
 **And** function is async and properly typed
+
+**Given** template development workflow
+**When** I want to preview email templates
+**Then** `npm run email:dev` starts React Email dev server
+**And** templates render with hot-reload
+**And** I can preview across Gmail, Outlook, Apple Mail views
 
 ---
 
@@ -83,89 +96,7 @@ So that **I feel welcomed and know my account was created**.
 
 ---
 
-## Story 4.3: Email Verification Template
-
-As a **new user needing to verify my email**,
-I want **to receive a clear verification email with a link**,
-So that **I can verify my account and access all features**.
-
-**Acceptance Criteria:**
-
-**Given** a user registers with email/password
-**When** registration completes
-**Then** a verification email is sent automatically
-**And** email contains a secure verification link
-
-**Given** the verification email
-**When** I view it in my inbox
-**Then** subject line is clear (e.g., "Verify your email")
-**And** purpose of the email is immediately obvious
-**And** verification link/button is prominent
-
-**Given** the verification email content
-**When** I read the email
-**Then** I see clear instructions to click the link
-**And** I see information about link expiration
-**And** I see what to do if I didn't request this
-**And** I see a fallback text link if button doesn't work
-
-**Given** the verification link
-**When** I click it
-**Then** I am taken to the app's verification handler
-**And** link contains secure token
-**And** link works only once (consumed on use)
-
-**Given** the verification email template
-**When** I review the code
-**Then** template is built with React Email
-**And** template matches welcome email branding
-**And** verification URL is properly escaped
-**And** template handles long URLs gracefully
-
----
-
-## Story 4.4: Password Reset Email Template
-
-As a **user who forgot my password**,
-I want **to receive a password reset email with a secure link**,
-So that **I can reset my password and regain access**.
-
-**Acceptance Criteria:**
-
-**Given** a user requests password reset
-**When** they submit their email on forgot password page
-**Then** a password reset email is sent (if account exists)
-**And** email arrives within 30 seconds
-
-**Given** the password reset email
-**When** I view it in my inbox
-**Then** subject line is clear (e.g., "Reset your password")
-**And** sender is recognizable as the application
-**And** email doesn't reveal if account exists (security)
-
-**Given** the password reset email content
-**When** I read the email
-**Then** I see clear instructions to reset password
-**And** I see the reset link/button prominently
-**And** I see link expiration time (e.g., "expires in 1 hour")
-**And** I see security notice if I didn't request this
-
-**Given** the reset link
-**When** I click it
-**Then** I am taken to the password reset page
-**And** link contains secure, single-use token
-**And** token is validated before showing reset form
-
-**Given** the password reset email template
-**When** I review the code
-**Then** template is built with React Email
-**And** template matches other email branding
-**And** security messaging is appropriate
-**And** template handles edge cases (expired links mentioned)
-
----
-
-## Story 4.5: Email Error Handling & Logging
+## Story 4.3: Email Error Handling & Logging
 
 As a **developer maintaining the application**,
 I want **robust error handling for email sending**,
@@ -192,11 +123,11 @@ So that **I can diagnose issues and ensure reliability**.
 **And** exponential backoff is used between retries
 **And** final failure is logged if all retries fail
 
-**Given** critical email failures (verification, reset)
+**Given** critical email failures (welcome, receipts)
 **When** emails fail to send
-**Then** user is informed they may need to retry
-**And** fallback messaging is shown in UI
-**And** no silent failures for critical emails
+**Then** failure is logged with full context for debugging
+**And** user action completes successfully (email is non-blocking)
+**And** no silent failures - all failures are tracked
 
 **Given** email sending in development
 **When** RESEND_API_KEY is not set

@@ -12,3 +12,13 @@ agents/desk-check-gate.md
 skills/agent-creator/
 skills/designer-founder/
 *.backup
+
+# Installed by @torka/claude-qol
+scripts/auto_approve_safe.py
+scripts/auto_approve_safe.rules.json
+scripts/context-monitor.py
+scripts/__pycache__/
+commands/optimize-auto-approve-hook.md
+skills/nash/
+auto_approve_safe.decisions.jsonl
+auto_approve_safe.decisions.archived.jsonl

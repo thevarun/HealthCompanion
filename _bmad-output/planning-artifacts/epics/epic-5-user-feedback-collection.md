@@ -2,6 +2,11 @@
 
 **Goal:** Users can easily share feedback; admins can review and manage submissions
 
+**UX Design Artifacts:**
+- [Design Brief](../ux-design/epic-5-feedback-design-brief.md)
+- [Component Strategy](../ux-design/epic-5-feedback-component-strategy.md)
+- [User Journeys](../ux-design/epic-5-feedback-user-journeys.md)
+
 ## Story 5.1: Feedback Database Schema
 
 As a **developer implementing feedback collection**,
@@ -85,6 +90,11 @@ So that **I can quickly share my thoughts from any page**.
 **And** modal is full-screen or properly sized for mobile
 **And** form is usable with touch keyboard
 
+**UX Design:**
+- **Prototype:** [Feedback Modal](https://www.magicpatterns.com/c/ixx6mdxgjkjwkvsjuzybkg)
+- **Components:** `FeedbackModal.tsx`, `FeedbackTrigger.tsx`
+- **Note:** Design uses sidebar trigger placement instead of floating button
+
 ---
 
 ## Story 5.3: Feedback Submission API
@@ -130,97 +140,5 @@ So that **the team receives my input**.
 **Then** I see loading state on submit button
 **And** double-submission is prevented
 **And** form resets after successful submission
-
----
-
-## Story 5.4: Feedback Admin List View
-
-As an **admin reviewing feedback**,
-I want **to see all feedback submissions in one place**,
-So that **I can understand user needs and issues**.
-
-**Acceptance Criteria:**
-
-**Given** I am an admin user
-**When** I navigate to the admin feedback page
-**Then** I see a list of all feedback submissions
-**And** list is sorted by newest first (default)
-**And** list shows: type, message preview, user/email, date, status
-
-**Given** the feedback list
-**When** I view it
-**Then** I can filter by type (Bug, Feature, Praise, All)
-**And** I can filter by status (Pending, Reviewed, Archived, All)
-**And** filters update the list without page reload
-
-**Given** a feedback item in the list
-**When** I view the preview
-**Then** I see the first ~100 characters of the message
-**And** I see the feedback type with color coding
-**And** I see relative timestamp ("2 hours ago")
-**And** I see user email or "Anonymous"
-
-**Given** I click on a feedback item
-**When** the detail view opens
-**Then** I see the full message
-**And** I see all metadata (type, user, date, status)
-**And** I can take actions (mark reviewed, delete)
-
-**Given** the admin feedback page
-**When** I access it as non-admin
-**Then** I am redirected to dashboard
-**And** I see "Access denied" or similar message
-
-**Given** the feedback list is empty
-**When** no feedback exists
-**Then** I see an empty state
-**And** message indicates no feedback yet
-
----
-
-## Story 5.5: Feedback Admin Actions
-
-As an **admin managing feedback**,
-I want **to take actions on feedback items**,
-So that **I can track what's been reviewed and export data**.
-
-**Acceptance Criteria:**
-
-**Given** a pending feedback item
-**When** I click "Mark as Reviewed"
-**Then** status changes to "reviewed"
-**And** reviewed_at timestamp is set
-**And** UI updates to reflect new status
-**And** I see confirmation toast
-
-**Given** a feedback item
-**When** I click "Delete"
-**Then** I see a confirmation dialog
-**And** dialog warns about permanent deletion
-**And** on confirm, item is deleted from database
-**And** list updates to remove the item
-
-**Given** I click "Archive"
-**When** I archive a feedback item
-**Then** status changes to "archived"
-**And** item remains in database but hidden by default
-**And** I can filter to see archived items
-
-**Given** the feedback admin page
-**When** I click "Export CSV"
-**Then** a CSV file is downloaded
-**And** file contains: id, type, message, email, status, created_at, reviewed_at
-**And** filename includes date (e.g., feedback-2024-01-15.csv)
-
-**Given** filters are active
-**When** I export CSV
-**Then** only filtered results are exported
-**And** export reflects current filter state
-
-**Given** bulk actions
-**When** I select multiple feedback items
-**Then** I can mark all as reviewed
-**And** I can delete all selected
-**And** confirmation is required for bulk actions
 
 ---

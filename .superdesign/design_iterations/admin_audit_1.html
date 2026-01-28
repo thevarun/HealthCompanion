@@ -1,0 +1,714 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Admin Panel - Audit Log</title>
+
+  <!-- Google Fonts -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+
+  <!-- Lucide Icons -->
+  <script src="https://unpkg.com/lucide@latest/dist/umd/lucide.min.js"></script>
+
+  <!-- Theme CSS -->
+  <link rel="stylesheet" href="admin_theme.css">
+
+  <style>
+    body {
+      font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+    }
+
+    /* Filters Bar */
+    .filters-bar {
+      display: flex;
+      align-items: center;
+      gap: var(--spacing-md);
+      margin-bottom: var(--spacing-lg);
+      flex-wrap: wrap;
+    }
+
+    .filter-group {
+      display: flex;
+      align-items: center;
+      gap: var(--spacing-sm);
+    }
+
+    .filter-label {
+      font-size: var(--font-size-sm);
+      font-weight: 500;
+      color: var(--text-muted);
+    }
+
+    .filter-select {
+      padding: var(--spacing-sm) var(--spacing-md);
+      padding-right: var(--spacing-xl);
+      border: 1px solid var(--border-color);
+      border-radius: var(--radius-sm);
+      background-color: var(--card-bg);
+      color: var(--text-body);
+      font-size: var(--font-size-sm);
+      cursor: pointer;
+      appearance: none;
+      background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='16' height='16' viewBox='0 0 24 24' fill='none' stroke='%2364748b' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='m6 9 6 6 6-6'/%3E%3C/svg%3E");
+      background-repeat: no-repeat;
+      background-position: right 8px center;
+    }
+
+    .filter-select:focus {
+      outline: none;
+      border-color: var(--accent-primary);
+    }
+
+    .dark .filter-select {
+      background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='16' height='16' viewBox='0 0 24 24' fill='none' stroke='%23a1a1aa' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='m6 9 6 6 6-6'/%3E%3C/svg%3E");
+    }
+
+    .filter-date {
+      padding: var(--spacing-sm) var(--spacing-md);
+      border: 1px solid var(--border-color);
+      border-radius: var(--radius-sm);
+      background-color: var(--card-bg);
+      color: var(--text-body);
+      font-size: var(--font-size-sm);
+    }
+
+    .filter-date:focus {
+      outline: none;
+      border-color: var(--accent-primary);
+    }
+
+    .filters-divider {
+      width: 1px;
+      height: 24px;
+      background-color: var(--border-color);
+    }
+
+    /* Audit Log Table */
+    .audit-table-wrapper {
+      background-color: var(--card-bg);
+      border: 1px solid var(--border-color);
+      border-radius: var(--radius);
+      overflow: hidden;
+    }
+
+    .audit-table {
+      width: 100%;
+      border-collapse: collapse;
+    }
+
+    .audit-table th,
+    .audit-table td {
+      padding: var(--spacing-md) var(--spacing-lg);
+      text-align: left;
+      border-bottom: 1px solid var(--border-light);
+    }
+
+    .audit-table th {
+      background-color: var(--hover-bg);
+      font-weight: 600;
+      font-size: var(--font-size-xs);
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+      color: var(--text-muted);
+    }
+
+    .audit-table tbody tr {
+      transition: var(--transition-fast);
+    }
+
+    .audit-table tbody tr:hover {
+      background-color: var(--hover-bg);
+    }
+
+    .audit-table tbody tr:last-child td {
+      border-bottom: none;
+    }
+
+    /* Action Badge */
+    .action-badge {
+      display: inline-flex;
+      align-items: center;
+      gap: var(--spacing-xs);
+      padding: 4px var(--spacing-sm);
+      border-radius: var(--radius-xs);
+      font-size: var(--font-size-xs);
+      font-weight: 500;
+    }
+
+    .action-badge.user-suspended {
+      background-color: var(--status-pending-bg);
+      color: var(--status-pending-text);
+    }
+
+    .action-badge.user-deleted {
+      background-color: var(--status-suspended-bg);
+      color: var(--status-suspended-text);
+    }
+
+    .action-badge.user-unsuspended {
+      background-color: var(--status-active-bg);
+      color: var(--status-active-text);
+    }
+
+    .action-badge.password-reset {
+      background-color: var(--type-feature-bg);
+      color: var(--type-feature-text);
+    }
+
+    .action-badge.settings-changed {
+      background-color: var(--hover-bg);
+      color: var(--text-body);
+      border: 1px solid var(--border-color);
+    }
+
+    /* Admin Cell */
+    .admin-cell {
+      display: flex;
+      align-items: center;
+      gap: var(--spacing-sm);
+    }
+
+    .admin-avatar-sm {
+      width: 28px;
+      height: 28px;
+      border-radius: 50%;
+      background: linear-gradient(135deg, var(--accent-primary), #8b5cf6);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: white;
+      font-weight: 600;
+      font-size: var(--font-size-xs);
+      flex-shrink: 0;
+    }
+
+    .admin-name {
+      font-weight: 500;
+      color: var(--text-body);
+    }
+
+    /* Target Cell */
+    .target-cell {
+      display: flex;
+      flex-direction: column;
+      gap: 2px;
+    }
+
+    .target-primary {
+      font-weight: 500;
+      color: var(--text-heading);
+    }
+
+    .target-secondary {
+      font-size: var(--font-size-xs);
+      color: var(--text-muted);
+      font-family: monospace;
+    }
+
+    /* Timestamp */
+    .timestamp-cell {
+      display: flex;
+      flex-direction: column;
+      gap: 2px;
+    }
+
+    .timestamp-date {
+      color: var(--text-body);
+    }
+
+    .timestamp-time {
+      font-size: var(--font-size-xs);
+      color: var(--text-muted);
+    }
+
+    /* Details Expandable */
+    .details-toggle {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      width: 28px;
+      height: 28px;
+      border: 1px solid var(--border-color);
+      border-radius: var(--radius-xs);
+      background-color: transparent;
+      color: var(--text-muted);
+      cursor: pointer;
+      transition: var(--transition-fast);
+    }
+
+    .details-toggle:hover {
+      background-color: var(--hover-bg);
+      color: var(--text-body);
+    }
+
+    /* Read-only Notice */
+    .readonly-notice {
+      display: flex;
+      align-items: center;
+      gap: var(--spacing-sm);
+      padding: var(--spacing-md) var(--spacing-lg);
+      background-color: var(--hover-bg);
+      border-radius: var(--radius-sm);
+      margin-bottom: var(--spacing-lg);
+      font-size: var(--font-size-sm);
+      color: var(--text-muted);
+    }
+
+    .readonly-notice i {
+      color: var(--accent-primary);
+    }
+
+    /* Table Footer */
+    .audit-table-footer {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: var(--spacing-md) var(--spacing-lg);
+      border-top: 1px solid var(--border-light);
+      background-color: var(--hover-bg);
+    }
+
+    .table-info {
+      font-size: var(--font-size-sm);
+      color: var(--text-muted);
+    }
+
+    .pagination {
+      display: flex;
+      align-items: center;
+      gap: var(--spacing-xs);
+    }
+
+    .pagination-btn {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      min-width: 32px;
+      height: 32px;
+      padding: 0 var(--spacing-sm);
+      border: 1px solid var(--border-color);
+      border-radius: var(--radius-xs);
+      background-color: var(--card-bg);
+      color: var(--text-body);
+      font-size: var(--font-size-sm);
+      cursor: pointer;
+      transition: var(--transition-fast);
+    }
+
+    .pagination-btn:hover:not(:disabled) {
+      background-color: var(--hover-bg);
+      border-color: var(--accent-primary);
+    }
+
+    .pagination-btn:disabled {
+      opacity: 0.5;
+      cursor: not-allowed;
+    }
+
+    .pagination-btn.active {
+      background-color: var(--accent-primary);
+      border-color: var(--accent-primary);
+      color: white;
+    }
+
+    /* Responsive */
+    @media (max-width: 1024px) {
+      .filters-bar {
+        flex-direction: column;
+        align-items: stretch;
+      }
+
+      .filter-group {
+        width: 100%;
+      }
+
+      .filter-select,
+      .filter-date {
+        flex: 1;
+      }
+
+      .filters-divider {
+        display: none;
+      }
+    }
+
+    @media (max-width: 768px) {
+      .audit-table-wrapper {
+        overflow-x: auto;
+      }
+
+      .audit-table {
+        min-width: 800px;
+      }
+
+      .audit-table-footer {
+        flex-direction: column;
+        gap: var(--spacing-md);
+      }
+    }
+  </style>
+</head>
+<body>
+  <div class="admin-layout">
+    <!-- Sidebar -->
+    <aside class="sidebar" id="sidebar">
+      <div class="sidebar-header">
+        <div class="sidebar-logo">
+          <div class="sidebar-logo-icon">
+            <i data-lucide="shield" style="width: 18px; height: 18px; color: white;"></i>
+          </div>
+          <span class="sidebar-logo-text">Admin</span>
+        </div>
+        <button class="sidebar-toggle" onclick="toggleSidebar()" aria-label="Toggle sidebar">
+          <i data-lucide="panel-left-close" style="width: 20px; height: 20px;"></i>
+        </button>
+      </div>
+
+      <nav class="sidebar-nav">
+        <div class="nav-group">
+          <div class="nav-group-label">Overview</div>
+          <a href="admin_layout_1.html" class="nav-item">
+            <i data-lucide="layout-dashboard" class="nav-icon"></i>
+            <span class="nav-label">Dashboard</span>
+          </a>
+        </div>
+
+        <div class="nav-group">
+          <div class="nav-group-label">Management</div>
+          <a href="admin_users_1.html" class="nav-item">
+            <i data-lucide="users" class="nav-icon"></i>
+            <span class="nav-label">Users</span>
+          </a>
+          <a href="admin_feedback_1.html" class="nav-item">
+            <i data-lucide="message-square-text" class="nav-icon"></i>
+            <span class="nav-label">Feedback</span>
+          </a>
+        </div>
+
+        <div class="nav-group">
+          <div class="nav-group-label">System</div>
+          <a href="#" class="nav-item active">
+            <i data-lucide="scroll-text" class="nav-icon"></i>
+            <span class="nav-label">Audit Log</span>
+          </a>
+          <a href="admin_email_1.html" class="nav-item">
+            <i data-lucide="mail" class="nav-icon"></i>
+            <span class="nav-label">Email Testing</span>
+          </a>
+          <a href="#" class="nav-item">
+            <i data-lucide="settings" class="nav-icon"></i>
+            <span class="nav-label">Settings</span>
+          </a>
+        </div>
+      </nav>
+    </aside>
+
+    <!-- Mobile Overlay -->
+    <div class="mobile-overlay" onclick="toggleSidebar()"></div>
+
+    <!-- Main Content -->
+    <main class="main-content">
+      <!-- Header -->
+      <header class="header">
+        <div class="header-left">
+          <button class="header-sidebar-toggle" onclick="toggleSidebar()" aria-label="Toggle sidebar">
+            <i data-lucide="panel-left" style="width: 18px; height: 18px;"></i>
+          </button>
+          <span class="admin-badge">Admin Panel</span>
+        </div>
+        <div class="header-right">
+          <button class="theme-toggle" onclick="toggleTheme()" aria-label="Toggle theme">
+            <i data-lucide="sun" class="theme-icon-light" style="width: 18px; height: 18px;"></i>
+            <i data-lucide="moon" class="theme-icon-dark" style="width: 18px; height: 18px; display: none;"></i>
+          </button>
+          <div class="user-menu">
+            <div class="user-avatar">VT</div>
+            <span class="user-name">Varun</span>
+            <i data-lucide="chevron-down" style="width: 16px; height: 16px; color: var(--text-muted);"></i>
+          </div>
+        </div>
+      </header>
+
+      <!-- Page Content -->
+      <div class="page-content">
+        <div class="page-header">
+          <h1 class="page-title">Audit Log</h1>
+          <p class="page-description">Track all administrative actions for security and compliance.</p>
+        </div>
+
+        <!-- Read-only Notice -->
+        <div class="readonly-notice">
+          <i data-lucide="lock" style="width: 18px; height: 18px;"></i>
+          <span>Audit logs are read-only and cannot be modified or deleted for compliance purposes.</span>
+        </div>
+
+        <!-- Filters -->
+        <div class="filters-bar">
+          <div class="filter-group">
+            <span class="filter-label">Action:</span>
+            <select class="filter-select">
+              <option value="">All Actions</option>
+              <option value="user_suspended">User Suspended</option>
+              <option value="user_deleted">User Deleted</option>
+              <option value="user_unsuspended">User Unsuspended</option>
+              <option value="password_reset">Password Reset</option>
+              <option value="settings_changed">Settings Changed</option>
+            </select>
+          </div>
+
+          <div class="filter-group">
+            <span class="filter-label">Admin:</span>
+            <select class="filter-select">
+              <option value="">All Admins</option>
+              <option value="admin1">Varun (you)</option>
+              <option value="admin2">Sarah Admin</option>
+            </select>
+          </div>
+
+          <div class="filters-divider"></div>
+
+          <div class="filter-group">
+            <span class="filter-label">From:</span>
+            <input type="date" class="filter-date" value="2024-01-01">
+          </div>
+
+          <div class="filter-group">
+            <span class="filter-label">To:</span>
+            <input type="date" class="filter-date" value="2024-01-18">
+          </div>
+
+          <button class="btn btn-secondary" style="margin-left: auto;">
+            <i data-lucide="download" style="width: 16px; height: 16px;"></i>
+            Export
+          </button>
+        </div>
+
+        <!-- Audit Table -->
+        <div class="audit-table-wrapper">
+          <table class="audit-table">
+            <thead>
+              <tr>
+                <th>Timestamp</th>
+                <th>Action</th>
+                <th>Admin</th>
+                <th>Target</th>
+                <th style="width: 60px;">Details</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td>
+                  <div class="timestamp-cell">
+                    <span class="timestamp-date">Jan 18, 2024</span>
+                    <span class="timestamp-time">2:45:32 PM</span>
+                  </div>
+                </td>
+                <td>
+                  <span class="action-badge user-suspended">
+                    <i data-lucide="ban" style="width: 12px; height: 12px;"></i>
+                    User Suspended
+                  </span>
+                </td>
+                <td>
+                  <div class="admin-cell">
+                    <div class="admin-avatar-sm">VT</div>
+                    <span class="admin-name">Varun</span>
+                  </div>
+                </td>
+                <td>
+                  <div class="target-cell">
+                    <span class="target-primary">mike.johnson@example.com</span>
+                    <span class="target-secondary">usr_4d5e6f7g</span>
+                  </div>
+                </td>
+                <td>
+                  <button class="details-toggle">
+                    <i data-lucide="chevron-right" style="width: 16px; height: 16px;"></i>
+                  </button>
+                </td>
+              </tr>
+              <tr>
+                <td>
+                  <div class="timestamp-cell">
+                    <span class="timestamp-date">Jan 18, 2024</span>
+                    <span class="timestamp-time">11:23:15 AM</span>
+                  </div>
+                </td>
+                <td>
+                  <span class="action-badge password-reset">
+                    <i data-lucide="key-round" style="width: 12px; height: 12px;"></i>
+                    Password Reset
+                  </span>
+                </td>
+                <td>
+                  <div class="admin-cell">
+                    <div class="admin-avatar-sm">VT</div>
+                    <span class="admin-name">Varun</span>
+                  </div>
+                </td>
+                <td>
+                  <div class="target-cell">
+                    <span class="target-primary">john.doe@example.com</span>
+                    <span class="target-secondary">usr_1a2b3c4d</span>
+                  </div>
+                </td>
+                <td>
+                  <button class="details-toggle">
+                    <i data-lucide="chevron-right" style="width: 16px; height: 16px;"></i>
+                  </button>
+                </td>
+              </tr>
+              <tr>
+                <td>
+                  <div class="timestamp-cell">
+                    <span class="timestamp-date">Jan 17, 2024</span>
+                    <span class="timestamp-time">4:56:08 PM</span>
+                  </div>
+                </td>
+                <td>
+                  <span class="action-badge user-deleted">
+                    <i data-lucide="trash-2" style="width: 12px; height: 12px;"></i>
+                    User Deleted
+                  </span>
+                </td>
+                <td>
+                  <div class="admin-cell">
+                    <div class="admin-avatar-sm" style="background: linear-gradient(135deg, #ec4899, #f97316);">SA</div>
+                    <span class="admin-name">Sarah Admin</span>
+                  </div>
+                </td>
+                <td>
+                  <div class="target-cell">
+                    <span class="target-primary">spam.user@example.com</span>
+                    <span class="target-secondary">usr_deleted_xyz</span>
+                  </div>
+                </td>
+                <td>
+                  <button class="details-toggle">
+                    <i data-lucide="chevron-right" style="width: 16px; height: 16px;"></i>
+                  </button>
+                </td>
+              </tr>
+              <tr>
+                <td>
+                  <div class="timestamp-cell">
+                    <span class="timestamp-date">Jan 17, 2024</span>
+                    <span class="timestamp-time">10:12:44 AM</span>
+                  </div>
+                </td>
+                <td>
+                  <span class="action-badge user-unsuspended">
+                    <i data-lucide="check-circle" style="width: 12px; height: 12px;"></i>
+                    User Unsuspended
+                  </span>
+                </td>
+                <td>
+                  <div class="admin-cell">
+                    <div class="admin-avatar-sm">VT</div>
+                    <span class="admin-name">Varun</span>
+                  </div>
+                </td>
+                <td>
+                  <div class="target-cell">
+                    <span class="target-primary">emily.wilson@example.com</span>
+                    <span class="target-secondary">usr_8h9i0j1k</span>
+                  </div>
+                </td>
+                <td>
+                  <button class="details-toggle">
+                    <i data-lucide="chevron-right" style="width: 16px; height: 16px;"></i>
+                  </button>
+                </td>
+              </tr>
+              <tr>
+                <td>
+                  <div class="timestamp-cell">
+                    <span class="timestamp-date">Jan 16, 2024</span>
+                    <span class="timestamp-time">3:30:00 PM</span>
+                  </div>
+                </td>
+                <td>
+                  <span class="action-badge settings-changed">
+                    <i data-lucide="settings" style="width: 12px; height: 12px;"></i>
+                    Settings Changed
+                  </span>
+                </td>
+                <td>
+                  <div class="admin-cell">
+                    <div class="admin-avatar-sm">VT</div>
+                    <span class="admin-name">Varun</span>
+                  </div>
+                </td>
+                <td>
+                  <div class="target-cell">
+                    <span class="target-primary">System Settings</span>
+                    <span class="target-secondary">email_templates</span>
+                  </div>
+                </td>
+                <td>
+                  <button class="details-toggle">
+                    <i data-lucide="chevron-right" style="width: 16px; height: 16px;"></i>
+                  </button>
+                </td>
+              </tr>
+            </tbody>
+          </table>
+          <div class="audit-table-footer">
+            <div class="table-info">
+              Showing <strong>1-5</strong> of <strong>128</strong> entries
+            </div>
+            <div class="pagination">
+              <button class="pagination-btn" disabled>
+                <i data-lucide="chevron-left" style="width: 16px; height: 16px;"></i>
+              </button>
+              <button class="pagination-btn active">1</button>
+              <button class="pagination-btn">2</button>
+              <button class="pagination-btn">3</button>
+              <span style="color: var(--text-muted);">...</span>
+              <button class="pagination-btn">26</button>
+              <button class="pagination-btn">
+                <i data-lucide="chevron-right" style="width: 16px; height: 16px;"></i>
+              </button>
+            </div>
+          </div>
+        </div>
+      </div>
+    </main>
+  </div>
+
+  <script>
+    // Initialize Lucide icons
+    lucide.createIcons();
+
+    // Sidebar toggle
+    function toggleSidebar() {
+      const sidebar = document.getElementById('sidebar');
+      if (window.innerWidth <= 768) {
+        sidebar.classList.toggle('open');
+      } else {
+        sidebar.classList.toggle('collapsed');
+      }
+    }
+
+    // Theme toggle
+    function toggleTheme() {
+      const html = document.documentElement;
+      const lightIcon = document.querySelector('.theme-icon-light');
+      const darkIcon = document.querySelector('.theme-icon-dark');
+
+      if (html.classList.contains('dark')) {
+        html.classList.remove('dark');
+        lightIcon.style.display = 'block';
+        darkIcon.style.display = 'none';
+      } else {
+        html.classList.add('dark');
+        lightIcon.style.display = 'none';
+        darkIcon.style.display = 'block';
+      }
+    }
+  </script>
+</body>
+</html>
