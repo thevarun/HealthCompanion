@@ -261,16 +261,9 @@ describe('OnboardingPreferences', () => {
     delete (window as any).location;
     window.location = { href: '' } as any;
 
-    render(<OnboardingPreferences initialData={defaultInitialData} />);
+    render(<OnboardingPreferences initialData={{ ...defaultInitialData, language: 'hi' }} />);
 
-    // Change language to Hindi
-    const languageSelect = screen.getByRole('combobox');
-    await user.click(languageSelect);
-
-    // Note: The Select component from shadcn uses a complex structure
-    // In a real test, we'd need to select the option from the dropdown
-    // For now, we'll test the API call with the default language
-
+    // Submit with Hindi language (set via initialData since Select interactions are complex in jsdom)
     const submitButton = screen.getByText('completeSetup');
     await user.click(submitButton);
 
