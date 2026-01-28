@@ -19,6 +19,7 @@ The project includes:
 | Error Boundaries | [docs/error-handling-guide.md](docs/error-handling-guide.md) |
 | CI/CD | [docs/ci-cd-pipeline.md](docs/ci-cd-pipeline.md) |
 | Development | [docs/development-guide.md](docs/development-guide.md) |
+| Email System | [docs/email-system.md](docs/email-system.md) |
 
 ## Core Architecture
 
