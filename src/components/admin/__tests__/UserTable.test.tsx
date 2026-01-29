@@ -7,9 +7,11 @@ import { UserTable } from '../UserTable';
 
 // Mock next/navigation
 const mockPush = vi.fn();
+const mockRefresh = vi.fn();
 vi.mock('next/navigation', () => ({
   useRouter: () => ({
     push: mockPush,
+    refresh: mockRefresh,
   }),
   useSearchParams: () => new URLSearchParams(),
 }));
@@ -28,6 +30,13 @@ vi.mock('next-intl', () => ({
     return key;
   },
 }));
+
+// Mock UserDetailDialog
+vi.mock('../UserDetailDialog', () => ({
+  UserDetailDialog: () => null,
+}));
+
+const CURRENT_USER_ID = 'current-admin-user-id';
 
 // Create mock users
 const createMockUser = (overrides: Partial<User> = {}): User => ({
@@ -80,6 +89,7 @@ describe('UserTable', () => {
           total={3}
           page={1}
           search=""
+          currentUserId={CURRENT_USER_ID}
         />,
       );
 
@@ -94,6 +104,7 @@ describe('UserTable', () => {
           total={3}
           page={1}
           search=""
+          currentUserId={CURRENT_USER_ID}
         />,
       );
 
@@ -111,6 +122,7 @@ describe('UserTable', () => {
           total={3}
           page={1}
           search=""
+          currentUserId={CURRENT_USER_ID}
         />,
       );
 
@@ -127,6 +139,7 @@ describe('UserTable', () => {
           total={0}
           page={1}
           search=""
+          currentUserId={CURRENT_USER_ID}
         />,
       );
 
@@ -142,6 +155,7 @@ describe('UserTable', () => {
           total={1}
           page={1}
           search=""
+          currentUserId={CURRENT_USER_ID}
         />,
       );
 
@@ -155,6 +169,7 @@ describe('UserTable', () => {
           total={1}
           page={1}
           search=""
+          currentUserId={CURRENT_USER_ID}
         />,
       );
 
@@ -168,6 +183,7 @@ describe('UserTable', () => {
           total={1}
           page={1}
           search=""
+          currentUserId={CURRENT_USER_ID}
         />,
       );
 
@@ -183,6 +199,7 @@ describe('UserTable', () => {
           total={3}
           page={1}
           search=""
+          currentUserId={CURRENT_USER_ID}
         />,
       );
 
@@ -199,6 +216,7 @@ describe('UserTable', () => {
           total={3}
           page={1}
           search=""
+          currentUserId={CURRENT_USER_ID}
         />,
       );
 
@@ -221,6 +239,7 @@ describe('UserTable', () => {
           total={3}
           page={1}
           search=""
+          currentUserId={CURRENT_USER_ID}
         />,
       );
 
@@ -239,6 +258,7 @@ describe('UserTable', () => {
           total={3}
           page={1}
           search=""
+          currentUserId={CURRENT_USER_ID}
         />,
       );
 
@@ -261,6 +281,7 @@ describe('UserTable', () => {
           total={3}
           page={1}
           search=""
+          currentUserId={CURRENT_USER_ID}
         />,
       );
 
@@ -282,6 +303,7 @@ describe('UserTable', () => {
           total={100}
           page={1}
           search=""
+          currentUserId={CURRENT_USER_ID}
         />,
       );
 
@@ -296,6 +318,7 @@ describe('UserTable', () => {
           total={100}
           page={1}
           search=""
+          currentUserId={CURRENT_USER_ID}
         />,
       );
 
@@ -309,6 +332,7 @@ describe('UserTable', () => {
           total={100}
           page={1}
           search=""
+          currentUserId={CURRENT_USER_ID}
         />,
       );
 
@@ -324,6 +348,7 @@ describe('UserTable', () => {
           total={100}
           page={1}
           search=""
+          currentUserId={CURRENT_USER_ID}
         />,
       );
 
@@ -346,6 +371,7 @@ describe('UserTable', () => {
           total={3}
           page={1}
           search=""
+          currentUserId={CURRENT_USER_ID}
         />,
       );
 
@@ -362,6 +388,7 @@ describe('UserTable', () => {
           total={3}
           page={1}
           search=""
+          currentUserId={CURRENT_USER_ID}
         />,
       );
 
@@ -384,6 +411,7 @@ describe('UserTable', () => {
           total={3}
           page={1}
           search=""
+          currentUserId={CURRENT_USER_ID}
         />,
       );
 
@@ -399,6 +427,7 @@ describe('UserTable', () => {
           total={3}
           page={1}
           search=""
+          currentUserId={CURRENT_USER_ID}
         />,
       );
 
@@ -424,6 +453,7 @@ describe('UserTable', () => {
           total={3}
           page={1}
           search=""
+          currentUserId={CURRENT_USER_ID}
         />,
       );
 
@@ -449,6 +479,7 @@ describe('UserTable', () => {
           total={3}
           page={1}
           search=""
+          currentUserId={CURRENT_USER_ID}
         />,
       );
 
@@ -469,6 +500,7 @@ describe('UserTable', () => {
           total={3}
           page={1}
           search=""
+          currentUserId={CURRENT_USER_ID}
         />,
       );
 
@@ -485,6 +517,7 @@ describe('UserTable', () => {
           total={3}
           page={1}
           search=""
+          currentUserId={CURRENT_USER_ID}
         />,
       );
 

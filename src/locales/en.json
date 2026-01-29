@@ -68,6 +68,88 @@
       "error": {
         "loadFailed": "Failed to load users. Please try again."
       }
+    },
+    "UserDetail": {
+      "title": "User Details",
+      "close": "Close",
+      "notSet": "Not set",
+      "never": "Never",
+      "verified": "Verified",
+      "unverified": "Unverified",
+      "notVerified": "Not verified",
+      "ownAccountWarning": "You cannot perform destructive actions on your own account.",
+      "sections": {
+        "accountInfo": "Account Information",
+        "actions": "Actions",
+        "dangerZone": "Danger Zone"
+      },
+      "fields": {
+        "username": "Username",
+        "displayName": "Display Name",
+        "signupDate": "Signed Up",
+        "lastLogin": "Last Login",
+        "emailVerified": "Email Verified",
+        "userId": "User ID"
+      },
+      "status": {
+        "active": "Active",
+        "suspended": "Suspended",
+        "pending": "Pending"
+      },
+      "actions": {
+        "resetPassword": "Reset Password",
+        "resetPasswordDesc": "Send password reset email to user",
+        "suspend": "Suspend User",
+        "suspendDesc": "Temporarily disable account access",
+        "unsuspend": "Unsuspend User",
+        "unsuspendDesc": "Restore account access",
+        "delete": "Delete User",
+        "deleteDesc": "Permanently remove user and all their data"
+      },
+      "suspend": {
+        "title": "Suspend {email}?",
+        "description": "This user will be unable to log in until you unsuspend them. They will be logged out immediately.",
+        "confirm": "Suspend User",
+        "loading": "Suspending...",
+        "success": "User Suspended",
+        "successDesc": "The user account has been suspended successfully.",
+        "error": "Failed to Suspend User"
+      },
+      "unsuspend": {
+        "title": "Unsuspend {email}?",
+        "description": "This will restore the user's access to the application. They will be able to log in again.",
+        "confirm": "Unsuspend User",
+        "loading": "Unsuspending...",
+        "success": "User Unsuspended",
+        "successDesc": "The user account has been unsuspended successfully.",
+        "error": "Failed to Unsuspend User"
+      },
+      "delete": {
+        "title": "Delete {email}?",
+        "warningStrong": "This action cannot be undone!",
+        "description": "This will permanently delete the user account and remove all associated data including:",
+        "dataProfile": "Profile information",
+        "dataActivity": "Activity history",
+        "dataContent": "All user-generated content",
+        "confirmPrompt": "Type to confirm:",
+        "placeholder": "Enter email address to confirm",
+        "confirm": "Delete User",
+        "loading": "Deleting...",
+        "success": "User Deleted",
+        "successDesc": "The user account has been permanently deleted.",
+        "error": "Failed to Delete User"
+      },
+      "resetPassword": {
+        "title": "Send Password Reset Email?",
+        "description": "This will send a password reset email to the user. They will receive a link to set a new password.",
+        "note": "The reset link will expire in 1 hour.",
+        "confirm": "Send Reset Email",
+        "loading": "Sending...",
+        "success": "Reset Email Sent",
+        "successNote": "The user should receive the email shortly. Ask them to check spam if not received.",
+        "error": "Failed to Send Reset Email"
+      },
+      "cancel": "Cancel"
     }
   },
   "Index": {

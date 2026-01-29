@@ -1,7 +1,9 @@
+import { cookies } from 'next/headers';
 import { getTranslations } from 'next-intl/server';
 
 import { UserTable } from '@/components/admin/UserTable';
 import { getUsersList } from '@/libs/queries/users';
+import { createClient } from '@/libs/supabase/server';
 
 type AdminUsersPageProps = {
   params: Promise<{ locale: string }>;
@@ -34,6 +36,12 @@ export default async function AdminUsersPage({
   const sortBy = (resolvedSearchParams.sort || 'created_at') as 'created_at' | 'email';
   const sortOrder = (resolvedSearchParams.order || 'desc') as 'asc' | 'desc';
   const status = (resolvedSearchParams.status || 'all') as 'all' | 'active' | 'suspended' | 'pending';
+
+  // Get current user ID for self-preservation checks
+  const cookieStore = await cookies();
+  const supabase = createClient(cookieStore);
+  const { data: { user: currentUser } } = await supabase.auth.getUser();
+  const currentUserId = currentUser?.id || '';
 
   // Fetch users data server-side
   const { users, total, error } = await getUsersList({
@@ -77,6 +85,7 @@ export default async function AdminUsersPage({
         sortBy={sortBy}
         sortOrder={sortOrder}
         statusFilter={status}
+        currentUserId={currentUserId}
       />
     </div>
   );

@@ -94,7 +94,7 @@ development_status:
   epic-6: in-progress
   6-1-admin-role-and-access-control: done
   6-2-admin-layout-and-navigation: done
-  6-3-user-management-list: ready-for-dev
+  6-3-user-management-list: done
   6-4-user-detail-and-actions: backlog
   6-5-system-metrics-dashboard: backlog
   6-6-admin-audit-logging: backlog

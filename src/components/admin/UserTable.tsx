@@ -49,6 +49,8 @@ import {
 } from '@/components/ui/tooltip';
 import { getUserInitials, getUserStatus } from '@/libs/queries/users';
 
+import { UserDetailDialog } from './UserDetailDialog';
+
 type UserTableProps = {
   users: User[];
   total: number;
@@ -57,6 +59,7 @@ type UserTableProps = {
   sortBy?: string;
   sortOrder?: 'asc' | 'desc';
   statusFilter?: string;
+  currentUserId: string;
 };
 
 const ITEMS_PER_PAGE = 20;
@@ -69,6 +72,7 @@ export function UserTable({
   sortBy = 'created_at',
   sortOrder = 'desc',
   statusFilter = 'all',
+  currentUserId,
 }: UserTableProps) {
   const t = useTranslations('Admin.Users');
   const router = useRouter();
@@ -76,6 +80,24 @@ export function UserTable({
   const [isPending, startTransition] = useTransition();
   const [selectedUsers, setSelectedUsers] = useState<Set<string>>(new Set());
   const [searchValue, setSearchValue] = useState(search);
+
+  // User detail dialog state
+  const [selectedUser, setSelectedUser] = useState<User | null>(null);
+  const [isDetailDialogOpen, setIsDetailDialogOpen] = useState(false);
+
+  // Handle opening user detail dialog
+  const handleViewUser = useCallback((user: User) => {
+    setSelectedUser(user);
+    setIsDetailDialogOpen(true);
+  }, []);
+
+  // Handle user updated - refresh the table data
+  const handleUserUpdated = useCallback(() => {
+    // Trigger a page refresh to get latest data
+    startTransition(() => {
+      router.refresh();
+    });
+  }, [router]);
 
   // Debounced search update
   const updateURL = useCallback((params: Record<string, string | null>) => {
@@ -348,7 +370,13 @@ export function UserTable({
                           <TooltipProvider>
                             <Tooltip>
                               <TooltipTrigger asChild>
-                                <Button variant="ghost" size="icon" className="size-8" disabled>
+                                <Button
+                                  variant="ghost"
+                                  size="icon"
+                                  className="size-8"
+                                  onClick={() => handleViewUser(user)}
+                                  data-testid={`view-user-${user.id}`}
+                                >
                                   <Eye className="size-4" />
                                 </Button>
                               </TooltipTrigger>
@@ -440,6 +468,15 @@ export function UserTable({
           </div>
         </div>
       </div>
+
+      {/* User Detail Dialog */}
+      <UserDetailDialog
+        user={selectedUser}
+        open={isDetailDialogOpen}
+        onOpenChange={setIsDetailDialogOpen}
+        currentUserId={currentUserId}
+        onUserUpdated={handleUserUpdated}
+      />
     </div>
   );
 }
