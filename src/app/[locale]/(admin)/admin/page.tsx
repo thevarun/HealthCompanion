@@ -1,24 +1,41 @@
+import { Activity, MessageSquare, UserPlus, Users } from 'lucide-react';
 import { getTranslations } from 'next-intl/server';
 
+import { MetricCard } from '@/components/admin/MetricCard';
+import type { MetricWithTrend } from '@/libs/queries/metrics';
 import {
-  Card,
-  CardDescription,
-  CardHeader,
-  CardTitle,
-} from '@/components/ui/card';
+  getActiveUsersCountWithTrend,
+  getNewSignupsCountWithTrend,
+  getPendingFeedbackCount,
+  getTotalUsersCount,
+} from '@/libs/queries/metrics';
 
 /**
  * Admin Dashboard Page
- * Overview page for the admin panel showing key metrics
- *
- * Note: Actual metrics will be implemented in Story 6.5
- * This is a placeholder with the layout structure.
+ * Overview page for the admin panel showing key system metrics.
+ * All metrics are fetched server-side for performance and security.
  */
 export default async function AdminDashboardPage(props: {
   params: Promise<{ locale: string }>;
 }) {
   const { locale } = await props.params;
   const t = await getTranslations({ locale, namespace: 'Admin' });
+
+  let totalUsers: number | null = null;
+  let newSignups: MetricWithTrend | null = null;
+  let activeUsers: MetricWithTrend | null = null;
+  let pendingFeedback: number | null = null;
+
+  try {
+    ;[totalUsers, newSignups, activeUsers, pendingFeedback] = await Promise.all([
+      getTotalUsersCount(),
+      getNewSignupsCountWithTrend(),
+      getActiveUsersCountWithTrend(),
+      getPendingFeedbackCount(),
+    ]);
+  } catch (error) {
+    console.error('Failed to fetch dashboard metrics:', error);
+  }
 
   return (
     <div className="space-y-6">
@@ -28,35 +45,34 @@ export default async function AdminDashboardPage(props: {
         <p className="text-muted-foreground">{t('dashboard.description')}</p>
       </div>
 
-      {/* Metrics cards grid - placeholders for Story 6.5 */}
+      {/* Metrics cards grid */}
       <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
-        <Card>
-          <CardHeader>
-            <CardDescription>{t('dashboard.totalUsers')}</CardDescription>
-            <CardTitle className="text-3xl font-bold">--</CardTitle>
-          </CardHeader>
-        </Card>
+        <MetricCard
+          title={t('dashboard.totalUsers')}
+          value={totalUsers}
+          icon={Users}
+        />
 
-        <Card>
-          <CardHeader>
-            <CardDescription>{t('dashboard.newSignups')}</CardDescription>
-            <CardTitle className="text-3xl font-bold">--</CardTitle>
-          </CardHeader>
-        </Card>
+        <MetricCard
+          title={t('dashboard.newSignups')}
+          value={newSignups?.count ?? null}
+          trend={newSignups?.trend}
+          icon={UserPlus}
+        />
 
-        <Card>
-          <CardHeader>
-            <CardDescription>{t('dashboard.activeUsers')}</CardDescription>
-            <CardTitle className="text-3xl font-bold">--</CardTitle>
-          </CardHeader>
-        </Card>
+        <MetricCard
+          title={t('dashboard.activeUsers')}
+          value={activeUsers?.count ?? null}
+          trend={activeUsers?.trend}
+          icon={Activity}
+        />
 
-        <Card>
-          <CardHeader>
-            <CardDescription>{t('dashboard.pendingFeedback')}</CardDescription>
-            <CardTitle className="text-3xl font-bold">--</CardTitle>
-          </CardHeader>
-        </Card>
+        <MetricCard
+          title={t('dashboard.pendingFeedback')}
+          value={pendingFeedback}
+          icon={MessageSquare}
+          href="/admin/feedback"
+        />
       </div>
     </div>
   );

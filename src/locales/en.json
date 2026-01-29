@@ -19,7 +19,11 @@
       "totalUsers": "Total Users",
       "newSignups": "New Signups (7d)",
       "activeUsers": "Active Users (7d)",
-      "pendingFeedback": "Pending Feedback"
+      "pendingFeedback": "Pending Feedback",
+      "trend": {
+        "up": "Up from last week",
+        "down": "Down from last week"
+      }
     },
     "Users": {
       "title": "User Management",
