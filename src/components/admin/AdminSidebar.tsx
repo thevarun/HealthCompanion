@@ -2,6 +2,7 @@
 
 import {
   LayoutDashboard,
+  Mail,
   MessageSquareText,
   ScrollText,
   Settings,
@@ -67,6 +68,7 @@ export function AdminSidebar({ collapsed = false, mobile = false, onLinkClick }:
     {
       group: t('nav.system'),
       items: [
+        { label: t('nav.emailTesting'), href: '/admin/email', icon: Mail },
         { label: t('nav.auditLog'), href: '/admin/audit', icon: ScrollText },
         { label: t('nav.settings'), href: '/admin/settings', icon: Settings },
       ],

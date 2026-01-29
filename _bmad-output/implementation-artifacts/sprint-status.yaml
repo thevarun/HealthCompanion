@@ -97,7 +97,7 @@ development_status:
   6-3-user-management-list: done
   6-4-user-detail-and-actions: done
   6-5-system-metrics-dashboard: done
-  6-6-admin-audit-logging: backlog
+  6-6-admin-audit-logging: done
   6-7-email-testing-ui: backlog
   6-8-feedback-admin-list-view: backlog
   6-9-feedback-admin-actions: backlog

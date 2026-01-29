@@ -4,4 +4,5 @@ export { AdminSidebar } from './AdminSidebar';
 export { AuditLogFilters } from './AuditLogFilters';
 export { AuditLogPagination } from './AuditLogPagination';
 export { AuditLogTable } from './AuditLogTable';
+export { EmailTestForm } from './EmailTestForm';
 export { MetricCard } from './MetricCard';

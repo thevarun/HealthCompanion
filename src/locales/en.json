@@ -11,6 +11,7 @@
       "users": "Users",
       "feedback": "Feedback",
       "system": "System",
+      "emailTesting": "Email Testing",
       "auditLog": "Audit Log",
       "settings": "Settings"
     },
@@ -47,6 +48,32 @@
         "next": "Next",
         "pageOf": "Page {current} of {total}"
       }
+    },
+    "Email": {
+      "title": "Email Testing",
+      "description": "Test email templates and delivery before sending to real users.",
+      "testEmail": "Send Test Email",
+      "testEmailDescription": "Select a template and recipient to send a test email.",
+      "templateLabel": "Email Template",
+      "templatePlaceholder": "Select a template",
+      "templateDescription": "Choose which email template to test.",
+      "templates": {
+        "welcome": "Welcome Email",
+        "passwordReset": "Password Reset",
+        "verifyEmail": "Email Verification"
+      },
+      "emailLabel": "Recipient Email",
+      "emailPlaceholder": "recipient@example.com",
+      "emailDescription": "Enter a valid email address to receive the test email.",
+      "dataLabel": "Template Data (Optional)",
+      "dataPlaceholder": "{\"name\": \"John Doe\"}",
+      "dataDescription": "Optional JSON data to populate template variables.",
+      "sendButton": "Send Test Email",
+      "sendingButton": "Sending...",
+      "successTitle": "Test Email Sent",
+      "successMessage": "Test email successfully sent to {email}.",
+      "errorTitle": "Failed to Send",
+      "invalidJson": "Invalid JSON format in template data."
     },
     "dashboard": {
       "title": "Dashboard",
