@@ -58,6 +58,12 @@ vi.mock('@/libs/api/errors/logger', () => ({
   logValidationError: vi.fn(),
 }));
 
+// Mock audit logging
+const mockLogAdminAction = vi.fn().mockResolvedValue(true);
+vi.mock('@/libs/audit/logAdminAction', () => ({
+  logAdminAction: (...args: unknown[]) => mockLogAdminAction(...args),
+}));
+
 // Mock getBaseUrl for reset-password redirect verification
 vi.mock('@/utils/Helpers', () => ({
   getBaseUrl: vi.fn(() => 'http://localhost:3000'),
@@ -70,8 +76,10 @@ const { DELETE: deleteHandler } = await import('../route');
 const { POST: resetPasswordHandler } = await import('../reset-password/route');
 
 // Helper to create mock request
-function createMockRequest(): NextRequest {
-  return {} as NextRequest;
+function createMockRequest(body?: Record<string, unknown>): NextRequest {
+  return {
+    json: body ? () => Promise.resolve(body) : () => Promise.reject(new Error('No body')),
+  } as unknown as NextRequest;
 }
 
 // Valid UUIDs for testing
@@ -173,6 +181,55 @@ describe('Admin User API Routes', () => {
       expect(mockUpdateUserById).toHaveBeenCalledWith(VALID_USER_ID, { ban_duration: '876000h' });
     });
 
+    it('logs audit entry on successful suspend', async () => {
+      mockUpdateUserById.mockResolvedValue({
+        data: { user: { ...mockTargetUser, id: VALID_USER_ID } },
+        error: null,
+      });
+
+      const params = Promise.resolve({ userId: VALID_USER_ID });
+      await suspendHandler(createMockRequest(), { params });
+
+      expect(mockLogAdminAction).toHaveBeenCalledWith({
+        action: 'suspend_user',
+        targetType: 'user',
+        targetId: VALID_USER_ID,
+        adminId: ADMIN_USER_ID,
+        metadata: undefined,
+      });
+    });
+
+    it('logs audit entry with reason metadata when provided', async () => {
+      mockUpdateUserById.mockResolvedValue({
+        data: { user: { ...mockTargetUser, id: VALID_USER_ID } },
+        error: null,
+      });
+
+      const params = Promise.resolve({ userId: VALID_USER_ID });
+      await suspendHandler(createMockRequest({ reason: 'Policy violation' }), { params });
+
+      expect(mockLogAdminAction).toHaveBeenCalledWith({
+        action: 'suspend_user',
+        targetType: 'user',
+        targetId: VALID_USER_ID,
+        adminId: ADMIN_USER_ID,
+        metadata: { reason: 'Policy violation' },
+      });
+    });
+
+    it('still succeeds even if audit logging fails', async () => {
+      mockUpdateUserById.mockResolvedValue({
+        data: { user: { ...mockTargetUser, id: VALID_USER_ID } },
+        error: null,
+      });
+      mockLogAdminAction.mockRejectedValueOnce(new Error('Logging failed'));
+
+      const params = Promise.resolve({ userId: VALID_USER_ID });
+      const response = await suspendHandler(createMockRequest(), { params });
+
+      expect(response.status).toBe(200);
+    });
+
     it('returns 500 on Supabase error', async () => {
       mockUpdateUserById.mockResolvedValue({
         data: null,
@@ -227,6 +284,42 @@ describe('Admin User API Routes', () => {
       expect(response.status).toBe(200);
       expect(data.success).toBe(true);
       expect(mockUpdateUserById).toHaveBeenCalledWith(VALID_USER_ID, { ban_duration: 'none' });
+    });
+
+    it('logs audit entry on successful unsuspend', async () => {
+      mockUpdateUserById.mockResolvedValue({
+        data: { user: { ...mockTargetUser, id: VALID_USER_ID } },
+        error: null,
+      });
+
+      const params = Promise.resolve({ userId: VALID_USER_ID });
+      await unsuspendHandler(createMockRequest(), { params });
+
+      expect(mockLogAdminAction).toHaveBeenCalledWith({
+        action: 'unsuspend_user',
+        targetType: 'user',
+        targetId: VALID_USER_ID,
+        adminId: ADMIN_USER_ID,
+        metadata: undefined,
+      });
+    });
+
+    it('logs audit entry with reason metadata when provided', async () => {
+      mockUpdateUserById.mockResolvedValue({
+        data: { user: { ...mockTargetUser, id: VALID_USER_ID } },
+        error: null,
+      });
+
+      const params = Promise.resolve({ userId: VALID_USER_ID });
+      await unsuspendHandler(createMockRequest({ reason: 'Account reviewed' }), { params });
+
+      expect(mockLogAdminAction).toHaveBeenCalledWith({
+        action: 'unsuspend_user',
+        targetType: 'user',
+        targetId: VALID_USER_ID,
+        adminId: ADMIN_USER_ID,
+        metadata: { reason: 'Account reviewed' },
+      });
     });
   });
 
@@ -372,6 +465,24 @@ describe('Admin User API Routes', () => {
         'target@example.com',
         expect.any(Object),
       );
+    });
+
+    it('logs audit entry on successful password reset', async () => {
+      mockGetUserById.mockResolvedValue({
+        data: { user: mockTargetUser },
+        error: null,
+      });
+      mockResetPasswordForEmail.mockResolvedValue({ error: null });
+
+      const params = Promise.resolve({ userId: VALID_USER_ID });
+      await resetPasswordHandler(createMockRequest(), { params });
+
+      expect(mockLogAdminAction).toHaveBeenCalledWith({
+        action: 'reset_password',
+        targetType: 'user',
+        targetId: VALID_USER_ID,
+        adminId: ADMIN_USER_ID,
+      });
     });
 
     it('sends reset email with correct redirect URL', async () => {

@@ -11,7 +11,42 @@
       "users": "उपयोगकर्ता",
       "feedback": "प्रतिक्रिया",
       "system": "सिस्टम",
+      "auditLog": "ऑडिट लॉग",
       "settings": "सेटिंग्स"
+    },
+    "AuditLog": {
+      "title": "ऑडिट लॉग",
+      "description": "जवाबदेही और समस्या निवारण के लिए सभी एडमिन कार्यों का इतिहास देखें।",
+      "recentActions": "हालिया कार्य",
+      "showingResults": "{total} में से {count} प्रविष्टियाँ दिखा रहे हैं",
+      "noLogs": "कोई ऑडिट लॉग प्रविष्टि नहीं मिली।",
+      "columns": {
+        "action": "कार्य",
+        "admin": "एडमिन",
+        "target": "लक्ष्य",
+        "timestamp": "समय",
+        "details": "विवरण"
+      },
+      "actions": {
+        "suspend_user": "उपयोगकर्ता निलंबित",
+        "unsuspend_user": "निलंबन हटाएं",
+        "delete_user": "उपयोगकर्ता हटाएं",
+        "reset_password": "पासवर्ड रीसेट"
+      },
+      "filters": {
+        "action": "कार्य प्रकार",
+        "allActions": "सभी कार्य",
+        "startDate": "आरंभ तिथि",
+        "endDate": "अंतिम तिथि",
+        "apply": "फ़िल्टर लागू करें",
+        "clear": "फ़िल्टर हटाएं",
+        "invalidDateRange": "आरंभ तिथि अंतिम तिथि से पहले होनी चाहिए"
+      },
+      "pagination": {
+        "previous": "पिछला",
+        "next": "अगला",
+        "pageOf": "पृष्ठ {current} का {total}"
+      }
     },
     "dashboard": {
       "title": "डैशबोर्ड",

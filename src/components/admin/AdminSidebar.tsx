@@ -3,6 +3,7 @@
 import {
   LayoutDashboard,
   MessageSquareText,
+  ScrollText,
   Settings,
   Shield,
   Users,
@@ -66,6 +67,7 @@ export function AdminSidebar({ collapsed = false, mobile = false, onLinkClick }:
     {
       group: t('nav.system'),
       items: [
+        { label: t('nav.auditLog'), href: '/admin/audit', icon: ScrollText },
         { label: t('nav.settings'), href: '/admin/settings', icon: Settings },
       ],
     },

@@ -9,6 +9,7 @@ import {
   logApiError,
   unauthorizedError,
 } from '@/libs/api/errors';
+import { logAdminAction } from '@/libs/audit/logAdminAction';
 import { isAdmin } from '@/libs/auth/isAdmin';
 import { createAdminClient } from '@/libs/supabase/admin';
 import { createClient } from '@/libs/supabase/server';
@@ -22,7 +23,7 @@ import { isValidUuid } from '@/utils/validation';
  * Cannot suspend own account (self-preservation).
  */
 export async function POST(
-  _request: NextRequest,
+  request: NextRequest,
   { params }: { params: Promise<{ userId: string }> },
 ) {
   try {
@@ -69,7 +70,25 @@ export async function POST(
       return internalError(error.message || 'Failed to suspend user');
     }
 
-    // 5. Return success with updated user data
+    // 5. Parse optional reason from request body
+    let reason: string | undefined;
+    try {
+      const body = await request.json();
+      reason = typeof body.reason === 'string' ? body.reason : undefined;
+    } catch {
+      // Body is optional, ignore parse errors
+    }
+
+    // 6. Log audit entry (fire and forget - don't await)
+    void logAdminAction({
+      action: 'suspend_user',
+      targetType: 'user',
+      targetId: userId,
+      adminId: user.id,
+      metadata: reason ? { reason } : undefined,
+    });
+
+    // 7. Return success with updated user data
     return NextResponse.json({
       success: true,
       user: data.user,

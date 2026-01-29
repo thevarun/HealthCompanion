@@ -11,7 +11,42 @@
       "users": "ব্যবহারকারী",
       "feedback": "প্রতিক্রিয়া",
       "system": "সিস্টেম",
+      "auditLog": "অডিট লগ",
       "settings": "সেটিংস"
+    },
+    "AuditLog": {
+      "title": "অডিট লগ",
+      "description": "জবাবদিহিতা এবং সমস্যা সমাধানের জন্য সমস্ত অ্যাডমিন কার্যক্রমের ইতিহাস দেখুন।",
+      "recentActions": "সাম্প্রতিক কার্যক্রম",
+      "showingResults": "{total} এর মধ্যে {count}টি এন্ট্রি দেখাচ্ছে",
+      "noLogs": "কোনো অডিট লগ এন্ট্রি পাওয়া যায়নি।",
+      "columns": {
+        "action": "কার্যক্রম",
+        "admin": "অ্যাডমিন",
+        "target": "লক্ষ্য",
+        "timestamp": "সময়",
+        "details": "বিবরণ"
+      },
+      "actions": {
+        "suspend_user": "ব্যবহারকারী স্থগিত",
+        "unsuspend_user": "স্থগিতাদেশ প্রত্যাহার",
+        "delete_user": "ব্যবহারকারী মুছুন",
+        "reset_password": "পাসওয়ার্ড রিসেট"
+      },
+      "filters": {
+        "action": "কার্যক্রমের ধরন",
+        "allActions": "সব কার্যক্রম",
+        "startDate": "শুরুর তারিখ",
+        "endDate": "শেষ তারিখ",
+        "apply": "ফিল্টার প্রয়োগ করুন",
+        "clear": "ফিল্টার মুছুন",
+        "invalidDateRange": "শুরুর তারিখ শেষ তারিখের আগে হতে হবে"
+      },
+      "pagination": {
+        "previous": "আগের",
+        "next": "পরবর্তী",
+        "pageOf": "পৃষ্ঠা {current} এর {total}"
+      }
     },
     "dashboard": {
       "title": "ড্যাশবোর্ড",

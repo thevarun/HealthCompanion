@@ -11,7 +11,42 @@
       "users": "Users",
       "feedback": "Feedback",
       "system": "System",
+      "auditLog": "Audit Log",
       "settings": "Settings"
+    },
+    "AuditLog": {
+      "title": "Audit Log",
+      "description": "View a history of all admin actions for accountability and troubleshooting.",
+      "recentActions": "Recent Actions",
+      "showingResults": "Showing {count} of {total} entries",
+      "noLogs": "No audit log entries found.",
+      "columns": {
+        "action": "Action",
+        "admin": "Admin",
+        "target": "Target",
+        "timestamp": "Timestamp",
+        "details": "Details"
+      },
+      "actions": {
+        "suspend_user": "Suspend User",
+        "unsuspend_user": "Unsuspend User",
+        "delete_user": "Delete User",
+        "reset_password": "Reset Password"
+      },
+      "filters": {
+        "action": "Action Type",
+        "allActions": "All Actions",
+        "startDate": "Start Date",
+        "endDate": "End Date",
+        "apply": "Apply Filters",
+        "clear": "Clear Filters",
+        "invalidDateRange": "Start date must be before end date"
+      },
+      "pagination": {
+        "previous": "Previous",
+        "next": "Next",
+        "pageOf": "Page {current} of {total}"
+      }
     },
     "dashboard": {
       "title": "Dashboard",

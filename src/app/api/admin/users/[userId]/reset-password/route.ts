@@ -10,6 +10,7 @@ import {
   notFoundError,
   unauthorizedError,
 } from '@/libs/api/errors';
+import { logAdminAction } from '@/libs/audit/logAdminAction';
 import { isAdmin } from '@/libs/auth/isAdmin';
 import { createAdminClient } from '@/libs/supabase/admin';
 import { createClient } from '@/libs/supabase/server';
@@ -90,8 +91,15 @@ export async function POST(
       return internalError(resetError.message || 'Failed to send reset email');
     }
 
-    // 6. Return success
-    // Note: Audit logging integration point for Story 6.6
+    // 6. Log audit entry (fire and forget - don't await)
+    void logAdminAction({
+      action: 'reset_password',
+      targetType: 'user',
+      targetId: userId,
+      adminId: user.id,
+    });
+
+    // 7. Return success
     return NextResponse.json({
       success: true,
       message: 'Password reset email sent',
