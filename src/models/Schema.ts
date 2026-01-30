@@ -12,6 +12,7 @@ import {
   boolean,
   index,
   jsonb,
+  pgEnum,
   pgSchema,
   pgTable,
   text,
@@ -118,5 +119,29 @@ export const adminAuditLog = pgTable(
       table.action,
       table.createdAt,
     ),
+  }),
+);
+
+// Feedback enums and table for user feedback management
+export const feedbackTypeEnum = pgEnum('feedback_type', ['bug', 'feature', 'praise']);
+export const feedbackStatusEnum = pgEnum('feedback_status', ['pending', 'reviewed', 'archived']);
+
+export const feedback = pgTable(
+  'feedback',
+  {
+    id: uuid('id').defaultRandom().primaryKey(),
+    type: feedbackTypeEnum('type').notNull(),
+    message: text('message').notNull(),
+    email: text('email'),
+    status: feedbackStatusEnum('status').notNull().default('pending'),
+    userId: uuid('user_id'),
+    createdAt: timestamp('created_at', { withTimezone: true }).defaultNow().notNull(),
+    reviewedAt: timestamp('reviewed_at', { withTimezone: true }),
+  },
+  table => ({
+    createdAtIdx: index('idx_feedback_created_at').on(table.createdAt),
+    typeIdx: index('idx_feedback_type').on(table.type),
+    statusIdx: index('idx_feedback_status').on(table.status),
+    statusCreatedAtIdx: index('idx_feedback_status_created_at').on(table.status, table.createdAt),
   }),
 );

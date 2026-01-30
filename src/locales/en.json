@@ -216,6 +216,51 @@
         "error": "Failed to Send Reset Email"
       },
       "cancel": "Cancel"
+    },
+    "Feedback": {
+      "title": "Feedback Management",
+      "description": "Review and manage user feedback submissions",
+      "allFeedback": "All Feedback",
+      "showingResults": "Showing {count} of {total} feedback items",
+      "types": {
+        "bug": "Bug",
+        "feature": "Feature",
+        "praise": "Praise"
+      },
+      "statuses": {
+        "pending": "Pending",
+        "reviewed": "Reviewed",
+        "archived": "Archived"
+      },
+      "filters": {
+        "allTypes": "All Types",
+        "allStatuses": "All Statuses",
+        "type": "Type",
+        "status": "Status",
+        "clearFilters": "Clear Filters",
+        "activeFilters": "{count} active"
+      },
+      "anonymous": "Anonymous",
+      "noFeedback": "No feedback yet",
+      "noFeedbackDescription": "Feedback submissions will appear here once users start providing feedback.",
+      "detail": {
+        "title": "Feedback Detail",
+        "fullMessage": "Full Message",
+        "submittedBy": "Submitted by",
+        "submittedAt": "Submitted",
+        "reviewedAt": "Reviewed",
+        "status": "Status",
+        "type": "Type",
+        "markReviewed": "Mark as Reviewed",
+        "delete": "Delete",
+        "close": "Close",
+        "actionComingSoon": "This action will be available in Story 6.9"
+      },
+      "pagination": {
+        "previous": "Previous",
+        "next": "Next",
+        "page": "Page {current} of {total}"
+      }
     }
   },
   "Index": {
