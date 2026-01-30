@@ -8,7 +8,7 @@ import { FeedbackList } from '../FeedbackList';
 // Mock next-intl
 vi.mock('next-intl', () => ({
   useTranslations: () => {
-    const t = (key: string) => {
+    const t = (key: string, params?: Record<string, unknown>) => {
       const translations: Record<string, string> = {
         'noFeedback': 'No feedback yet',
         'noFeedbackDescription': 'Feedback submissions will appear here once users start providing feedback.',
@@ -17,11 +17,29 @@ vi.mock('next-intl', () => ({
         'statuses.pending': 'Pending',
         'statuses.reviewed': 'Reviewed',
         'anonymous': 'Anonymous',
+        'bulkActions.selectAll': 'Select all',
+        'bulkActions.selected': `${params?.count} selected`,
+        'bulkActions.markReviewed': 'Mark All Reviewed',
+        'bulkActions.delete': 'Delete Selected',
+        'bulkActions.clearSelection': 'Clear',
+        'actions.cancel': 'Cancel',
+        'bulkActions.bulkDeleteConfirmTitle': `Delete ${params?.count} Items`,
+        'bulkActions.bulkDeleteConfirmMessage': `This will permanently delete ${params?.count} feedback items.`,
       };
       return translations[key] || key;
     };
     return t;
   },
+}));
+
+// Mock next/navigation
+vi.mock('next/navigation', () => ({
+  useRouter: () => ({ refresh: vi.fn() }),
+}));
+
+// Mock useToast
+vi.mock('@/hooks/use-toast', () => ({
+  useToast: () => ({ toast: vi.fn() }),
 }));
 
 // Mock date-fns
@@ -71,5 +89,18 @@ describe('FeedbackList', () => {
     expect(screen.getByTestId('feedback-empty')).toBeInTheDocument();
     expect(screen.getByText('No feedback yet')).toBeInTheDocument();
     expect(screen.getByText('Feedback submissions will appear here once users start providing feedback.')).toBeInTheDocument();
+  });
+
+  it('renders select all checkbox', () => {
+    render(<FeedbackList feedbackItems={mockFeedbackItems} />);
+
+    expect(screen.getByTestId('select-all-checkbox')).toBeInTheDocument();
+    expect(screen.getByText('Select all')).toBeInTheDocument();
+  });
+
+  it('renders checkboxes for each feedback card', () => {
+    render(<FeedbackList feedbackItems={mockFeedbackItems} />);
+
+    expect(screen.getAllByTestId('feedback-checkbox')).toHaveLength(2);
   });
 });

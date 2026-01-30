@@ -256,6 +256,41 @@
         "close": "Close",
         "actionComingSoon": "This action will be available in Story 6.9"
       },
+      "actions": {
+        "markReviewed": "Mark as Reviewed",
+        "archive": "Archive",
+        "delete": "Delete",
+        "export": "Export CSV",
+        "markReviewedSuccess": "Feedback marked as reviewed",
+        "archiveSuccess": "Feedback archived",
+        "deleteSuccess": "Feedback deleted",
+        "exportSuccess": "CSV exported successfully",
+        "actionError": "Action failed. Please try again.",
+        "deleteConfirmTitle": "Delete Feedback",
+        "deleteConfirmMessage": "This action is permanent and cannot be undone. Type 'delete' to confirm.",
+        "deleteConfirmPlaceholder": "Type delete to confirm",
+        "confirmDelete": "Delete Permanently",
+        "deleting": "Deleting...",
+        "cancel": "Cancel"
+      },
+      "bulkActions": {
+        "selected": "{count} selected",
+        "markReviewed": "Mark All Reviewed",
+        "delete": "Delete Selected",
+        "clearSelection": "Clear",
+        "selectAll": "Select all",
+        "bulkMarkReviewedSuccess": "{count} items marked as reviewed",
+        "bulkDeleteConfirmTitle": "Delete {count} Items",
+        "bulkDeleteConfirmMessage": "This will permanently delete {count} feedback items. This cannot be undone.",
+        "bulkDeleteSuccess": "{count} items deleted",
+        "bulkActionError": "Bulk action failed. Please try again."
+      },
+      "export": {
+        "button": "Export CSV",
+        "exporting": "Exporting...",
+        "success": "CSV exported successfully",
+        "error": "Failed to export CSV"
+      },
       "pagination": {
         "previous": "Previous",
         "next": "Next",

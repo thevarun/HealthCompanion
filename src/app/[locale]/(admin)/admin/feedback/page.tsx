@@ -1,5 +1,6 @@
 import { getTranslations } from 'next-intl/server';
 
+import { ExportCsvButton } from '@/components/admin/ExportCsvButton';
 import { FeedbackFilters } from '@/components/admin/FeedbackFilters';
 import { FeedbackList } from '@/components/admin/FeedbackList';
 import { FeedbackPagination } from '@/components/admin/FeedbackPagination';
@@ -55,9 +56,12 @@ export default async function FeedbackPage(props: {
 
   return (
     <div className="space-y-6">
-      <div>
-        <h2 className="text-2xl font-bold tracking-tight">{t('title')}</h2>
-        <p className="text-muted-foreground">{t('description')}</p>
+      <div className="flex items-center justify-between">
+        <div>
+          <h2 className="text-2xl font-bold tracking-tight">{t('title')}</h2>
+          <p className="text-muted-foreground">{t('description')}</p>
+        </div>
+        <ExportCsvButton type={type} status={status} />
       </div>
 
       <FeedbackFilters />

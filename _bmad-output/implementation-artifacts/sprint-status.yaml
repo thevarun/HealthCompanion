@@ -99,7 +99,7 @@ development_status:
   6-5-system-metrics-dashboard: done
   6-6-admin-audit-logging: done
   6-7-email-testing-ui: done
-  6-8-feedback-admin-list-view: backlog
+  6-8-feedback-admin-list-view: done
   6-9-feedback-admin-actions: backlog
   epic-6-retrospective: optional
 

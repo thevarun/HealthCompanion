@@ -5,6 +5,7 @@ export { AuditLogFilters } from './AuditLogFilters';
 export { AuditLogPagination } from './AuditLogPagination';
 export { AuditLogTable } from './AuditLogTable';
 export { EmailTestForm } from './EmailTestForm';
+export { ExportCsvButton } from './ExportCsvButton';
 export { FeedbackCard } from './FeedbackCard';
 export { FeedbackDetailDialog } from './FeedbackDetailDialog';
 export { FeedbackFilters } from './FeedbackFilters';

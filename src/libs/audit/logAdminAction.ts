@@ -5,11 +5,17 @@ export type AuditAction
   = | 'suspend_user'
     | 'unsuspend_user'
     | 'delete_user'
-    | 'reset_password';
+    | 'reset_password'
+    | 'feedback_mark_reviewed'
+    | 'feedback_delete'
+    | 'feedback_archive'
+    | 'feedback_export'
+    | 'feedback_bulk_mark_reviewed'
+    | 'feedback_bulk_delete';
 
 export type LogAdminActionParams = {
   action: AuditAction;
-  targetType: 'user';
+  targetType: 'user' | 'feedback';
   targetId: string;
   adminId: string;
   metadata?: {
