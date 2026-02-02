@@ -19,7 +19,7 @@ vi.mock('next-intl', () => ({
         'emailPlaceholder': 'recipient@example.com',
         'emailDescription': 'Enter a valid email address to receive the test email.',
         'dataLabel': 'Template Data (Optional)',
-        'dataPlaceholder': '{"name": "John Doe"}',
+        'dataPlaceholder': '{\"name\": \"John Doe\"}',
         'dataDescription': 'Optional JSON data to populate template variables.',
         'sendButton': 'Send Test Email',
         'sendingButton': 'Sending...',

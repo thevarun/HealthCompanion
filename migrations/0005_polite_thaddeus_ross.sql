@@ -1,5 +1,11 @@
-CREATE TYPE "public"."feedback_status" AS ENUM('pending', 'reviewed', 'archived');--> statement-breakpoint
-CREATE TYPE "public"."feedback_type" AS ENUM('bug', 'feature', 'praise');--> statement-breakpoint
+DO $$ BEGIN
+  CREATE TYPE "public"."feedback_status" AS ENUM('pending', 'reviewed', 'archived');
+EXCEPTION WHEN duplicate_object THEN null;
+END $$;--> statement-breakpoint
+DO $$ BEGIN
+  CREATE TYPE "public"."feedback_type" AS ENUM('bug', 'feature', 'praise');
+EXCEPTION WHEN duplicate_object THEN null;
+END $$;--> statement-breakpoint
 CREATE TABLE "feedback" (
 	"id" uuid PRIMARY KEY DEFAULT gen_random_uuid() NOT NULL,
 	"type" "feedback_type" NOT NULL,
