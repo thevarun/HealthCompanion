@@ -62,7 +62,7 @@ export function MainAppShell({ children }: MainAppShellProps) {
     { icon: Loader2, label: 'DS - Loading', href: '/design-system/loading' },
     { icon: CreditCard, label: 'Pricing', href: '/pricing', disabled: true },
     { icon: Settings, label: 'Settings', href: '/settings', disabled: true },
-    { icon: User, label: 'Profile', href: '/profile', disabled: true },
+    { icon: User, label: 'Profile', href: '/dashboard/user-profile' },
     { icon: UserPlus, label: 'Onboarding', href: '/onboarding' },
   ];
 

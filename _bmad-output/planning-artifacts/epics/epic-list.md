@@ -155,38 +155,24 @@ Instrumentation and insights infrastructure.
 
 ---
 
-## Epic 10: AI Chat Integration (Example Module)
-**Goal:** Template users see production-quality streaming patterns they can learn from or remove
+## Epic 10: AI Chat Module (Dual Implementation)
+**Goal:** Template users have two production-quality chat options (Dify + Vercel AI SDK) with clear documentation and easy removal
 
-Already exists from HealthCompanion - needs cleanup and documentation as example code. Route renamed to `/chat/dify`.
+Two chat implementations giving downstream developers stack flexibility:
+- **Dify** (`/chat/dify`) - Simple, managed, minimal setup
+- **Vercel AI SDK** (`/chat/vercel`) - Full control, observable, extensible
 
 **FRs covered:** FR-CHAT-001, FR-CHAT-002
 
 **Key Deliverables:**
-- Clean up existing chat interface code
-- Rename route to `/chat/dify`
+- Clean, reorganized Dify chat at `/chat/dify`
+- Vercel AI SDK chat at `/chat/vercel` with streaming
+- LangFuse integration for LLM observability
+- Mem0 integration for persistent memory (opt-in)
+- Unified database schema (`vt_saas`)
 - Document SSE streaming patterns
 - Document API proxy pattern
-- Clear removal instructions
-- Mark as "example code" in documentation
-
----
-
-## Epic 11: Vercel AI SDK Chat with Observability & Memory
-**Goal:** Template users have an alternative chat implementation with full local control, observability, and optional persistent memory
-
-Second chat implementation using Vercel AI SDK, giving downstream developers stack flexibility:
-- **Dify** (`/chat/dify`) - Simple, managed, minimal setup
-- **Vercel AI SDK** (`/chat/vercel`) - Full control, observable, extensible
-
-**Key Deliverables:**
-- Vercel AI SDK integration with OpenAI (provider-swappable)
-- LangFuse integration for LLM observability
-- Mem0 integration for persistent memory (opt-in, async extraction)
-- Local PostgreSQL storage for conversations/messages
-- Conversation history UI with sidebar navigation
-- Comprehensive developer documentation
-- Clear removal instructions
+- Removal guides for either or both implementations
 
 **New Database Tables:**
 - `vercel_conversations` - Chat session metadata

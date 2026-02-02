@@ -2,6 +2,8 @@
 
 **Goal:** Product owner can track user behavior and key conversion metrics
 
+**Design Artifact:** [epic-9-analytics-dashboard-design.md](../ux-design/epic-9-analytics-dashboard-design.md)
+
 ## Story 9.1: Analytics Infrastructure Setup (PostHog)
 
 As a **template user (developer)**,
