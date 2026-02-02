@@ -11,20 +11,17 @@
 flowchart TD
     A[User viewing a resource] --> B[Click Publish / Share button]
     B --> C[ShareLinkModal opens]
-    C --> D[Configure expiration]
-    D --> E[Optionally set max access count]
-    E --> F[Click Create Link]
-    F --> G[Loading state on button]
-    G --> H{API Success?}
-    H -->|Yes| I[Generated URL displayed in modal]
+    C --> D[Click Create Link]
+    D --> F{API Success?}
+    F -->|Yes| I[Generated URL displayed in modal]
     I --> J[Click Copy button]
     J --> K[URL copied to clipboard]
     K --> L[Toast: Link copied!]
     L --> M[Click Done]
     M --> N[Modal closes]
-    H -->|No| O[Error message shown]
+    F -->|No| O[Error message shown]
     O --> P[User can retry]
-    P --> F
+    P --> D
 ```
 
 ### Steps Detail
@@ -34,23 +31,18 @@ flowchart TD
 - **Action:** Click "Publish" or "Share" button
 - **Result:** `ShareLinkModal` opens as a dialog overlay
 
-#### Step 2: Configure Options
-- **Expiration:** Select from dropdown: Never, 1 day, 7 days, 30 days
-- **Max access count:** Optional number input (leave empty = unlimited)
-- **Default state:** Expiration = "Never", Max access = empty (unlimited)
-
-#### Step 3: Create Link
+#### Step 2: Create Link
 - **Button:** "Create Link" (primary variant)
 - **Loading:** Button shows loading state while API call in progress
 - **Prevention:** Button disabled during loading to prevent double-submit
 
-#### Step 4: Copy Generated Link
+#### Step 3: Copy Generated Link
 - **Display:** Generated URL shown in a read-only input with link icon
 - **Action:** Click "Copy" button next to the URL
 - **Feedback:** Icon swaps to checkmark, sonner toast "Link copied!"
 - **Auto-select:** URL text is visually truncated but full URL is copied
 
-#### Step 5: Close Modal
+#### Step 4: Close Modal
 - **Button:** "Done" (replaces "Create Link" after generation)
 - **Alternative:** Click X button or press Escape
 - **Reset:** Form state resets when modal closes
@@ -60,10 +52,9 @@ flowchart TD
 | Step | Design Source | Primary File | Key Feature |
 |------|--------------|--------------|-------------|
 | 1. Open modal | [MagicPatterns](https://www.magicpatterns.com/c/rcyosbx5s9dfvmc4jdmytw) | `ShareLinkModal.tsx` | Dialog trigger |
-| 2. Configure | [MagicPatterns](https://www.magicpatterns.com/c/rcyosbx5s9dfvmc4jdmytw) | `ShareLinkModal.tsx` | Select + Input |
-| 3. Create | [MagicPatterns](https://www.magicpatterns.com/c/rcyosbx5s9dfvmc4jdmytw) | `ShareLinkModal.tsx` | Button loading state |
-| 4. Copy | [MagicPatterns](https://www.magicpatterns.com/c/rcyosbx5s9dfvmc4jdmytw) | `ShareLinkModal.tsx` | Clipboard API + toast |
-| 5. Close | [MagicPatterns](https://www.magicpatterns.com/c/rcyosbx5s9dfvmc4jdmytw) | `ShareLinkModal.tsx` | Dialog close + reset |
+| 2. Create | [MagicPatterns](https://www.magicpatterns.com/c/rcyosbx5s9dfvmc4jdmytw) | `ShareLinkModal.tsx` | Button loading state |
+| 3. Copy | [MagicPatterns](https://www.magicpatterns.com/c/rcyosbx5s9dfvmc4jdmytw) | `ShareLinkModal.tsx` | Clipboard API + toast |
+| 4. Close | [MagicPatterns](https://www.magicpatterns.com/c/rcyosbx5s9dfvmc4jdmytw) | `ShareLinkModal.tsx` | Dialog close + reset |
 
 ---
 
@@ -86,8 +77,6 @@ flowchart TD
     H --> I[Option to request new link]
     D -->|Revoked| J[Show revoked message]
     J --> K[Option to request new link]
-    D -->|Max access reached| L[Show access limit message]
-    L --> M[Option to request new link]
     D -->|Token not found| N[Show 404 page]
 ```
 
@@ -103,7 +92,6 @@ Server-side checks (in order):
 1. Token exists in database
 2. `is_active` is `true` (not revoked)
 3. `expires_at` is null or in the future
-4. `access_count < max_access_count` (if max set)
 
 #### Step 3a: Valid Link → Show Content
 - **Action:** Load the referenced resource (`resource_type` + `resource_id`)
@@ -114,7 +102,6 @@ Server-side checks (in order):
 #### Step 3b: Invalid Link → Show Error
 - **Expired:** "This link has expired" message with timestamp
 - **Revoked:** "This link is no longer available" message
-- **Max reached:** "This link has reached its access limit" message
 - **All cases:** Show "Request a new link" button/link (mailto or contact form)
 
 ---
@@ -178,7 +165,7 @@ flowchart TD
 | Link | Truncated URL + copy button | `{host}/share/{token}` |
 | Status | Badge: Active (green), Expired (gray), Revoked (red) | Auto-determined from `is_active` + `expires_at` |
 | Expires | Relative date or "Never" | `expires_at` formatted |
-| Views | `{access_count}` / `{max_access_count}` or `{access_count}` (unlimited) | Access tracking |
+| Views | `{access_count}` | Access tracking |
 | Actions | Revoke button (active only) | Disabled for already-revoked links |
 
 ### Implementation Sources

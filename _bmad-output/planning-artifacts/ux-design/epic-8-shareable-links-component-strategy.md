@@ -19,7 +19,7 @@
 
 | Design | MagicPatterns URL | Primary File | Key Elements |
 |--------|-------------------|--------------|--------------|
-| Share Link Modal | [View](https://www.magicpatterns.com/c/rcyosbx5s9dfvmc4jdmytw) | `ShareLinkModal.tsx` | Expiration select, max access input, generated link display, copy button |
+| Share Link Modal | [View](https://www.magicpatterns.com/c/rcyosbx5s9dfvmc4jdmytw) | `ShareLinkModal.tsx` | Generated link display, copy button |
 | Share Links Table | [View](https://www.magicpatterns.com/c/rcyosbx5s9dfvmc4jdmytw) | `ShareLinksTable.tsx` | Table with status badges, copy/toggle/delete actions, empty state |
 
 ## Component Mapping
@@ -29,7 +29,6 @@
 | Modal container | Custom `Modal.tsx` | shadcn `Dialog`, `DialogContent`, `DialogHeader`, `DialogTitle`, `DialogFooter` | Replace entirely |
 | Modal close button | Custom in `Modal.tsx` | Built into shadcn `DialogContent` | Automatic |
 | Expiration select | Custom `Select.tsx` | shadcn `Select`, `SelectTrigger`, `SelectContent`, `SelectItem` | Replace entirely |
-| Max access input | Custom `Input.tsx` | shadcn `Input` + `Label` | Replace entirely |
 | Create/Done buttons | Custom `Button.tsx` | shadcn `Button` | Replace entirely |
 | Copy button | Custom `Button.tsx` | shadcn `Button` with `variant="outline"` + `size="icon"` | Replace entirely |
 | Links table | HTML `<table>` | shadcn `Table`, `TableHeader`, `TableRow`, `TableHead`, `TableBody`, `TableCell` | Replace entirely |
@@ -63,8 +62,6 @@ import { z } from 'zod'
 const createShareLinkSchema = z.object({
   resourceType: z.string().min(1),
   resourceId: z.string().uuid(),
-  expiration: z.enum(['never', '1d', '7d', '30d']),
-  maxAccessCount: z.number().int().positive().nullable(),
 })
 ```
 
@@ -85,7 +82,6 @@ export const shareableLinks = healthCompanionSchema.table(
     createdBy: uuid('created_by').notNull(),         // Supabase user ID
     expiresAt: timestamp('expires_at', { withTimezone: true }), // null = never expires
     accessCount: integer('access_count').default(0).notNull(),
-    maxAccessCount: integer('max_access_count'),     // null = unlimited
     isActive: boolean('is_active').default(true).notNull(),
     createdAt: timestamp('created_at', { withTimezone: true })
       .defaultNow()
@@ -114,7 +110,7 @@ export const shareableLinks = healthCompanionSchema.table(
 ```typescript
 // src/app/api/share/route.ts
 // Auth: required (Supabase session)
-// Body: { resourceType, resourceId, expiration, maxAccessCount }
+// Body: { resourceType, resourceId }
 // Returns: { token, url, expiresAt }
 ```
 
@@ -186,7 +182,6 @@ interface ShareLink {
   isActive: boolean
   expiresAt: string | null
   accessCount: number
-  maxAccessCount: number | null
   createdAt: string
 }
 
@@ -202,7 +197,7 @@ interface ShareLinksTableProps {
 
 ```typescript
 // In ShareLinkModal handleCreate:
-// TODO: Analytics — event: "share_link_created", properties: { resourceType, expiration, hasMaxAccess: !!maxAccessCount }
+// TODO: Analytics — event: "share_link_created", properties: { resourceType }
 
 // In ShareLinksTable handleRevoke:
 // TODO: Analytics — event: "share_link_revoked", properties: { resourceType, token }
