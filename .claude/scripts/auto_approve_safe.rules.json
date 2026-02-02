@@ -41,7 +41,7 @@
     "^yarn\\s+(test|lint|typecheck|type-check|check|build|dev|start|install|add|remove)(\\s+.*)?$",
     "^npx\\s+(tsc|eslint|prettier|vitest|jest)(\\s+.*)?$",
     "^npx\\s+tsx\\s+[^|;&]+$",
-    "^npx\\s+shadcn@latest\\s+(add|init)(\\s+[\\w@/-]+)*(\\s+--yes)?$",
+    "^npx\\s+shadcn@latest\\s+(add|init)(\\s+[\\w@/-]+)*(\\s+--yes)?(\\s+2>&1)?$",
 
     "^pytest(\\s+.*)?$",
     "^python(3)?\\s+-m\\s+pytest(\\s+.*)?$",
@@ -113,7 +113,16 @@
     "^npm\\s+(dedupe|cache\\s+clean)(\\s+.*)?$",
     "^curl\\s+(-[sIo]+\\s+)*https?://localhost[:/][^|;&]*$",
     "^curl\\s+[^|;&]*http://localhost[:/][^|;&]*$",
+    "^curl\\s+(-[so]+\\s+)*[^|;&]*https?://localhost[:/][^|;&]*(\\s*2>&1)?(\\s*2>/dev/null)?(\\s*\\|\\s*(head|tail|grep)\\s+[^|;&]*)?(\\s*\\|\\|\\s*echo\\s+[^|;&]*)?$",
     "^pgrep\\s+",
+
+    "^(PORT=\\d+\\s+)?npx\\s+playwright\\s+(test|install)\\b",
+    "^python3?\\s+-c\\s+",
+    "^node\\s+-e\\s+",
+    "^npm\\s+run\\s+[\\w:-]+(\\s+[^|;&]*)?(\\s*2>&1)?(\\s*&)?$",
+    "^lsof\\s+-ti:\\d+(\\s+2>/dev/null)?$",
+    "^ps\\s+aux",
+    "^xxd\\s+",
 
     "^curl\\s+(-[sXo]+\\s+)*(POST|GET|PUT|DELETE)\\s+['\"]?https?://localhost[:/][^|;&]*$",
     "^curl\\s+-X\\s+(POST|GET|PUT|DELETE)\\s+['\"]?https?://localhost[:/][^|;&]*$",
@@ -135,7 +144,8 @@
     "^doas\\b",
     "(?<!git\\s)\\brm\\s+.*(-r|-rf|-fr|--recursive)",
     "(?<!git\\s)\\brm\\s+-[^\\s]*r",
-    "^rm\\s+/",
+    "^rm\\s+/$",
+    "^rm\\s+/(etc|usr|var|bin|sbin|lib|boot|dev|proc|sys|root|home)\\b",
     "\\bmkfs\\.",
     "\\bdd\\b.*\\bof=",
     "\\bshutdown\\b",
@@ -156,7 +166,7 @@
   ],
 
   "sensitive_paths": [
-    "\\.env$",
+    "\\.env(?!\\.example)$",
     "\\.env\\.(?!example)",
     "\\.pem$",
     "\\.key$",

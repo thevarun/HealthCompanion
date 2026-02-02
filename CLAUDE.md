@@ -19,6 +19,7 @@ The project includes:
 | Error Boundaries | [docs/error-handling-guide.md](docs/error-handling-guide.md) |
 | CI/CD | [docs/ci-cd-pipeline.md](docs/ci-cd-pipeline.md) |
 | Development | [docs/development-guide.md](docs/development-guide.md) |
+| Admin Setup | [docs/admin-setup.md](docs/admin-setup.md) |
 | Email System | [docs/email-system.md](docs/email-system.md) |
 
 ## Core Architecture
@@ -247,7 +248,7 @@ npm run lint && npm run check-types && npm test && npm run build
 - Setup/teardown files handle test account creation
 
 ### Visual Development & Inspection
-After implementing front-end changes, use Playwright MCP tools to navigate to affected pages, capture screenshots, and check console for errors.
+After implementing front-end changes, use Playwright MCP tools to navigate to affected pages, capture screenshots, and check console for errors. Always save screenshots to `_bmad-output/implementation-artifacts/screenshots` using the `downloadsDir` parameter (and `savePng: true`).
 
 ## Important Implementation Notes
 

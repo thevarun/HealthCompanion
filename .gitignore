@@ -43,6 +43,10 @@ yarn-error.log*
 
 # local env files
 .env*.local
+.env
+
+# serena
+.serena/
 
 # local folder
 local
