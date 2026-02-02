@@ -61,13 +61,15 @@ export async function GET(request: NextRequest) {
       }
 
       // Successfully exchanged code for session
-      return NextResponse.redirect(new URL(next, request.url));
+      const safePath = next.startsWith('/') ? next : '/';
+      return NextResponse.redirect(new URL(safePath, request.url));
     }
   }
 
   // Return the user to an error page with instructions
   // Extract locale from the 'next' parameter or default to 'en'
-  const localeMatch = next.match(/^\/([^/]+)\//);
+  const safeNext = next.startsWith('/') ? next : '/';
+  const localeMatch = safeNext.match(/^\/([^/]+)\//);
   const locale = localeMatch?.[1] ?? 'en';
   return NextResponse.redirect(new URL(`/${locale}/auth-code-error`, request.url));
 }

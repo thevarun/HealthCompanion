@@ -64,11 +64,13 @@ export async function GET(request: NextRequest) {
       ).catch(err => console.error('Failed to send welcome email:', err));
     }
 
-    return NextResponse.redirect(new URL(next, request.url));
+    const safePath = next.startsWith('/') ? next : '/';
+    return NextResponse.redirect(new URL(safePath, request.url));
   }
 
   // Extract locale from next path or default to 'en'
-  const localeMatch = next.match(/^\/([^/]+)\//);
+  const safeNext = next.startsWith('/') ? next : '/';
+  const localeMatch = safeNext.match(/^\/([^/]+)\//);
   const locale = localeMatch?.[1] ?? 'en';
   return NextResponse.redirect(new URL(`/${locale}/auth-code-error`, request.url));
 }

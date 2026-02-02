@@ -1,3 +1,5 @@
+import { getBaseUrl } from '@/utils/Helpers';
+
 import { sendEmail } from './sendEmail';
 import { WelcomeEmail } from './templates/WelcomeEmail';
 import type { EmailSendResult } from './types';
@@ -28,7 +30,7 @@ export async function sendWelcomeEmail(
   name?: string,
 ): Promise<EmailSendResult> {
   const appName = process.env.EMAIL_FROM_NAME || 'VT SaaS Template';
-  const appUrl = process.env.NEXT_PUBLIC_APP_URL || 'http://localhost:3000';
+  const appUrl = getBaseUrl();
 
   return sendEmail(
     email,
