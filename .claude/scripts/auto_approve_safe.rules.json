@@ -125,7 +125,9 @@
 
     "^echo\\s+[\"'][^\"']*[\"']\\s*&&\\s*sleep\\s+[0-9.]+$",
     "^for\\s+i\\s+in\\s+\\{1\\.\\.[0-9]+\\};\\s+do\\s+sleep\\s+[0-9.]+;\\s*done$",
-    "^for\\s+i\\s+in\\s+\\{1\\.\\.[0-9]+\\};\\s+do\\s+curl\\s+(-[sfo]+\\s+)*https?://localhost[:/][^;|&]*;\\s*done$"
+    "^for\\s+i\\s+in\\s+\\{1\\.\\.[0-9]+\\};\\s+do\\s+curl\\s+(-[sfo]+\\s+)*https?://localhost[:/][^;|&]*;\\s*done$",
+
+    "^git\\s+commit\\s+-m\\s+\"\\$\\(cat\\s+<<'?EOF'?"
   ],
 
   "deny_patterns": [
@@ -155,7 +157,7 @@
 
   "sensitive_paths": [
     "\\.env$",
-    "\\.env\\.",
+    "\\.env\\.(?!example)",
     "\\.pem$",
     "\\.key$",
     "\\.crt$",

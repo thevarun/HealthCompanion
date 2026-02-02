@@ -352,6 +352,32 @@ describe('POST /api/feedback', () => {
       expect(data.details).toBeDefined();
     });
 
+    it('returns 400 for whitespace-only message', async () => {
+      ;(createClient as any).mockReturnValue({
+        auth: {
+          getUser: vi.fn().mockResolvedValue({
+            data: { user: null },
+            error: null,
+          }),
+        },
+      });
+
+      const request = new Request('http://localhost/api/feedback', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          type: 'bug',
+          message: '   \n\t  ',
+        }),
+      });
+
+      const response = await POST(request);
+      const data = await response.json();
+
+      expect(response.status).toBe(400);
+      expect(data.code).toBe('VALIDATION_ERROR');
+    });
+
     it('returns 400 for missing message', async () => {
       ;(createClient as any).mockReturnValue({
         auth: {
