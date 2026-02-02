@@ -4,6 +4,11 @@
 
 **Design Artifact:** [epic-9-analytics-dashboard-design.md](../ux-design/epic-9-analytics-dashboard-design.md)
 
+**Parallel Development Notes:**
+- Epic 9 can run in parallel with Epic 8
+- **Analytics hook points from Epic 8**: When Epic 9 analytics infrastructure is ready, wire up the documented hook points in Epic 8 components
+- **Dependency**: Story 9.6 requires Epic 8.5 (pSEO pages) to exist
+
 ## Story 9.1: Analytics Infrastructure Setup (PostHog)
 
 As a **template user (developer)**,
@@ -237,5 +242,35 @@ So that **I can monitor the business without external tools**.
 **Then** initial load is fast (skeleton states)
 **And** heavy queries don't block render
 **And** caching is used where appropriate
+
+---
+
+## Story 9.6: pSEO Traffic Instrumentation
+
+As a **growth-focused product owner**,
+I want **pSEO pages instrumented with analytics**,
+So that **I can measure which pages drive traffic and conversions**.
+
+**Acceptance Criteria:**
+
+**Given** pSEO page analytics
+**When** a user views a pSEO page
+**Then** `pseo_page_viewed` event is tracked via analytics utility (from 9.1-9.2)
+**And** properties include: category, slug, referrer
+
+**Given** search indexing documentation
+**When** I review the setup guide
+**Then** Google Search Console setup is documented
+**And** steps for verifying pSEO page indexing are included
+
+**Given** pSEO performance visibility
+**When** I review analytics
+**Then** dashboard or PostHog view shows pSEO page performance metrics
+**And** metrics include: page views, top pages, referral sources
+
+**Given** dependencies
+**When** I review the implementation order
+**Then** depends on: Story 8.5 (pSEO pages exist)
+**And** depends on: Stories 9.1-9.2 (analytics infrastructure)
 
 ---
