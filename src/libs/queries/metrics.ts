@@ -1,8 +1,11 @@
 import type { User } from '@supabase/supabase-js';
+import { count, eq } from 'drizzle-orm';
 
+import { db } from '@/libs/DB';
 import { createAdminClient } from '@/libs/supabase/admin';
 import type { TrendData } from '@/libs/utils/calculateTrend';
 import { calculateTrend } from '@/libs/utils/calculateTrend';
+import { feedback } from '@/models/Schema';
 
 export type MetricWithTrend = {
   count: number;
@@ -166,10 +169,18 @@ export async function getActiveUsersCountWithTrend(): Promise<MetricWithTrend | 
 }
 
 /**
- * Returns the count of pending (unreviewed) feedback.
- * Returns 0 for now as feedback table is not yet created.
+ * Returns the count of pending (unreviewed) feedback from the database.
  */
 export async function getPendingFeedbackCount(): Promise<number | null> {
-  // Feedback table not yet created - return 0 as placeholder
-  return 0;
+  try {
+    const result = await db
+      .select({ count: count() })
+      .from(feedback)
+      .where(eq(feedback.status, 'pending'));
+
+    return result[0]?.count ?? 0;
+  } catch (error) {
+    console.error('Failed to fetch pending feedback count:', error);
+    return null;
+  }
 }

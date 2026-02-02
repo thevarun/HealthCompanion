@@ -122,7 +122,9 @@
     "^npm\\s+run\\s+[\\w:-]+(\\s+[^|;&]*)?(\\s*2>&1)?(\\s*&)?$",
     "^lsof\\s+-ti:\\d+(\\s+2>/dev/null)?$",
     "^ps\\s+aux",
-    "^xxd\\s+"
+    "^xxd\\s+",
+
+    "^git\\s+commit\\s+-m\\s+\"\\$\\(cat\\s+<<'?EOF'?"
   ],
 
   "deny_patterns": [

@@ -47,7 +47,7 @@ import {
   TooltipProvider,
   TooltipTrigger,
 } from '@/components/ui/tooltip';
-import { getUserInitials, getUserStatus } from '@/libs/queries/users';
+import { getUserInitials, getUserStatus } from '@/libs/queries/userUtils';
 
 import { UserDetailDialog } from './UserDetailDialog';
 

@@ -26,7 +26,7 @@ import {
   DialogTitle,
 } from '@/components/ui/dialog';
 import { Separator } from '@/components/ui/separator';
-import { getUserInitials, getUserStatus } from '@/libs/queries/users';
+import { getUserInitials, getUserStatus } from '@/libs/queries/userUtils';
 
 import { DeleteUserDialog } from './DeleteUserDialog';
 import { ResetPasswordDialog } from './ResetPasswordDialog';

@@ -1,6 +1,9 @@
 import type { User } from '@supabase/supabase-js';
 
-import { createAdminClient } from '@/libs/supabase/admin';
+import { fetchAllUsers } from './metrics';
+import { getUserStatus } from './userUtils';
+
+export { getUserInitials, getUserStatus } from './userUtils';
 
 export type UsersListOptions = {
   page?: number;
@@ -19,9 +22,11 @@ export type UsersListResult = {
 
 /**
  * Fetches a list of users from Supabase auth.users table using the Admin API.
- * This function requires the SUPABASE_SERVICE_ROLE_KEY to be configured.
+ * Fetches all users, then applies search/status/sort filters in-memory,
+ * and returns the correct page slice with accurate total count.
  *
- * Note: Supabase Admin API pagination is 1-indexed
+ * This approach is necessary because Supabase Admin API doesn't support
+ * server-side search or filtering on listUsers.
  */
 export async function getUsersList(options: UsersListOptions = {}): Promise<UsersListResult> {
   const {
@@ -34,19 +39,8 @@ export async function getUsersList(options: UsersListOptions = {}): Promise<User
   } = options;
 
   try {
-    const supabaseAdmin = createAdminClient();
-
-    // Supabase Admin API uses 1-indexed pages
-    const { data, error } = await supabaseAdmin.auth.admin.listUsers({
-      page,
-      perPage: limit,
-    });
-
-    if (error) {
-      throw error;
-    }
-
-    let filteredUsers = data.users || [];
+    const allUsers = await fetchAllUsers();
+    let filteredUsers = allUsers;
 
     // Apply search filter (email or username)
     if (search) {
@@ -79,9 +73,14 @@ export async function getUsersList(options: UsersListOptions = {}): Promise<User
       }
     });
 
+    // Paginate the filtered result
+    const total = filteredUsers.length;
+    const start = (page - 1) * limit;
+    const paginatedUsers = filteredUsers.slice(start, start + limit);
+
     return {
-      users: filteredUsers,
-      total: data.users?.length || 0, // Note: Supabase doesn't provide total count directly
+      users: paginatedUsers,
+      total,
       error: null,
     };
   } catch (error) {
@@ -92,42 +91,4 @@ export async function getUsersList(options: UsersListOptions = {}): Promise<User
       error: error as Error,
     };
   }
-}
-
-/**
- * Determines the status of a user based on their Supabase auth data.
- *
- * Status logic:
- * - suspended: User has banned_until set (any date)
- * - pending: Email not confirmed (email_confirmed_at is null)
- * - active: All other cases
- */
-export function getUserStatus(user: User): 'active' | 'suspended' | 'pending' {
-  // Check for ban (suspended status)
-  if (user.banned_until) {
-    return 'suspended';
-  }
-
-  // Check for pending email verification
-  if (!user.email_confirmed_at) {
-    return 'pending';
-  }
-
-  // Default to active
-  return 'active';
-}
-
-/**
- * Gets user initials from email and/or username.
- * Priority: username > email
- * Returns first 2 characters, uppercase.
- */
-export function getUserInitials(email?: string | null, username?: string | null): string {
-  if (username && username.length > 0) {
-    return username.substring(0, 2).toUpperCase();
-  }
-  if (email && email.length > 0) {
-    return email.substring(0, 2).toUpperCase();
-  }
-  return 'U?';
 }

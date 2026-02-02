@@ -16,6 +16,30 @@ vi.mock('@/libs/supabase/admin', () => ({
   createAdminClient: vi.fn(),
 }));
 
+// Mock the database
+const mockSelect = vi.fn();
+const mockFrom = vi.fn();
+const mockWhere = vi.fn();
+
+vi.mock('@/libs/DB', () => ({
+  db: {
+    select: (...args: any[]) => {
+      mockSelect(...args);
+      return { from: (...fArgs: any[]) => {
+        mockFrom(...fArgs);
+        return { where: (...wArgs: any[]) => {
+          mockWhere(...wArgs);
+          return mockWhere.mock.results?.[mockWhere.mock.calls.length - 1]?.value ?? Promise.resolve([{ count: 0 }]);
+        } };
+      } };
+    },
+  },
+}));
+
+vi.mock('@/models/Schema', () => ({
+  feedback: { status: 'status' },
+}));
+
 // Import the mocked module
 const { createAdminClient } = await import('@/libs/supabase/admin');
 const mockedCreateAdminClient = vi.mocked(createAdminClient);
@@ -372,10 +396,31 @@ describe('metrics queries', () => {
   });
 
   describe('getPendingFeedbackCount', () => {
-    it('returns 0 (placeholder)', async () => {
-      const count = await getPendingFeedbackCount();
+    it('returns count from database', async () => {
+      mockWhere.mockResolvedValueOnce([{ count: 5 }]);
 
-      expect(count).toBe(0);
+      const result = await getPendingFeedbackCount();
+
+      expect(result).toBe(5);
+      expect(mockSelect).toHaveBeenCalled();
+      expect(mockFrom).toHaveBeenCalled();
+      expect(mockWhere).toHaveBeenCalled();
+    });
+
+    it('returns 0 when no pending feedback exists', async () => {
+      mockWhere.mockResolvedValueOnce([{ count: 0 }]);
+
+      const result = await getPendingFeedbackCount();
+
+      expect(result).toBe(0);
+    });
+
+    it('returns null on database error', async () => {
+      mockWhere.mockRejectedValueOnce(new Error('DB connection failed'));
+
+      const result = await getPendingFeedbackCount();
+
+      expect(result).toBeNull();
     });
   });
 });
