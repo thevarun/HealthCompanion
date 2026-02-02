@@ -66,7 +66,7 @@ export function FeedbackCard({ feedback: item, onSelect, isSelected }: FeedbackC
             {messagePreview}
           </p>
           <p className="mt-1 text-xs text-muted-foreground" data-testid="feedback-email">
-            {item.email || t('anonymous')}
+            {item.userEmail || t('anonymous')}
           </p>
         </button>
       </div>

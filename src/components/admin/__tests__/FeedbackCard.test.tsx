@@ -38,7 +38,7 @@ const mockFeedback: FeedbackEntry = {
   id: 'fb-1',
   type: 'bug',
   message: 'This is a bug report with some details about the issue.',
-  email: 'user@example.com',
+  userEmail: 'user@example.com',
   status: 'pending',
   userId: 'user-1',
   createdAt: new Date('2026-01-29T12:00:00Z'),
@@ -78,7 +78,7 @@ describe('FeedbackCard', () => {
   });
 
   it('shows Anonymous when no email', () => {
-    const anonFeedback = { ...mockFeedback, email: null };
+    const anonFeedback = { ...mockFeedback, userEmail: null };
     render(<FeedbackCard feedback={anonFeedback} />);
 
     expect(screen.getByTestId('feedback-email')).toHaveTextContent('Anonymous');

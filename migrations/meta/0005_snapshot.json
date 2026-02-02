@@ -1,12 +1,12 @@
 {
-  "id": "f45a06f9-567a-4c01-beea-3a2e36a46a3f",
-  "prevId": "b6bbba73-4bf8-46fd-b5c9-6f4821505900",
+  "id": "a08edc71-356e-40c5-bc91-a789f2ab1e6d",
+  "prevId": "9ceae89e-510a-4608-8cb5-3aeb26f966b3",
   "version": "7",
   "dialect": "postgresql",
   "tables": {
-    "public.admin_audit_log": {
+    "health_companion.admin_audit_log": {
       "name": "admin_audit_log",
-      "schema": "",
+      "schema": "health_companion",
       "columns": {
         "id": {
           "name": "id",
@@ -113,9 +113,9 @@
       "checkConstraints": {},
       "isRLSEnabled": false
     },
-    "public.feedback": {
+    "health_companion.feedback": {
       "name": "feedback",
-      "schema": "",
+      "schema": "health_companion",
       "columns": {
         "id": {
           "name": "id",
@@ -124,6 +124,12 @@
           "notNull": true,
           "default": "gen_random_uuid()"
         },
+        "message": {
+          "name": "message",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true
+        },
         "type": {
           "name": "type",
           "type": "feedback_type",
@@ -131,14 +137,14 @@
           "primaryKey": false,
           "notNull": true
         },
-        "message": {
-          "name": "message",
-          "type": "text",
+        "user_id": {
+          "name": "user_id",
+          "type": "uuid",
           "primaryKey": false,
-          "notNull": true
+          "notNull": false
         },
-        "email": {
-          "name": "email",
+        "user_email": {
+          "name": "user_email",
           "type": "text",
           "primaryKey": false,
           "notNull": false
@@ -150,12 +156,6 @@
           "primaryKey": false,
           "notNull": true,
           "default": "'pending'"
-        },
-        "user_id": {
-          "name": "user_id",
-          "type": "uuid",
-          "primaryKey": false,
-          "notNull": false
         },
         "created_at": {
           "name": "created_at",
@@ -172,26 +172,11 @@
         }
       },
       "indexes": {
-        "idx_feedback_created_at": {
-          "name": "idx_feedback_created_at",
+        "idx_feedback_user_id": {
+          "name": "idx_feedback_user_id",
           "columns": [
             {
-              "expression": "created_at",
-              "isExpression": false,
-              "asc": true,
-              "nulls": "last"
-            }
-          ],
-          "isUnique": false,
-          "concurrently": false,
-          "method": "btree",
-          "with": {}
-        },
-        "idx_feedback_type": {
-          "name": "idx_feedback_type",
-          "columns": [
-            {
-              "expression": "type",
+              "expression": "user_id",
               "isExpression": false,
               "asc": true,
               "nulls": "last"
@@ -217,8 +202,23 @@
           "method": "btree",
           "with": {}
         },
-        "idx_feedback_status_created_at": {
-          "name": "idx_feedback_status_created_at",
+        "idx_feedback_created_at": {
+          "name": "idx_feedback_created_at",
+          "columns": [
+            {
+              "expression": "created_at",
+              "isExpression": false,
+              "asc": true,
+              "nulls": "last"
+            }
+          ],
+          "isUnique": false,
+          "concurrently": false,
+          "method": "btree",
+          "with": {}
+        },
+        "idx_feedback_status_created": {
+          "name": "idx_feedback_status_created",
           "columns": [
             {
               "expression": "status",

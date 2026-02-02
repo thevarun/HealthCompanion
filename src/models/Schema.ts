@@ -99,7 +99,7 @@ export const userPreferences = healthCompanionSchema.table(
 );
 
 // Admin audit log table for tracking admin actions
-export const adminAuditLog = pgTable(
+export const adminAuditLog = healthCompanionSchema.table(
   'admin_audit_log',
   {
     id: uuid('id').defaultRandom().primaryKey(),
@@ -122,26 +122,29 @@ export const adminAuditLog = pgTable(
   }),
 );
 
-// Feedback enums and table for user feedback management
+// Feedback enums
 export const feedbackTypeEnum = pgEnum('feedback_type', ['bug', 'feature', 'praise']);
 export const feedbackStatusEnum = pgEnum('feedback_status', ['pending', 'reviewed', 'archived']);
 
-export const feedback = pgTable(
+// Feedback table for user feedback collection
+export const feedback = healthCompanionSchema.table(
   'feedback',
   {
     id: uuid('id').defaultRandom().primaryKey(),
-    type: feedbackTypeEnum('type').notNull(),
     message: text('message').notNull(),
-    email: text('email'),
-    status: feedbackStatusEnum('status').notNull().default('pending'),
-    userId: uuid('user_id'),
-    createdAt: timestamp('created_at', { withTimezone: true }).defaultNow().notNull(),
-    reviewedAt: timestamp('reviewed_at', { withTimezone: true }),
+    type: feedbackTypeEnum('type').notNull(),
+    userId: uuid('user_id'), // nullable - for anonymous submissions
+    userEmail: text('user_email'), // nullable - for anonymous submissions
+    status: feedbackStatusEnum('status').default('pending').notNull(),
+    createdAt: timestamp('created_at', { withTimezone: true })
+      .defaultNow()
+      .notNull(),
+    reviewedAt: timestamp('reviewed_at', { withTimezone: true }), // nullable
   },
   table => ({
-    createdAtIdx: index('idx_feedback_created_at').on(table.createdAt),
-    typeIdx: index('idx_feedback_type').on(table.type),
+    userIdIdx: index('idx_feedback_user_id').on(table.userId),
     statusIdx: index('idx_feedback_status').on(table.status),
-    statusCreatedAtIdx: index('idx_feedback_status_created_at').on(table.status, table.createdAt),
+    createdAtIdx: index('idx_feedback_created_at').on(table.createdAt),
+    statusCreatedIdx: index('idx_feedback_status_created').on(table.status, table.createdAt),
   }),
 );

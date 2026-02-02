@@ -31,7 +31,7 @@ test.describe('Multi-Thread Chat', () => {
 
     // Send a message
     await composer.fill('Hello, this is my first message');
-    await authenticatedPage.getByRole('button', { name: 'Send' }).click();
+    await authenticatedPage.getByRole('button', { name: 'Send', exact: true }).click();
 
     // Wait for assistant response
     await expect(authenticatedPage.locator('[data-message-role="assistant"]').first()).toBeVisible({ timeout: 10000 });

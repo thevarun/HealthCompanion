@@ -1,12 +1,12 @@
 {
-  "id": "b6bbba73-4bf8-46fd-b5c9-6f4821505900",
+  "id": "9ceae89e-510a-4608-8cb5-3aeb26f966b3",
   "prevId": "e225effa-5b3b-4ff3-8770-f8daf5990e58",
   "version": "7",
   "dialect": "postgresql",
   "tables": {
-    "public.admin_audit_log": {
-      "name": "admin_audit_log",
-      "schema": "",
+    "health_companion.feedback": {
+      "name": "feedback",
+      "schema": "health_companion",
       "columns": {
         "id": {
           "name": "id",
@@ -15,35 +15,38 @@
           "notNull": true,
           "default": "gen_random_uuid()"
         },
-        "admin_id": {
-          "name": "admin_id",
-          "type": "uuid",
-          "primaryKey": false,
-          "notNull": true
-        },
-        "action": {
-          "name": "action",
+        "message": {
+          "name": "message",
           "type": "text",
           "primaryKey": false,
           "notNull": true
         },
-        "target_type": {
-          "name": "target_type",
-          "type": "text",
+        "type": {
+          "name": "type",
+          "type": "feedback_type",
+          "typeSchema": "public",
           "primaryKey": false,
           "notNull": true
         },
-        "target_id": {
-          "name": "target_id",
+        "user_id": {
+          "name": "user_id",
           "type": "uuid",
-          "primaryKey": false,
-          "notNull": true
-        },
-        "metadata": {
-          "name": "metadata",
-          "type": "jsonb",
           "primaryKey": false,
           "notNull": false
+        },
+        "user_email": {
+          "name": "user_email",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "status": {
+          "name": "status",
+          "type": "feedback_status",
+          "typeSchema": "public",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "'pending'"
         },
         "created_at": {
           "name": "created_at",
@@ -51,14 +54,20 @@
           "primaryKey": false,
           "notNull": true,
           "default": "now()"
+        },
+        "reviewed_at": {
+          "name": "reviewed_at",
+          "type": "timestamp with time zone",
+          "primaryKey": false,
+          "notNull": false
         }
       },
       "indexes": {
-        "idx_admin_audit_log_admin_id": {
-          "name": "idx_admin_audit_log_admin_id",
+        "idx_feedback_user_id": {
+          "name": "idx_feedback_user_id",
           "columns": [
             {
-              "expression": "admin_id",
+              "expression": "user_id",
               "isExpression": false,
               "asc": true,
               "nulls": "last"
@@ -69,8 +78,23 @@
           "method": "btree",
           "with": {}
         },
-        "idx_admin_audit_log_created_at": {
-          "name": "idx_admin_audit_log_created_at",
+        "idx_feedback_status": {
+          "name": "idx_feedback_status",
+          "columns": [
+            {
+              "expression": "status",
+              "isExpression": false,
+              "asc": true,
+              "nulls": "last"
+            }
+          ],
+          "isUnique": false,
+          "concurrently": false,
+          "method": "btree",
+          "with": {}
+        },
+        "idx_feedback_created_at": {
+          "name": "idx_feedback_created_at",
           "columns": [
             {
               "expression": "created_at",
@@ -84,11 +108,11 @@
           "method": "btree",
           "with": {}
         },
-        "idx_admin_audit_log_action_created_at": {
-          "name": "idx_admin_audit_log_action_created_at",
+        "idx_feedback_status_created": {
+          "name": "idx_feedback_status_created",
           "columns": [
             {
-              "expression": "action",
+              "expression": "status",
               "isExpression": false,
               "asc": true,
               "nulls": "last"
@@ -449,7 +473,26 @@
       "isRLSEnabled": false
     }
   },
-  "enums": {},
+  "enums": {
+    "public.feedback_status": {
+      "name": "feedback_status",
+      "schema": "public",
+      "values": [
+        "pending",
+        "reviewed",
+        "archived"
+      ]
+    },
+    "public.feedback_type": {
+      "name": "feedback_type",
+      "schema": "public",
+      "values": [
+        "bug",
+        "feature",
+        "praise"
+      ]
+    }
+  },
   "schemas": {
     "health_companion": "health_companion"
   },

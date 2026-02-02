@@ -116,7 +116,7 @@ export function FeedbackDetailDialog({ feedback: item, open, onOpenChange }: Fee
           <DialogHeader>
             <DialogTitle>{t('detail.title')}</DialogTitle>
             <DialogDescription>
-              {item.email || t('anonymous')}
+              {item.userEmail || t('anonymous')}
             </DialogDescription>
           </DialogHeader>
 
@@ -152,7 +152,7 @@ export function FeedbackDetailDialog({ feedback: item, open, onOpenChange }: Fee
             {/* Submitted by */}
             <div>
               <span className="text-xs font-medium text-muted-foreground">{t('detail.submittedBy')}</span>
-              <p className="mt-1 text-sm">{item.email || t('anonymous')}</p>
+              <p className="mt-1 text-sm">{item.userEmail || t('anonymous')}</p>
             </div>
 
             {/* Timestamps */}

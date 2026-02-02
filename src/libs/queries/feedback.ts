@@ -17,7 +17,7 @@ export type FeedbackEntry = {
   id: string;
   type: FeedbackType;
   message: string;
-  email: string | null;
+  userEmail: string | null;
   status: FeedbackStatus;
   userId: string | null;
   createdAt: Date;

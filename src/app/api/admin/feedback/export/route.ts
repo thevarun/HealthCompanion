@@ -62,7 +62,7 @@ export async function GET(request: NextRequest) {
       escapeCsvField(item.type),
       escapeCsvField(item.status),
       escapeCsvField(item.message),
-      escapeCsvField(item.email || ''),
+      escapeCsvField(item.userEmail || ''),
       escapeCsvField(item.userId || ''),
       escapeCsvField(item.createdAt.toISOString()),
       escapeCsvField(item.reviewedAt ? item.reviewedAt.toISOString() : ''),
